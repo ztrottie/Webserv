@@ -1,5 +1,4 @@
 #include <cstddef>
-#include <iostream>
 #include <netinet/in.h>
 #include <strings.h>
 #include <sys/_endian.h>
@@ -9,7 +8,6 @@
 #include <sys/time.h>
 #include <unistd.h>
 #include <netdb.h>
-#include <utility>
 
 int main(void) {
 	int listensocket = socket(AF_INET, SOCK_STREAM, 0);
@@ -25,14 +23,20 @@ int main(void) {
 	struct kevent event;
 	EV_SET(&event, listensocket, EVFILT_READ | EVFILT_WRITE, EV_ADD, 0, 0, NULL);
 	kevent(kq, &event, 1, NULL, 0, NULL);
-	struct kevent events[1];
+	struct kevent events[10];
 	while (1) {
 		int num_events = kevent(kq, NULL, 0, events, 1, NULL);
 		if (num_events == -1) {
 			perror("kevent");
-		} else {
-    	    // Handle events
-			printf("Event occurred!\n");
+			break;
+		}
+		for (int i = 0 ; i < num_events; i++) {
+			int fd = events[i].ident;
+
+			if (fd == listensocket) {
+				struct sockaddr_in client_address;
+				
+			}
 		}
 	}
 	close(kq);
