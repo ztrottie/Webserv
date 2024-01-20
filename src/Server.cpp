@@ -1,12 +1,14 @@
 #include "../include/Server.hpp"
 #include <iostream>
+#include "../include/color.h"
 
 Server::Server() {
-	std::cout << "Default Server constructor " << std::endl;
+	std::cout << "Initializing the default webserv" << std::endl;
+
 }
 
 Server::Server(const Server &inst) {
-	std::cout << "Copy Server constructor " << std::endl;
+	std::cout << "Copy Server constructor" << std::endl;
 	*this = inst;
 }
 

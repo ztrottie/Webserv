@@ -8,6 +8,7 @@ BIN_DIR	=	bin/
 
 
 SRCS	=	main.cpp \
+			Server.cpp
 
 OBJS	=	$(addprefix $(BIN_DIR), ${SRCS:.cpp=.o})
 
