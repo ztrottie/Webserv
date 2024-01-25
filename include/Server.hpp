@@ -1,9 +1,10 @@
 #pragma once
 
 #include <cstdint>
-#include <utility>
-#include <vector>
 #include <string>
+#include <sys/types.h>
+#include <sys/event.h>
+#include <sys/time.h>
 // #include "Router.hpp"
 
 class Server
@@ -13,14 +14,13 @@ private:
 	uint16_t	 											_port;
 	const char												*_host;
 	std::string												_name;
-	std::vector<std::pair<unsigned short, std::string> >	_pathsErrorPages;
 	// unsigned int											_clientBodySize;
-	// Router													_serverRouter;
+	// Router												_serverRouter;
 
 public:
 	// Constructors / Destructor
-	Server();
-	Server(uint16_t port, const char *host, std::string name);
+	Server(int &listSocket);
+	Server(uint16_t port, const char *host, std::string name, int &listSocket);
 	Server(const Server &inst);
 	~Server();
 
@@ -29,6 +29,7 @@ public:
 
 	// Functions
 	int getListSocket() const;
+	int acceptConnection();
 };
 
 // Server_HPP

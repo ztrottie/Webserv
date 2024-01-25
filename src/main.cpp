@@ -1,9 +1,9 @@
 #include <iostream>
 #include "../include/color.h"
-#include "../include/Server.hpp"
+#include "../include/Webserv.hpp"
 
 int main(void) {
 	std::cout << YELLOW "Launching the webserv!" RESET << std::endl;
-	Server defaultServer;
+	Webserv webserv;
     return 0;
 }
