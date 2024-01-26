@@ -3,6 +3,7 @@
 #include <sys/types.h>
 #include <sys/event.h>
 #include <sys/time.h>
+#include "Server.hpp"
 #include "struct.hpp"
 
 class Webserv
@@ -10,8 +11,7 @@ class Webserv
 private:
 	int								_kq;
 	int								_nbSockets;
-	struct kevent					_event;
-	std::map<int, socket_in*>		_clientMap;
+	std::map<int, serverInfo*>		_clientMap;
 public:
 	// Constructors / Destructor
 	Webserv();
@@ -22,7 +22,8 @@ public:
 	Webserv& operator=(const Webserv &rhs);
 
 	// Functions
-	void addNewServer();
+	void addNewServer(uint16_t port, const char *host, std::string name);
+	void loop();
 };
 
 // Webserv_HPP

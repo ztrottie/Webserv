@@ -5,6 +5,8 @@
 #include <sys/types.h>
 #include <sys/event.h>
 #include <sys/time.h>
+#include "struct.hpp"
+#include "utils.hpp"
 // #include "Router.hpp"
 
 class Server
@@ -19,8 +21,8 @@ private:
 
 public:
 	// Constructors / Destructor
-	Server(int &listSocket);
-	Server(uint16_t port, const char *host, std::string name, int &listSocket);
+	Server(serverInfo *server);
+	Server(uint16_t port, const char *host, std::string name, serverInfo *server);
 	Server(const Server &inst);
 	~Server();
 
@@ -28,8 +30,7 @@ public:
 	Server& operator=(const Server &rhs);
 
 	// Functions
-	int getListSocket() const;
-	int acceptConnection();
+	int acceptConnection(serverInfo *client);
 };
 
 // Server_HPP

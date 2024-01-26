@@ -1,16 +1,16 @@
 #pragma once
-#include "Server.hpp"
 #include <arpa/inet.h>
 
-enum eType {
-	SERVER,
-	CLIENT
+class Server;
+
+enum socketType {
+	CLIENT,
+	SERVER
 };
 
-struct socket_in {
-	int		socket;
-	Server	*servInst;
-	sockaddr_in clientAddress;
-	socklen_t clientAddressLength;
-	int		type;
+struct serverInfo {
+	int socket;
+	int type;
+	struct sockaddr_in client_address;
+	Server	*serverInst;
 };

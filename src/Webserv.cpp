@@ -2,33 +2,11 @@
 #include <iostream>
 #include <sys/event.h>
 #include <utility>
+#include <unistd.h>
 
 Webserv::Webserv() : _nbSockets(0) {
 	std::cout << "Default Webserv constructor " << std::endl;
 	_kq = kqueue();
-	int socket = -2;
-	Server defaultServer(socket);
-	_nbSockets++;
-	socket_in socketInfo = {socket, &defaultServer, SERVER};
-	_clientMap.insert(std::make_pair(socket, &socketInfo));
-	EV_SET(&_event, socket, EVFILT_READ | EVFILT_WRITE, EV_ADD, 0, 0, NULL);
-	if (kevent(_kq, &_event, 1, NULL, 0, NULL) < 0) {
-		std::cout << "fuck" << std::endl;
-	}
-	struct kevent event[_nbSockets];
-	while (1) {
-		int num_event = kevent(_kq, NULL, 0, event, 1, NULL);
-		if (num_event > 0) {
-			std::cout << "connection request" << std::endl;
-			for (int i = 0; i < _nbSockets; i++) {
-				struct socket_in *tmpServerInfo = _clientMap[event[i].ident];
-				if (tmpServerInfo->type == SERVER) {
-					int tmpSocket = tmpServerInfo->servInst->acceptConnection();
-					
-				}
-			}
-		}
-	}
 }
 
 Webserv::Webserv(const Webserv &inst) {
@@ -38,6 +16,7 @@ Webserv::Webserv(const Webserv &inst) {
 
 Webserv::~Webserv() {
 	std::cout << "Webserv destructor" << std::endl;
+	close(_kq);
 }
 
 Webserv& Webserv::operator=(const Webserv &rhs) {
@@ -46,4 +25,33 @@ Webserv& Webserv::operator=(const Webserv &rhs) {
 
 	}
 	return *this;
+}
+
+void Webserv::addNewServer(uint16_t port, const char *host, std::string name) {
+	serverInfo server;
+	server.serverInst = new Server(port, host, name, &server);
+	_clientMap.insert(std::make_pair(server.socket, &server));
+	struct kevent changes[1];
+	EV_SET(&changes[0], server.socket, EVFILT_READ, EV_ADD, 0, 0, nullptr);
+	kevent(_kq, changes, 1, nullptr, 0, nullptr);
+	_nbSockets++;
+}
+
+void Webserv::loop() {
+	while (1) {
+		struct kevent events[10];
+		int numEvents = kevent(_kq, nullptr, 0, events, 10, nullptr);
+		std::cout << numEvents << std::endl;
+		for (int i = 0; i < numEvents; i++) {
+			serverInfo *server = _clientMap[events[i].ident];
+			if (server->type == SERVER) {
+				serverInfo client;
+				server->serverInst->acceptConnection(&client);
+				struct kevent clientChanges;
+				EV_SET(&clientChanges, client.socket, EVFILT_READ | EVFILT_WRITE, EV_ADD, 0, 0, nullptr);
+				kevent(_kq, &clientChanges, 1, nullptr, 0, nullptr);
+				_nbSockets++;
+			}
+		}
+	}
 }
