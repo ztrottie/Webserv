@@ -1,14 +1,18 @@
 #include "../include/Server.hpp"
+#include <algorithm>
 #include <arpa/inet.h>
+#include <cstring>
 #include <ctime>
 #include <iostream>
 #include <stdexcept>
+#include <string>
 #include <sys/_endian.h>
 #include <sys/_types/_socklen_t.h>
 #include <sys/socket.h>
 #include "../include/color.h"
 #include <netinet/in.h>
 #include <fcntl.h>
+#include <unistd.h>
 
 Server::Server(uint16_t port, const char *host, std::string name, serverInfo *server) : _port(port), _host(host), _name(name) {
 	std::cout << YELLOW << timestamp() << " Initializing a default Server named " << _name << " on " << _host << ":" << _port << RESET << std::endl;
@@ -56,4 +60,28 @@ int Server::acceptConnection(serverInfo *client) {
 	client->serverInst = this;
 	std::cout << GREEN << timestamp() << " incomming connnection from " << inet_ntoa(client->client_address.sin_addr) << " accepted" << RESET << std::endl;
 	return (0);
+}
+
+int Server::handleClient(serverInfo *client) {
+	char buffer[1024];
+	std::string data;
+	size_t nbytes = 1024;
+	while (nbytes == 1024) {
+		std::memset(buffer, 0, sizeof(buffer));
+		nbytes = recv(client->socket, buffer, sizeof(buffer), 0);
+		data += buffer;
+	}
+	std::cout << data << std::endl;
+	if (nbytes <= 0) {
+		std::cout << RED << timestamp() << " server: " << _name << " connection from: " << inet_ntoa(client->client_address.sin_addr) << " CLOSED!!!" << RESET << std::endl;
+		return CLOSE;
+	}
+	if (data.find("GET / HTTP/1.1") != std::string::npos) {
+		std::string response = "HTTP/1.1 200 OK\r\nContent-Length: 12\r\n\r\nHello, World!";
+        send(client->socket, response.c_str(), response.size(), 0);
+	} else {
+		return CLOSE;
+	}
+
+	return KEEP;
 }

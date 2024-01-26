@@ -23,6 +23,7 @@ public:
 
 	// Functions
 	void addNewServer(uint16_t port, const char *host, std::string name);
+	void acceptConnection(serverInfo *info);
 	void loop();
 };
 

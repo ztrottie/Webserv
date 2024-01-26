@@ -31,6 +31,7 @@ public:
 
 	// Functions
 	int acceptConnection(serverInfo *client);
+	int handleClient(serverInfo *client);
 };
 
 // Server_HPP
