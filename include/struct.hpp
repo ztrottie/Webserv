@@ -13,6 +13,11 @@ enum socketStatus {
 	CLOSE
 };
 
+enum socketError {
+	OK,
+	KO
+}
+
 struct serverInfo {
 	int socket;
 	int type;

@@ -57,8 +57,7 @@ void Webserv::loop() {
 			serverInfo *info = _clientMap[events[i].ident];
 			if (info->type == SERVER) {
 				acceptConnection(info);
-			}
-			else {
+			} else {
 				if (info->serverInst->handleClient(info) == CLOSE) {
 					close(info->socket);
 					_clientMap.erase(info->socket);
