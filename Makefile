@@ -1,14 +1,16 @@
 NAME	=	webserv
 
 CC		=	c++
-CFLAGS	=	-Wall -Werror -Wextra -std=c++98 -Wno-shadow -Wshadow
+CFLAGS	=	#-Wall -Werror -Wextra -std=c++98 -Wno-shadow -Wshadow
 
 SRC_DIR	=	src/
 BIN_DIR	=	bin/
 
 
 SRCS	=	main.cpp \
-			Server.cpp
+			Server.cpp \
+			parsing.cpp \
+			utils.cpp
 
 OBJS	=	$(addprefix $(BIN_DIR), ${SRCS:.cpp=.o})
 
@@ -30,5 +32,8 @@ fclean: clean
 	@rm -f $(NAME)
 
 re: fclean all
+
+run: re all
+	@./webserv
 
 .PHONY:	all clean fclean re
