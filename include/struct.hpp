@@ -16,7 +16,7 @@ enum socketStatus {
 enum socketError {
 	OK,
 	KO
-}
+};
 
 struct serverInfo {
 	int socket;
