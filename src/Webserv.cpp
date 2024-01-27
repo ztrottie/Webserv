@@ -1,11 +1,12 @@
 #include "../include/Webserv.hpp"
-#include <atomic>
+#include <ctime>
 #include <iostream>
 #include <sys/event.h>
 #include <utility>
 #include <unistd.h>
+#include "../include/utils.hpp"
 
-Webserv::Webserv() : _nbSockets(0) {
+Webserv::Webserv() : _nbServer(0), _nbClients(0) {
 	std::cout << "Default Webserv constructor " << std::endl;
 	_kq = kqueue();
 }
@@ -35,30 +36,36 @@ void Webserv::addNewServer(uint16_t port, const char *host, std::string name) {
 	struct kevent changes;
 	EV_SET(&changes, server->socket, EVFILT_READ, EV_ADD, 0, 0, nullptr);
 	kevent(_kq, &changes, 1, nullptr, 0, nullptr);
-	_nbSockets++;
+	_nbServer++;
 }
 
 void Webserv::acceptConnection(serverInfo *info) {
 	serverInfo *client = new serverInfo;
-	info->serverInst->acceptConnection(client);
+	if (info->serverInst->acceptConnection(client) == CLOSE) {
+		close(client->socket);
+		delete client;
+		return ;
+	}
 	struct kevent clientChanges;
 	EV_SET(&clientChanges, client->socket, EVFILT_READ, EV_ADD, 0, 0, nullptr);
 	kevent(_kq, &clientChanges, 1, nullptr, 0, nullptr);
-	_nbSockets++;
+	_nbClients++;
 	_clientMap.insert(std::make_pair(client->socket, client));
 }
 
 void Webserv::loop() {
 	while (1) {
-		std::cout << _clientMap.size() << std::endl;
+		std::cout << timestamp() << " Number of connection on the webserv: [" << _nbClients << "]" << std::endl;
 		struct kevent events[10];
-		int numEvents = kevent(_kq, nullptr, 0, events, 10, nullptr);
+		std:timespec time = {10, 0};
+		int numEvents = kevent(_kq, nullptr, 0, events, 10, &time);
 		for (int i = 0; i < numEvents; i++) {
 			serverInfo *info = _clientMap[events[i].ident];
 			if (info->type == SERVER) {
 				acceptConnection(info);
 			} else {
 				if (info->serverInst->handleClient(info) == CLOSE) {
+					_nbClients--;
 					close(info->socket);
 					_clientMap.erase(info->socket);
 					delete info;

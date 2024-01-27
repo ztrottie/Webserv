@@ -1,8 +1,10 @@
 #include "../include/Router.hpp"
+#include "../include/color.h"
+#include "../include/utils.hpp"
 #include <iostream>
 
-Router::Router() {
-	std::cout << "Default Router constructor " << std::endl;
+Router::Router(Server *server, std::string root, std::string index) : _server(server), _root(root), _index(index) {
+	std::cout << YELLOW << timestamp() << " Initializing the server Router!" << RESET << std::endl;
 }
 
 Router::Router(const Router &inst) {
@@ -21,3 +23,4 @@ Router& Router::operator=(const Router &rhs) {
 	}
 	return *this;
 }
+

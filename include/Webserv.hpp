@@ -10,7 +10,8 @@ class Webserv
 {
 private:
 	int								_kq;
-	int								_nbSockets;
+	int								_nbServer;
+	int								_nbClients;
 	std::map<int, serverInfo*>		_clientMap;
 public:
 	// Constructors / Destructor

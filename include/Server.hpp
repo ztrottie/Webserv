@@ -6,8 +6,7 @@
 #include <sys/event.h>
 #include <sys/time.h>
 #include "struct.hpp"
-#include "utils.hpp"
-// #include "Router.hpp"
+#include "Router.hpp"
 
 class Server
 {
@@ -17,7 +16,7 @@ private:
 	const char												*_host;
 	std::string												_name;
 	// unsigned int											_clientBodySize;
-	// Router												_serverRouter;
+	Router													*_serverRouter;
 
 public:
 	// Constructors / Destructor
@@ -32,6 +31,7 @@ public:
 	// Functions
 	int acceptConnection(serverInfo *client);
 	int handleClient(serverInfo *client);
+	Router *getRouter() const;
 };
 
 // Server_HPP

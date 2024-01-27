@@ -11,7 +11,8 @@ SRCS	=	main.cpp \
 			Server.cpp \
 			Webserv.cpp \
 			parsing.cpp \
-			utils.cpp
+			utils.cpp \
+			Router.cpp
 
 OBJS	=	$(addprefix $(BIN_DIR), ${SRCS:.cpp=.o})
 
