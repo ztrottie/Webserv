@@ -6,7 +6,7 @@
 #include <unistd.h>
 
 Webserv::Webserv() : _nbSockets(0) {
-	std::cout << "Default Webserv constructor " << std::endl;
+	// std::cout << "Default Webserv constructor " << std::endl;
 	_kq = kqueue();
 }
 
@@ -16,7 +16,7 @@ Webserv::Webserv(const Webserv &inst) {
 }
 
 Webserv::~Webserv() {
-	std::cout << "Webserv destructor" << std::endl;
+	// std::cout << "Webserv destructor" << std::endl;
 	close(_kq);
 }
 
