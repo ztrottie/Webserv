@@ -23,7 +23,7 @@ public:
 	Webserv& operator=(const Webserv &rhs);
 
 	// Functions
-	void addNewServer(uint16_t port, const char *host, std::string name);
+	void addNewServer(uint16_t port, const char *host, std::string name, Router *router);
 	void acceptConnection(serverInfo *info);
 	void loop();
 };

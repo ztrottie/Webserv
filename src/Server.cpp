@@ -12,8 +12,9 @@
 #include <netinet/in.h>
 #include <fcntl.h>
 #include <unistd.h>
+#include <sstream>
 
-Server::Server(uint16_t port, const char *host, std::string name, serverInfo *server) : _port(port), _host(host), _name(name) {
+Server::Server(uint16_t port, const char *host, std::string name, Router *router, serverInfo *server) : _port(port), _host(host), _name(name) {
 	std::cout << YELLOW << timestamp() << " Initializing a Server named " << _name << " on " << _host << ":" << _port << RESET << std::endl;
 	server->socket = socket(AF_INET, SOCK_STREAM, 0);
 	if (server->socket == -1)
@@ -27,8 +28,8 @@ Server::Server(uint16_t port, const char *host, std::string name, serverInfo *se
 		throw std::invalid_argument("bind creation Failed");
 	listen(server->socket, 5);
 	server->type = SERVER;
+	_serverRouter = router;
 	_listSocket = server->socket;
-	_serverRouter = new Router();
 	std::cout << GREEN << timestamp() << " " << _name <<  " is listening on port " << _port << RESET << std::endl;
 }
 
@@ -68,7 +69,7 @@ int Server::acceptConnection(serverInfo *client) {
 
 int Server::handleClient(serverInfo *client) {
 	char buffer[1024] = {0};
-
+	
 	ssize_t nbytes;
 	nbytes = recv(client->socket, buffer, sizeof(buffer), 0);
 	std::string data = buffer;
@@ -80,17 +81,18 @@ int Server::handleClient(serverInfo *client) {
     } else if (nbytes == -1) {
 		std::cout << timestamp() << " problem while recieving data closing connection" << std::endl;
 	}
-	if (data.find("GET / HTTP/1.1") != std::string::npos) {
-		std::string response = "HTTP/1.1 200 OK\r\nContent-Length: 12\r\n\r\nHello, World!";
-        send(client->socket, response.c_str(), response.size(), 0);
-	} else {
-		std::string response = "HTTP/1.1 403 Forbidden\r\nContent-Length: 14\r\n\r\nAccess Denied\n";
-		send(client->socket, response.c_str(), response.size(), 0);
-		std::cout << timestamp() << " Invalid request from the client closing the connection with error 403" << std::endl;
-		return (CLOSE);
-	}
-
-	return KEEP;
+	std::stringstream ss(data);
+	std::string uri;
+	std::string method;
+	std::getline(ss, method, ' ');
+	std::getline(ss, uri, ' ');
+	std::cout << uri << std::endl;
+	std::string path;
+	int result = _serverRouter->getFile(uri, path);
+	std::string response = "HTTP/1.1 404 Not Found\r\nContent-Length: 14\r\n\r\nAccess Denied\n";
+	send(client->socket, response.c_str(), response.size(), 0);
+	std::cout << timestamp() << " Invalid request from the client closing the connection with error 404" << std::endl;
+	return (CLOSE);
 }
 
 Router *Server::getRouter() const {

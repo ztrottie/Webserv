@@ -9,7 +9,7 @@ int main(void) {
 	parsing parsing("config.cfg");
 	if (parsing.parseConfigFile() == false)
 		return 1;
-	webserv.addNewServer(8080, "10.12.6.4", "default");
+	webserv.addNewServer(8081, "10.12.6.4", "default", NULL);
 	webserv.loop();
     return 0;
 }

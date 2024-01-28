@@ -29,9 +29,9 @@ Webserv& Webserv::operator=(const Webserv &rhs) {
 	return *this;
 }
 
-void Webserv::addNewServer(uint16_t port, const char *host, std::string name) {
+void Webserv::addNewServer(uint16_t port, const char *host, std::string name, Router *router) {
 	serverInfo *server = new serverInfo;
-	server->serverInst = new Server(port, host, name, server);
+	server->serverInst = new Server(port, host, name, router, server);
 	_clientMap.insert(std::make_pair(server->socket, server));
 	struct kevent changes;
 	EV_SET(&changes, server->socket, EVFILT_READ, EV_ADD, 0, 0, nullptr);

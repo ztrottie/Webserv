@@ -20,8 +20,7 @@ private:
 
 public:
 	// Constructors / Destructor
-	Server(serverInfo *server);
-	Server(uint16_t port, const char *host, std::string name, serverInfo *server);
+	Server(uint16_t port, const char *host, std::string name, Router *router, serverInfo *server);
 	Server(const Server &inst);
 	~Server();
 
