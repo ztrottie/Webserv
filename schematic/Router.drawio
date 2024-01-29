@@ -1,175 +1,175 @@
 <mxfile host="65bd71144e">
     <diagram id="DKuZG6ESW7scDJW9Ac7R" name="Page-1">
-        <mxGraphModel dx="12129" dy="1156" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="10000" pageHeight="10000" math="0" shadow="0">
+        <mxGraphModel dx="11015" dy="501" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="10000" pageHeight="10000" math="0" shadow="0">
             <root>
                 <mxCell id="0"/>
                 <mxCell id="1" parent="0"/>
-                <mxCell id="11" style="edgeStyle=none;html=1;fontSize=29;" edge="1" parent="1" source="2" target="10">
+                <mxCell id="11" style="edgeStyle=none;html=1;fontSize=29;" parent="1" source="2" target="10" edge="1">
                     <mxGeometry relative="1" as="geometry"/>
                 </mxCell>
-                <mxCell id="28" style="edgeStyle=none;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;fontSize=24;" edge="1" parent="1" source="2" target="25">
+                <mxCell id="28" style="edgeStyle=none;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;fontSize=24;" parent="1" source="2" target="25" edge="1">
                     <mxGeometry relative="1" as="geometry"/>
                 </mxCell>
-                <mxCell id="2" value="&lt;font style=&quot;font-size: 29px;&quot;&gt;Router&lt;/font&gt;" style="ellipse;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+                <mxCell id="2" value="&lt;font style=&quot;font-size: 29px;&quot;&gt;Router&lt;/font&gt;" style="ellipse;whiteSpace=wrap;html=1;" parent="1" vertex="1">
                     <mxGeometry x="860" y="840" width="170" height="170" as="geometry"/>
                 </mxCell>
-                <mxCell id="8" style="edgeStyle=none;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;fontSize=29;" edge="1" parent="1" source="3" target="7">
+                <mxCell id="8" style="edgeStyle=none;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;fontSize=29;" parent="1" source="3" target="7" edge="1">
                     <mxGeometry relative="1" as="geometry"/>
                 </mxCell>
-                <mxCell id="3" value="Server" style="whiteSpace=wrap;html=1;fontSize=29;" vertex="1" parent="1">
+                <mxCell id="3" value="Server" style="whiteSpace=wrap;html=1;fontSize=29;" parent="1" vertex="1">
                     <mxGeometry x="280" y="900" width="120" height="60" as="geometry"/>
                 </mxCell>
-                <mxCell id="6" style="edgeStyle=none;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;fontSize=29;" edge="1" parent="1" source="5" target="3">
+                <mxCell id="6" style="edgeStyle=none;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;fontSize=29;" parent="1" source="5" target="3" edge="1">
                     <mxGeometry relative="1" as="geometry"/>
                 </mxCell>
-                <mxCell id="5" value="Get /bonjour HTTP /1.1" style="whiteSpace=wrap;html=1;fontSize=29;" vertex="1" parent="1">
+                <mxCell id="5" value="Get /bonjour HTTP /1.1" style="whiteSpace=wrap;html=1;fontSize=29;" parent="1" vertex="1">
                     <mxGeometry x="-20" y="895" width="240" height="70" as="geometry"/>
                 </mxCell>
-                <mxCell id="9" style="edgeStyle=none;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;fontSize=29;" edge="1" parent="1" source="7" target="2">
+                <mxCell id="9" style="edgeStyle=none;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;fontSize=29;" parent="1" source="7" target="2" edge="1">
                     <mxGeometry relative="1" as="geometry"/>
                 </mxCell>
-                <mxCell id="7" value="/bonjour" style="whiteSpace=wrap;html=1;fontSize=29;" vertex="1" parent="1">
+                <mxCell id="7" value="GET /bonjour" style="whiteSpace=wrap;html=1;fontSize=29;" parent="1" vertex="1">
                     <mxGeometry x="560" y="895" width="120" height="60" as="geometry"/>
                 </mxCell>
-                <mxCell id="13" style="edgeStyle=none;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;fontSize=24;" edge="1" parent="1" source="10" target="12">
+                <mxCell id="13" style="edgeStyle=none;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;fontSize=24;" parent="1" source="10" target="12" edge="1">
                     <mxGeometry relative="1" as="geometry"/>
                 </mxCell>
-                <mxCell id="32" style="edgeStyle=none;html=1;fontSize=24;" edge="1" parent="1" source="10" target="29">
+                <mxCell id="32" style="edgeStyle=none;html=1;fontSize=24;" parent="1" source="10" target="29" edge="1">
                     <mxGeometry relative="1" as="geometry"/>
                 </mxCell>
-                <mxCell id="10" value="&lt;font style=&quot;font-size: 24px;&quot;&gt;search URI in locations&lt;br&gt;&lt;/font&gt;" style="whiteSpace=wrap;html=1;fontSize=29;" vertex="1" parent="1">
+                <mxCell id="10" value="&lt;font style=&quot;font-size: 24px;&quot;&gt;search URI in locations&lt;br&gt;&lt;/font&gt;" style="whiteSpace=wrap;html=1;fontSize=29;" parent="1" vertex="1">
                     <mxGeometry x="1180" y="865" width="200" height="120" as="geometry"/>
                 </mxCell>
-                <mxCell id="15" style="edgeStyle=none;html=1;fontSize=24;" edge="1" parent="1" source="12" target="14">
+                <mxCell id="15" style="edgeStyle=none;html=1;fontSize=24;" parent="1" source="12" target="14" edge="1">
                     <mxGeometry relative="1" as="geometry"/>
                 </mxCell>
-                <mxCell id="12" value="found!" style="whiteSpace=wrap;html=1;fontSize=24;" vertex="1" parent="1">
+                <mxCell id="12" value="found!" style="whiteSpace=wrap;html=1;fontSize=24;" parent="1" vertex="1">
                     <mxGeometry x="1550" y="900" width="120" height="50" as="geometry"/>
                 </mxCell>
-                <mxCell id="38" style="edgeStyle=none;html=1;entryX=0.5;entryY=1;entryDx=0;entryDy=0;fontSize=24;" edge="1" parent="1" source="14" target="37">
+                <mxCell id="38" style="edgeStyle=none;html=1;entryX=0.5;entryY=1;entryDx=0;entryDy=0;fontSize=24;" parent="1" source="14" target="37" edge="1">
                     <mxGeometry relative="1" as="geometry"/>
                 </mxCell>
-                <mxCell id="14" value="Location /bonjour" style="whiteSpace=wrap;html=1;fontSize=24;" vertex="1" parent="1">
+                <mxCell id="14" value="Location /bonjour" style="whiteSpace=wrap;html=1;fontSize=24;" parent="1" vertex="1">
                     <mxGeometry x="1800" y="895" width="120" height="60" as="geometry"/>
                 </mxCell>
-                <mxCell id="19" style="edgeStyle=none;html=1;entryX=0.5;entryY=1;entryDx=0;entryDy=0;fontSize=24;" edge="1" parent="1" source="16" target="18">
+                <mxCell id="19" style="edgeStyle=none;html=1;entryX=0.5;entryY=1;entryDx=0;entryDy=0;fontSize=24;" parent="1" source="16" target="18" edge="1">
                     <mxGeometry relative="1" as="geometry"/>
                 </mxCell>
-                <mxCell id="24" style="edgeStyle=none;html=1;entryX=1;entryY=0.5;entryDx=0;entryDy=0;fontSize=24;" edge="1" parent="1" source="16" target="23">
+                <mxCell id="24" style="edgeStyle=none;html=1;entryX=1;entryY=0.5;entryDx=0;entryDy=0;fontSize=24;" parent="1" source="16" target="23" edge="1">
                     <mxGeometry relative="1" as="geometry"/>
                 </mxCell>
-                <mxCell id="16" value="is there another root" style="whiteSpace=wrap;html=1;fontSize=24;" vertex="1" parent="1">
+                <mxCell id="16" value="is there another root" style="whiteSpace=wrap;html=1;fontSize=24;" parent="1" vertex="1">
                     <mxGeometry x="1790" y="540" width="140" height="70" as="geometry"/>
                 </mxCell>
-                <mxCell id="22" style="edgeStyle=none;html=1;entryX=0.5;entryY=1;entryDx=0;entryDy=0;fontSize=24;" edge="1" parent="1" source="18" target="21">
+                <mxCell id="22" style="edgeStyle=none;html=1;entryX=0.5;entryY=1;entryDx=0;entryDy=0;fontSize=24;" parent="1" source="18" target="21" edge="1">
                     <mxGeometry relative="1" as="geometry"/>
                 </mxCell>
-                <mxCell id="18" value="yes" style="whiteSpace=wrap;html=1;fontSize=24;" vertex="1" parent="1">
+                <mxCell id="18" value="yes" style="whiteSpace=wrap;html=1;fontSize=24;" parent="1" vertex="1">
                     <mxGeometry x="1800" y="390" width="120" height="60" as="geometry"/>
                 </mxCell>
-                <mxCell id="62" style="edgeStyle=none;html=1;entryX=1;entryY=0.5;entryDx=0;entryDy=0;fontSize=24;" edge="1" parent="1" source="21" target="61">
+                <mxCell id="62" style="edgeStyle=none;html=1;entryX=1;entryY=0.5;entryDx=0;entryDy=0;fontSize=24;" parent="1" source="21" target="61" edge="1">
                     <mxGeometry relative="1" as="geometry"/>
                 </mxCell>
-                <mxCell id="21" value="use the location one" style="whiteSpace=wrap;html=1;fontSize=24;" vertex="1" parent="1">
+                <mxCell id="21" value="use the location one" style="whiteSpace=wrap;html=1;fontSize=24;" parent="1" vertex="1">
                     <mxGeometry x="1785" y="260" width="150" height="60" as="geometry"/>
                 </mxCell>
-                <mxCell id="26" style="edgeStyle=none;html=1;entryX=1;entryY=0.5;entryDx=0;entryDy=0;fontSize=24;" edge="1" parent="1" source="23" target="25">
+                <mxCell id="26" style="edgeStyle=none;html=1;entryX=1;entryY=0.5;entryDx=0;entryDy=0;fontSize=24;" parent="1" source="23" target="25" edge="1">
                     <mxGeometry relative="1" as="geometry"/>
                 </mxCell>
-                <mxCell id="23" value="nope" style="whiteSpace=wrap;html=1;fontSize=24;" vertex="1" parent="1">
+                <mxCell id="23" value="nope" style="whiteSpace=wrap;html=1;fontSize=24;" parent="1" vertex="1">
                     <mxGeometry x="1540" y="545" width="120" height="60" as="geometry"/>
                 </mxCell>
-                <mxCell id="63" style="edgeStyle=none;html=1;entryX=0.5;entryY=1;entryDx=0;entryDy=0;fontSize=24;" edge="1" parent="1" source="25" target="61">
+                <mxCell id="63" style="edgeStyle=none;html=1;entryX=0.5;entryY=1;entryDx=0;entryDy=0;fontSize=24;" parent="1" source="25" target="61" edge="1">
                     <mxGeometry relative="1" as="geometry"/>
                 </mxCell>
-                <mxCell id="25" value="take the Router root" style="whiteSpace=wrap;html=1;fontSize=24;" vertex="1" parent="1">
+                <mxCell id="25" value="take the Router root" style="whiteSpace=wrap;html=1;fontSize=24;" parent="1" vertex="1">
                     <mxGeometry x="1200" y="537.5" width="160" height="75" as="geometry"/>
                 </mxCell>
-                <mxCell id="35" style="edgeStyle=none;html=1;entryX=1;entryY=0.5;entryDx=0;entryDy=0;fontSize=24;" edge="1" parent="1" source="29" target="34">
+                <mxCell id="35" style="edgeStyle=none;html=1;entryX=1;entryY=0.5;entryDx=0;entryDy=0;fontSize=24;" parent="1" source="29" target="34" edge="1">
                     <mxGeometry relative="1" as="geometry"/>
                 </mxCell>
-                <mxCell id="29" value="not found" style="whiteSpace=wrap;html=1;fontSize=24;" vertex="1" parent="1">
+                <mxCell id="29" value="not found" style="whiteSpace=wrap;html=1;fontSize=24;" parent="1" vertex="1">
                     <mxGeometry x="1220" y="1100" width="120" height="60" as="geometry"/>
                 </mxCell>
-                <mxCell id="36" style="edgeStyle=none;html=1;entryX=0.5;entryY=1;entryDx=0;entryDy=0;fontSize=24;" edge="1" parent="1" source="34" target="2">
+                <mxCell id="36" style="edgeStyle=none;html=1;entryX=0.5;entryY=1;entryDx=0;entryDy=0;fontSize=24;" parent="1" source="34" target="2" edge="1">
                     <mxGeometry relative="1" as="geometry"/>
                 </mxCell>
-                <mxCell id="34" value="trim the URI to /" style="whiteSpace=wrap;html=1;fontSize=24;" vertex="1" parent="1">
+                <mxCell id="34" value="trim the URI to /" style="whiteSpace=wrap;html=1;fontSize=24;" parent="1" vertex="1">
                     <mxGeometry x="885" y="1100" width="120" height="60" as="geometry"/>
                 </mxCell>
-                <mxCell id="41" style="edgeStyle=none;html=1;entryX=0.5;entryY=1;entryDx=0;entryDy=0;fontSize=24;" edge="1" parent="1" source="37" target="40">
+                <mxCell id="41" style="edgeStyle=none;html=1;entryX=0.5;entryY=1;entryDx=0;entryDy=0;fontSize=24;" parent="1" source="37" target="40" edge="1">
                     <mxGeometry relative="1" as="geometry"/>
                 </mxCell>
-                <mxCell id="44" style="edgeStyle=none;html=1;fontSize=24;" edge="1" parent="1" source="37" target="43">
+                <mxCell id="44" style="edgeStyle=none;html=1;fontSize=24;" parent="1" source="37" target="43" edge="1">
                     <mxGeometry relative="1" as="geometry"/>
                 </mxCell>
-                <mxCell id="37" value="is the method is valid&amp;nbsp;" style="whiteSpace=wrap;html=1;fontSize=24;" vertex="1" parent="1">
+                <mxCell id="37" value="is the method&amp;nbsp;&lt;br&gt;&amp;nbsp;valid&amp;nbsp;" style="whiteSpace=wrap;html=1;fontSize=24;" parent="1" vertex="1">
                     <mxGeometry x="1785" y="750" width="150" height="80" as="geometry"/>
                 </mxCell>
-                <mxCell id="42" style="edgeStyle=none;html=1;entryX=0.5;entryY=1;entryDx=0;entryDy=0;fontSize=24;" edge="1" parent="1" source="40" target="16">
+                <mxCell id="42" style="edgeStyle=none;html=1;entryX=0.5;entryY=1;entryDx=0;entryDy=0;fontSize=24;" parent="1" source="40" target="16" edge="1">
                     <mxGeometry relative="1" as="geometry"/>
                 </mxCell>
-                <mxCell id="40" value="yes" style="whiteSpace=wrap;html=1;fontSize=24;" vertex="1" parent="1">
+                <mxCell id="40" value="yes" style="whiteSpace=wrap;html=1;fontSize=24;" parent="1" vertex="1">
                     <mxGeometry x="1800" y="650" width="120" height="60" as="geometry"/>
                 </mxCell>
-                <mxCell id="46" style="edgeStyle=none;html=1;fontSize=24;" edge="1" parent="1" source="43" target="45">
+                <mxCell id="46" style="edgeStyle=none;html=1;fontSize=24;" parent="1" source="43" target="45" edge="1">
                     <mxGeometry relative="1" as="geometry"/>
                 </mxCell>
-                <mxCell id="43" value="no" style="whiteSpace=wrap;html=1;fontSize=24;" vertex="1" parent="1">
+                <mxCell id="43" value="no" style="whiteSpace=wrap;html=1;fontSize=24;" parent="1" vertex="1">
                     <mxGeometry x="2020" y="760" width="120" height="60" as="geometry"/>
                 </mxCell>
-                <mxCell id="49" style="edgeStyle=none;html=1;fontSize=24;" edge="1" parent="1" source="45" target="48">
+                <mxCell id="49" style="edgeStyle=none;html=1;fontSize=24;" parent="1" source="45" target="48" edge="1">
                     <mxGeometry relative="1" as="geometry"/>
                 </mxCell>
-                <mxCell id="45" value="return error 403" style="whiteSpace=wrap;html=1;fontSize=24;" vertex="1" parent="1">
+                <mxCell id="45" value="return error 403" style="whiteSpace=wrap;html=1;fontSize=24;" parent="1" vertex="1">
                     <mxGeometry x="2250" y="760" width="120" height="60" as="geometry"/>
                 </mxCell>
-                <mxCell id="52" style="edgeStyle=none;html=1;entryX=0.5;entryY=1;entryDx=0;entryDy=0;fontSize=24;" edge="1" parent="1" source="48" target="51">
+                <mxCell id="52" style="edgeStyle=none;html=1;entryX=0.5;entryY=1;entryDx=0;entryDy=0;fontSize=24;" parent="1" source="48" target="51" edge="1">
                     <mxGeometry relative="1" as="geometry"/>
                 </mxCell>
-                <mxCell id="57" style="edgeStyle=none;html=1;fontSize=24;" edge="1" parent="1" source="48" target="56">
+                <mxCell id="57" style="edgeStyle=none;html=1;fontSize=24;" parent="1" source="48" target="56" edge="1">
                     <mxGeometry relative="1" as="geometry"/>
                 </mxCell>
-                <mxCell id="48" value="does the location has custom error pages?" style="whiteSpace=wrap;html=1;fontSize=24;" vertex="1" parent="1">
+                <mxCell id="48" value="does the location has custom error pages?" style="whiteSpace=wrap;html=1;fontSize=24;" parent="1" vertex="1">
                     <mxGeometry x="2460" y="740" width="240" height="100" as="geometry"/>
                 </mxCell>
-                <mxCell id="55" style="edgeStyle=none;html=1;entryX=0.5;entryY=1;entryDx=0;entryDy=0;fontSize=24;" edge="1" parent="1" source="51" target="54">
+                <mxCell id="55" style="edgeStyle=none;html=1;entryX=0.5;entryY=1;entryDx=0;entryDy=0;fontSize=24;" parent="1" source="51" target="54" edge="1">
                     <mxGeometry relative="1" as="geometry"/>
                 </mxCell>
-                <mxCell id="51" value="yes" style="whiteSpace=wrap;html=1;fontSize=24;" vertex="1" parent="1">
+                <mxCell id="51" value="yes" style="whiteSpace=wrap;html=1;fontSize=24;" parent="1" vertex="1">
                     <mxGeometry x="2520" y="580" width="120" height="60" as="geometry"/>
                 </mxCell>
-                <mxCell id="54" value="use the location ones" style="whiteSpace=wrap;html=1;fontSize=24;" vertex="1" parent="1">
+                <mxCell id="54" value="use the location ones" style="whiteSpace=wrap;html=1;fontSize=24;" parent="1" vertex="1">
                     <mxGeometry x="2510" y="430" width="140" height="90" as="geometry"/>
                 </mxCell>
-                <mxCell id="60" style="edgeStyle=none;html=1;entryX=0.5;entryY=1;entryDx=0;entryDy=0;fontSize=24;" edge="1" parent="1" source="56" target="59">
+                <mxCell id="60" style="edgeStyle=none;html=1;entryX=0.5;entryY=1;entryDx=0;entryDy=0;fontSize=24;" parent="1" source="56" target="59" edge="1">
                     <mxGeometry relative="1" as="geometry"/>
                 </mxCell>
-                <mxCell id="56" value="nope" style="whiteSpace=wrap;html=1;fontSize=24;" vertex="1" parent="1">
+                <mxCell id="56" value="nope" style="whiteSpace=wrap;html=1;fontSize=24;" parent="1" vertex="1">
                     <mxGeometry x="2780" y="760" width="120" height="60" as="geometry"/>
                 </mxCell>
-                <mxCell id="59" value="use the router ones" style="whiteSpace=wrap;html=1;fontSize=24;" vertex="1" parent="1">
+                <mxCell id="59" value="use the router ones" style="whiteSpace=wrap;html=1;fontSize=24;" parent="1" vertex="1">
                     <mxGeometry x="2770" y="570" width="140" height="90" as="geometry"/>
                 </mxCell>
-                <mxCell id="68" style="edgeStyle=none;html=1;entryX=1;entryY=0.5;entryDx=0;entryDy=0;fontSize=24;" edge="1" parent="1" source="61" target="67">
+                <mxCell id="68" style="edgeStyle=none;html=1;entryX=1;entryY=0.5;entryDx=0;entryDy=0;fontSize=24;" parent="1" source="61" target="67" edge="1">
                     <mxGeometry relative="1" as="geometry"/>
                 </mxCell>
-                <mxCell id="61" value="add the full URI to the root" style="whiteSpace=wrap;html=1;fontSize=24;" vertex="1" parent="1">
+                <mxCell id="61" value="add the full URI to the root" style="whiteSpace=wrap;html=1;fontSize=24;" parent="1" vertex="1">
                     <mxGeometry x="1195" y="245" width="170" height="90" as="geometry"/>
                 </mxCell>
-                <mxCell id="73" style="edgeStyle=none;html=1;entryX=1;entryY=0.5;entryDx=0;entryDy=0;fontSize=24;" edge="1" parent="1" source="67" target="72">
+                <mxCell id="73" style="edgeStyle=none;html=1;entryX=1;entryY=0.5;entryDx=0;entryDy=0;fontSize=24;" parent="1" source="67" target="72" edge="1">
                     <mxGeometry relative="1" as="geometry"/>
                 </mxCell>
-                <mxCell id="74" style="edgeStyle=none;html=1;entryX=0.5;entryY=1;entryDx=0;entryDy=0;fontSize=24;" edge="1" parent="1" source="67" target="71">
+                <mxCell id="74" style="edgeStyle=none;html=1;entryX=0.5;entryY=1;entryDx=0;entryDy=0;fontSize=24;" parent="1" source="67" target="71" edge="1">
                     <mxGeometry relative="1" as="geometry"/>
                 </mxCell>
-                <mxCell id="67" value="does it end with a directory?" style="whiteSpace=wrap;html=1;fontSize=24;" vertex="1" parent="1">
+                <mxCell id="67" value="does it end with a directory?" style="whiteSpace=wrap;html=1;fontSize=24;" parent="1" vertex="1">
                     <mxGeometry x="870" y="250" width="160" height="80" as="geometry"/>
                 </mxCell>
-                <mxCell id="71" value="yes" style="whiteSpace=wrap;html=1;fontSize=24;" vertex="1" parent="1">
+                <mxCell id="71" value="yes" style="whiteSpace=wrap;html=1;fontSize=24;" parent="1" vertex="1">
                     <mxGeometry x="890" y="100" width="120" height="60" as="geometry"/>
                 </mxCell>
-                <mxCell id="72" value="nope" style="whiteSpace=wrap;html=1;fontSize=24;" vertex="1" parent="1">
+                <mxCell id="72" value="nope" style="whiteSpace=wrap;html=1;fontSize=24;" parent="1" vertex="1">
                     <mxGeometry x="630" y="260" width="120" height="60" as="geometry"/>
                 </mxCell>
             </root>

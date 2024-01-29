@@ -88,7 +88,7 @@ int Server::handleClient(serverInfo *client) {
 	std::getline(ss, uri, ' ');
 	std::cout << uri << std::endl;
 	std::string path;
-	int result = _serverRouter->getFile(uri, path);
+	int result = _serverRouter->getFile(method, uri, path);
 	std::string response = "HTTP/1.1 404 Not Found\r\nContent-Length: 14\r\n\r\nAccess Denied\n";
 	send(client->socket, response.c_str(), response.size(), 0);
 	std::cout << timestamp() << " Invalid request from the client closing the connection with error 404" << std::endl;
