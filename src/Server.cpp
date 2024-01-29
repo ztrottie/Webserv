@@ -223,7 +223,7 @@ int Server::handleClient(serverInfo *client) {
 	std::getline(ss, uri, ' ');
 	std::cout << uri << std::endl;
 	std::string path;
-	int code = _serverRouter->getFile(method, method, uri, path);
+	int code = _serverRouter->getFile(method, uri, path);
 	std::string response;
 	headerGenerator(code, path, response);
 	contentGenerator(path, response);
