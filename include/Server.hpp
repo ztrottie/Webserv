@@ -2,6 +2,7 @@
 
 #include <cstdint>
 #include <string>
+#include <sys/resource.h>
 #include <sys/types.h>
 #include <sys/event.h>
 #include <sys/time.h>
@@ -31,6 +32,11 @@ public:
 	int acceptConnection(serverInfo *client);
 	int handleClient(serverInfo *client);
 	Router *getRouter() const;
+	void codeMessage(int code, std::string &message);
+	int headerGenerator(int code, std::string const &path, std::string &response);
+	void contentTypeGenerator(std::string &contentType, std::string const &path);
+	void contentLengthGenerator(std::string &contentLength, std::string const &path);
+	void contentGenerator(std::string const &path, std::string response);
 };
 
 // Server_HPP

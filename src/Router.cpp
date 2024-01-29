@@ -29,6 +29,10 @@ void Router::addErrorPage(const int errorNumber, std::string pathToError) {
 	_errorPagesLocation.insert(std::make_pair(errorNumber, pathToError));
 }
 
-int Router::getFile(std::string const &URI, std::string &path) {
+int Router::getFile(std::string const &method, std::string const &URI, std::string &path) {
+	std::map<std::string, Location*>::const_iterator it = _locations.find(URI);
+	if (it == _locations.end()) {
+		
+	}
 	return (0);
 }

@@ -25,5 +25,5 @@ public:
 
 	// Functions
 	void addErrorPage(const int errorNumber, std::string pathToError);
-	int getFile(std::string const &URI, std::string &path);
+	int getFile(std::string const &method, std::string const &URI, std::string &path);
 };
