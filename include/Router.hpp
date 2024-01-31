@@ -5,6 +5,11 @@
 #include <string>
 #include <map>
 #include <vector>
+#include "../include/color.h"
+#include "../include/utils.hpp"
+#include <iostream>
+#include <sys/stat.h>
+#include <unistd.h>
 
 #define IS_DIR 1
 #define IS_FILE 2
@@ -33,7 +38,7 @@ public:
 	void setRoot(std::string const &root);
 	void setIndex(std::string const &index);
 	void addErrorPage(const int errorNumber, std::string pathToError);
-	void addLocation(std::string const &key, Location *bobsHouse);
+	void addLocation(std::string const &key, Location *loc);
 	void addAllowedMethod(std::string const &method);
 
 	// Functions
@@ -41,5 +46,6 @@ public:
 	void trimURI(std::string &URI);
 	int checkFilePerm(std::string const &path);
 	int checkIfFileIsValid(std::string const &path);
-	int getError(std::string &path, int errorCode);
+	int getErrorPage(std::string &path, int errorCode);
+	int checkAllowedMethod(std::string const &method, Location *loc);
 };
