@@ -13,10 +13,6 @@ Router::Router(){
 	std::cout << YELLOW << timestamp() << " Initializing the server Router!" << RESET << std::endl;
 }
 
-Router::Router(Server *server, std::string root, std::string index) : _root(root), _index(index) {
-	std::cout << YELLOW << timestamp() << " Initializing the server Router!" << RESET << std::endl;
-}
-
 Router::Router(const Router &inst) {
 	std::cout << "Copy Router constructor " << std::endl;
 	*this = inst;
@@ -45,8 +41,8 @@ void Router::trimURI(std::string &uri){
 	uri = uri.substr(0, index);
 }
 
-void Router::addLocation(std::string const &key, Location *bobsHouse){
-	_locations.insert(std::make_pair(key, bobsHouse));
+void Router::addLocation(std::string const &key, Location *loc){
+	_locations.insert(std::make_pair(key, loc));
 }
 
 int Router::checkIfFileIsValid(std::string const &path){

@@ -7,6 +7,10 @@ Location::Location() {
 	std::cout << "Default Location constructor " << std::endl;
 }
 
+Location::Location(std::string const &name) : _name(name) {
+
+}
+
 Location::Location(const Location &inst) {
 	std::cout << "Copy Location constructor " << std::endl;
 }
@@ -21,9 +25,11 @@ Location& Location::operator=(const Location &rhs) {
 }
 
 int Location::getPerm(std::string const &method){
-	std::vector<const std::string>::const_iterator it = _allowedMethod->begin();
-	for (; it != _allowedMethod->end() && *it != method;++it){}
-	if (it == _allowedMethod->end())
+	if (_allowedMethod.size() == 0)
+		return 0;
+	std::vector<const std::string>::const_iterator it = _allowedMethod.begin();
+	for (; it != _allowedMethod.end() && *it != method;++it){}
+	if (it == _allowedMethod.end())
 		return 405;
 	return 1;
 }
