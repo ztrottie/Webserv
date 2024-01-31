@@ -1,6 +1,4 @@
 #include "../include/parsing.hpp"
-#include <cstdio>
-#include <string>
 
 parsing::parsing(string path): pathConfigFile(path){
 	defaultIfError = false;
@@ -19,21 +17,53 @@ bool	parsing::parseConfigFile(){
 	while (std::getline(configFile, line)){
 		if (nbLine == 0)
 			checkDefault(line);
-		checkServer(line);
+		if (checkServer(line) == -2)
+			return false;
+		if (checkHost(line) == -2)
+			return false;
+		checkListen(line);
 		nbLine++;
 	}
 	return true;
 }
 
-int	parsing::checkServer(std::string const &line){
-	if (line.find("server") == string::npos)
+int	parsing::checkHost(std::string const &line){
+
+	if (line.find("host") == string::npos)
 		return -1;
-	if (line.find("server") < string::npos && line.find("{") < string::npos){
-		if (isThereSomethingInMyString(line, "server", "{", defaultIfError) == false){
+	if (checkIdentationParsing("host", 1, line, false, defaultIfError, "host line") == false)
+		return -2;
+	
+	writeTimestamp(GREEN, "Host is ok!");
+	return true;
+}
+
+int	parsing::checkListen(std::string const &line){
+	if (line.find("listen") == string::npos)
+		return -1;
+	writeTimestamp(GREEN, "Listen is ok!");
+	return true;
+}
+
+int	parsing::checkServer(std::string const &line){
+	// writeTimestamp(YELLOW, "In checkServer: " + line);
+	if (line.find("server") == string::npos || line.find("server_name") != string::npos)
+		return -1;
+	if (line.find("server") > 0){
+		writeTimestamp(RED, "The server line mustn\'t have indentation!");
+		return -2;
+	}
+	if (line.find("server") != string::npos && line.find("{") != string::npos){
+		if (isThereSomethingInMyString(line, "server", "{", false) == false){
+			writeTimestamp(GREEN, "Server is being created...");
 		}
 		else{
-			return false;
+			return -2;
 		}
+	}
+	else if (line.find("server") != string::npos && line.find("{") == string::npos){
+		writeTimestamp(RED, "Error in the server line, you didnt put the \"{\" at the end!");
+		return -2;
 	}
 	return CORRECT;
 }
@@ -44,7 +74,7 @@ int	parsing::checkDefault(std::string const &line){
 	int	ret = true;
 
 	if ((line.find("acceptDefault") > 0 || line.find("acceptDefault") == string::npos)){
-		writeTimestamp(RED, "You choose that the program will close if they're is an error in the ConfigFile");
+		writeTimestamp(YELLOW, "You choose that the program will close if they're is an error in the ConfigFile");
 		writeTimestamp(YELLOW, "If you don't want that, you must include a the beginning of the ConfigFile : \"acceptDefault true\"");
 		return -1;
 	}
@@ -71,7 +101,7 @@ int	parsing::checkDefault(std::string const &line){
 	if (ret == true)
 		writeTimestamp(GREEN, "You choose that the program will choose default configuration if the ConfigFile has some error in it!");
 	else{
-		writeTimestamp(RED, "You choose that the program will close if they're is an error in the ConfigFile");
+		writeTimestamp(YELLOW, "You choose that the program will close if they're is an error in the ConfigFile");
 		writeTimestamp(YELLOW, "If you don't want that, you must include a the beginning of the ConfigFile : \"acceptDefault true\"");
 	}
 	return ret;

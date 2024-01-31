@@ -1,7 +1,4 @@
 #include "../include/utils.hpp"
-#include <_ctype.h>
-#include <algorithm>
-#include <ctime>
 #include <iostream>
 
 std::string	timestamp() {
@@ -16,6 +13,45 @@ std::string	timestamp() {
 void writeTimestamp(std::string color, std::string const &message){
 	std::cout << color << timestamp() << " " << message << RESET << std::endl;
 }
+
+bool	checkIdentationParsing(std::string const &firstWord, int nbIndentation, std::string const &line, bool inLocation, bool defaultIfError, std::string const &lineName){
+	if (line.find(firstWord) != nbIndentation){
+		if(defaultIfError == true){
+				writeTimestamp(YELLOW, "Error of identation in " + lineName + ", switching to default setting");
+				return true;
+		}
+		else if(defaultIfError == false){
+			writeTimestamp(RED, "Error of identation in " + lineName + ", must have one, default setting is off, exiting program...");
+			return false;
+		}
+	}
+	if (inLocation == false){
+		if (line.find("	") != 0){
+			if(defaultIfError == true){
+				writeTimestamp(YELLOW, "Error of identation in " + lineName + ", must have one, switching to default setting");
+				return true;
+			}
+			else if(defaultIfError == false){
+				writeTimestamp(RED, "Error of identation in " + lineName + ", must have one, default setting is off, exiting program...");
+				return false;
+			}
+		}
+	}
+	else if (inLocation == true){
+		if (line.find("		") != 0){
+			if(defaultIfError == true){
+				writeTimestamp(YELLOW, "Eror of identation in " + lineName + ", must have one, switching to default setting");
+				return true;
+			}
+			else if(defaultIfError == false){
+				writeTimestamp(RED, "Eror of identation in " + lineName + ", must have one, default setting is off, exiting program...");
+				return false;
+			}
+		}
+	}
+	return true;
+}
+
 
 bool isThereSomethingInMyString(std::string const &input, std::string const &beginning, std::string const& end, bool write){
 

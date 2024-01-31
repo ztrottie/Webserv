@@ -51,4 +51,6 @@ class parsing{
 		bool	checkFile();
 		int		checkDefault(std::string const &line);
 		int		checkServer(std::string const &line);
+		int		checkHost(std::string const &line);
+		int		checkListen(std::string const &line);
 };
