@@ -1,13 +1,4 @@
 #include "../include/Router.hpp"
-#include "../include/color.h"
-#include "../include/utils.hpp"
-#include <iostream>
-#include <map>
-#include <sys/_types/_size_t.h>
-#include <sys/stat.h>
-#include <sys/unistd.h>
-#include <unistd.h>
-#include <utility>
 
 Router::Router(){
 	std::cout << YELLOW << timestamp() << " Initializing the server Router!" << RESET << std::endl;
@@ -25,6 +16,18 @@ Router::~Router() {
 Router& Router::operator=(const Router &rhs) {
 	std::cout << "Router operator = overload" << std::endl;
 	return *this;
+}
+
+void Router::setRoot(std::string const &root){
+	_root = root;
+}
+
+void Router::setIndex(std::string const &index){
+	_index = index;
+}
+
+void Router::addAllowedMethod(std::string const &method){
+	_allowedMethod.push_back(method);
 }
 
 void Router::addErrorPage(const int errorNumber, std::string pathToError) {
@@ -59,7 +62,7 @@ int Router::checkIfFileIsValid(std::string const &path){
 	return 500;
 }
 
-int Router::getError(std::string &path, int errorCode){
+int Router::getErrorPage(std::string &path, int errorCode){
 	std::map<int, std::string>::const_iterator it = _errorPagesLocation.find(errorCode);
 	if (it == _errorPagesLocation.end())
 		return 500;
@@ -67,36 +70,46 @@ int Router::getError(std::string &path, int errorCode){
 	return errorCode;
 }
 
+int Router::checkAllowedMethod(std::string const &method, Location *loc){
+	int perm = loc->getPerm(method);
+	if (perm == 405)
+		return METHNOTALLOWED;
+	if (perm == NOT_FOUND){
+		std::vector<const std::string>::const_iterator it = _allowedMethod.begin();
+		for (; it != _allowedMethod.end() && *it != method;++it){}
+		if (it == _allowedMethod.end())
+			return NOT_FOUND;
+	}
+	return FOUND;
+}
+
 int Router::getFile(std::string const &method, std::string const &URI, std::string &path) {
 	std::string uriCopy = URI;
 	for (std::map<std::string, Location*>::const_iterator it = _locations.end(); it == _locations.end();){
 		it = _locations.find(uriCopy);
 		if (it == _locations.end()){
-			trimURI(uriCopy);	
+			trimURI(uriCopy);
 		}
 	}
 	Location *loc = _locations[uriCopy];
-	if (loc->isMethodAllowed(method) == 405){//do this for all error codes *needs to change all below*
-		if (loc->isErrorCodeValid(405, path))
-			return 405;
-		return getError(path, 405);
-	}
+	int methodCode = checkAllowedMethod(method, loc);
+	if (methodCode == NOT_FOUND && methodCode == METHNOTALLOWED)
+		return getErrorPage(path, methodCode);
 	if (loc->getRoot(path) == NOT_FOUND)
 		path = _root;
 	path += URI;
 	for (int i = 0; i < 2;i++){
 		int code = checkIfFileIsValid(path);
-		if (code == 500)
-			return 500;
+		if (code == INTERNALSERVERROR)
+			return code;
 		if (code == 1){
 			path += "/" + _index;
 			continue;
 		}
 		else if (code == 2)
 			break;
-		else if (code == 404)
-			return 404;
+		else if (code == NOTFOUND)
+			return code;
 	}
-	//std::cout << uriCopy << std::endl;
-	return (200);
+	return (OK);
 }
