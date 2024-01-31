@@ -71,7 +71,7 @@ int Router::getErrorPage(std::string &path, int errorCode){
 }
 
 int Router::checkAllowedMethod(std::string const &method, Location *loc){
-	int perm = loc->getPerm(method);
+	int perm = loc->isMethodAllowed(method);
 	if (perm == 405)
 		return METHNOTALLOWED;
 	if (perm == NOT_FOUND){
