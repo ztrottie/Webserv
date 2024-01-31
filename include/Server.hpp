@@ -34,9 +34,10 @@ public:
 	Router *getRouter() const;
 	void codeMessage(int code, std::string &message);
 	int headerGenerator(int code, std::string const &path, std::string &response);
-	void contentTypeGenerator(std::string &contentType, std::string const &path);
+	int contentTypeGenerator(std::string &contentType, std::string const &path);
 	void contentLengthGenerator(std::string &contentLength, std::string const &path);
-	void contentGenerator(std::string const &path, std::string response);
+	void contentGenerator(std::string const &path, std::string &response);
+	void internalServerError(std::string &response);
 };
 
 // Server_HPP

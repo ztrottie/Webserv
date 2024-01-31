@@ -2,7 +2,6 @@
 #include "../include/color.h"
 #include "../include/utils.hpp"
 #include <arpa/inet.h>
-#include <cstddef>
 #include <iosfwd>
 #include <iostream>
 #include <stdexcept>
@@ -128,28 +127,10 @@ void Server::codeMessage(int code, std::string &message) {
 		case (NOTACCEPTABLE):
 			message += "406 Not Acceptable";
 			break;
-		case (INTERNALSERVERROR):
-			message += "500 Internal Server Error";
-			break;
-		case (NOTIMPLEMENT):
-			message += "501 Not Implemented";
-			break;
-		case (BADGATEWAY):
-			message += "502 Bad Gateway";
-			break;
-		case (SERVICEUNAVAILABLE):
-			message += "503 Service Unavailable";
-			break;
-		case (GATEWAYTIMEOUT):
-			message += "504 Gateway Timeout";
-			break;
-		case (HTTPVERSIONNOTSUPPORTED):
-			message += "505 HTTP Version Not Supported";
-			break;
 	}
 }
 
-void Server::contentTypeGenerator(std::string &contentType, std::string const &path) {
+int Server::contentTypeGenerator(std::string &contentType, std::string const &path) {
 	std::map<std::string, std::string> contentTypeMap;
 
 	contentTypeMap[".html"] = "text/html";
@@ -159,9 +140,11 @@ void Server::contentTypeGenerator(std::string &contentType, std::string const &p
 	std::string fileExtension = path.substr(pos, path.size());
 	std::map<std::string, std::string>::const_iterator it = contentTypeMap.find(fileExtension);
 	if (it == contentTypeMap.end()) {
-		//retourner internal server error
+		std::cout << RED << timestamp() << "Error in content Type" RESET << std::endl;
+		return INTERNALSERVERROR;
 	}
 	contentType += contentTypeMap[fileExtension];
+	return (OK);
 }
 
 void Server::contentLengthGenerator(std::string &contentLength, std::string const &path) {
@@ -181,7 +164,10 @@ int Server::headerGenerator(int code, std::string const &path, std::string &resp
 	std::string contentType = "Content-Type: ";
 	std::string	contentLength = "Content-Length: ";
 	codeMessage(code, codeMessageString);
-	contentTypeGenerator(contentType, path);
+	if (contentTypeGenerator(contentType, path)) {
+		internalServerError(response);
+		return (INTERNALSERVERROR);
+	}
 	contentLengthGenerator(contentLength, path);
 	codeMessageString += "\r\n";
 	contentType += "\r\n";
@@ -190,11 +176,16 @@ int Server::headerGenerator(int code, std::string const &path, std::string &resp
 	return (0);
 }
 
-void Server::contentGenerator(std::string const &path, std::string response) {
+void Server::internalServerError(std::string &response) {
+	response = "HTTP/1.1 500 Internal Server Error\r\nContent-Type: text/plain\r\nContent-length:21\r\n\r\nInternal Server Error";
+}
+
+void Server::contentGenerator(std::string const &path, std::string &response) {
 	std::ifstream file(path, std::ios::binary);
 
 	if (!file.is_open()) {
-		//internal server error
+		internalServerError(response);
+		return ;
 	}
 	std::string line;
 	while (std::getline(file, line)) {
@@ -225,8 +216,10 @@ int Server::handleClient(serverInfo *client) {
 	std::string path;
 	int code = _serverRouter->getFile(method, uri, path);
 	std::string response;
-	headerGenerator(code, path, response);
-	contentGenerator(path, response);
+	if (code == INTERNALSERVERROR)
+		internalServerError(response);
+	if (code != INTERNALSERVERROR && headerGenerator(code, path, response) != INTERNALSERVERROR)
+		contentGenerator(path, response);
 	send(client->socket, response.c_str(), response.size(), 0);
 	if (code >= 300)
 		return (CLOSE);

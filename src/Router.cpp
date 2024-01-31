@@ -76,12 +76,11 @@ int Router::getFile(std::string const &method, std::string const &URI, std::stri
 		}
 	}
 	Location *loc = _locations[uriCopy];
-	if (loc->getPerm(method) == 405){//do this for all error codes *needs to change all below*
-		if (loc->getErrorCode(405, path))
+	if (loc->isMethodAllowed(method) == 405){//do this for all error codes *needs to change all below*
+		if (loc->isErrorCodeValid(405, path))
 			return 405;
 		return getError(path, 405);
 	}
-	std::cout << "ici!!!!!!!!" << std::endl;
 	if (loc->getRoot(path) == NOT_FOUND)
 		path = _root;
 	path += URI;

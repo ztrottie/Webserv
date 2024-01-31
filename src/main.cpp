@@ -17,5 +17,6 @@ int main(void) {
 	bob.addLocation("/", bobshouse);
 	bob.addLocation("/bonjour", bobshouse);
 	bob.getFile("GET", "/bonjour/slaut", path);
+	bob.addAllowedMethod("GET");
     return 0;
 }
