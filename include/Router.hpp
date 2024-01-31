@@ -14,7 +14,6 @@ class Server;
 class Router
 {
 private:
-	Server								*_server;
 	const std::string					_root;
 	const std::string					_index;
 	std::map<int, std::string>			_errorPagesLocation;

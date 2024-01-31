@@ -13,7 +13,7 @@ Router::Router(){
 	std::cout << YELLOW << timestamp() << " Initializing the server Router!" << RESET << std::endl;
 }
 
-Router::Router(Server *server, std::string root, std::string index) : _server(server), _root(root), _index(index) {
+Router::Router(Server *server, std::string root, std::string index) : _root(root), _index(index) {
 	std::cout << YELLOW << timestamp() << " Initializing the server Router!" << RESET << std::endl;
 }
 
@@ -81,11 +81,11 @@ int Router::getFile(std::string const &method, std::string const &URI, std::stri
 	}
 	Location *loc = _locations[uriCopy];
 	if (loc->getPerm(method) == 405){//do this for all error codes *needs to change all below*
-		std::cout << "ici!!!!!!!!" << std::endl;
 		if (loc->getErrorCode(405, path))
 			return 405;
 		return getError(path, 405);
 	}
+	std::cout << "ici!!!!!!!!" << std::endl;
 	if (loc->getRoot(path) == NOT_FOUND)
 		path = _root;
 	path += URI;
