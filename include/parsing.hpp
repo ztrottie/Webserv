@@ -25,12 +25,12 @@ enum flags{
 	LISTEN_ERR,
 	SERVERNAME_ERR,
 	ROOT_ERR,
-	DEFAULT_FILE_ERR,
 	ERROR_PAGE_ERR,
 	LOCATION_ERR,
 	ALLOWEDMETHODS_ERR,
 	RETURN_ERR,
-	CLIENT_MAX_BODY_SIZE_ERR
+	CLIENT_MAX_BODY_SIZE_ERR,
+	INDEX_ERR
 };
 
 using std::string;
@@ -49,8 +49,22 @@ class parsing{
 		bool	defaultIfError;
 		void	error(int errorCode);
 		bool	checkFile();
-		int		checkDefault(std::string const &line);
-		int		checkServer(std::string const &line);
-		int		checkHost(std::string const &line);
-		int		checkListen(std::string const &line);
+		int		isThisTheEnd(string const &line);
+		int		checkDefault(string const &line);
+		int		checkServer(string const &line);
+		int		checkHost(string const &line);
+		int		checkListen(string const &line);
+		int		checkServerName(string const &line);
+		int		checkRoot(string const &line, int inden);
+		int		checkIndex(string const &line, int inden);
+		int		checkErrorPage(string const &line, int inden);
+		int		checkClientMaxBodySize(string const &line);
+		int		checkReturns(string const &line);
+		// Dans location
+		int		checkLocation(string &line);
+		int		checkIndexLocation(string const &line);
+		int		checkRootLocation(string const &line);
+		int		checkAllowedMethods(string const &line);
+		int		checkErrorPageLocation(string const &line);
+		int		checkReturnsLocation(string const &line);
 };
