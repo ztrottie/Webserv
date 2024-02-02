@@ -11,12 +11,16 @@ int main(void) {
 	// 	return 1;
 	// webserv.addNewServer(8081, "127.0.0.1", "default", NULL);
 	// webserv.loop();
-	std::string path;
-	Router bob;
-	Location *bobshouse = new Location();
-	bob.addLocation("/", bobshouse);
-	bob.addLocation("/bonjour", bobshouse);
-	bob.getFile("GET", "/bonjour/slaut", path);
-	bob.addAllowedMethod("GET");
+	// std::string path;
+	Router *bob = new Router();
+	Location *loc = new Location();
+	Webserv	webserv;
+	bob->addAllowedMethod("GET");
+	bob->setIndex("index.html");
+	bob->setRoot("./www");
+	bob->addErrorPage(404, "./www/erros/404.html");
+	bob->addLocation("/", loc);
+	webserv.addNewServer(8081, "127.0.0.1", "default", bob);
+	webserv.loop();
     return 0;
 }

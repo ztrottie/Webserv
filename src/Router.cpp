@@ -1,7 +1,7 @@
 #include "../include/Router.hpp"
 
 Router::Router(){
-	std::cout << YELLOW << timestamp() << " Initializing the server Router!" << RESET << std::endl;
+	std::cout << timestamp() << " Initializing the server Router!" << std::endl;
 }
 
 Router::Router(const Router &inst) {
@@ -103,7 +103,9 @@ int Router::getFile(std::string const &method, std::string const &URI, std::stri
 		if (code == INTERNALSERVERROR)
 			return code;
 		if (code == 1){
-			path += "/" + _index;
+			if (path.at(path.size() - 1) != '/')
+				path += "/";
+			path += _index;
 			continue;
 		}
 		else if (code == 2)
