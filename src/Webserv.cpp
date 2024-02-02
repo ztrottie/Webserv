@@ -1,4 +1,5 @@
 #include "../include/Webserv.hpp"
+#include <csignal>
 #include <ctime>
 #include <iostream>
 #include <sys/event.h>
@@ -6,7 +7,7 @@
 #include <unistd.h>
 #include "../include/utils.hpp"
 
-Webserv::Webserv() : _nbServer(0), _nbClients(0) {
+Webserv::Webserv() : _nbServer(0), _nbClients(0), _loop(true) {
 	std::cout << "Default Webserv constructor " << std::endl;
 	_kq = kqueue();
 }
@@ -19,6 +20,13 @@ Webserv::Webserv(const Webserv &inst) {
 Webserv::~Webserv() {
 	std::cout << "Webserv destructor" << std::endl;
 	close(_kq);
+	for (std::map<int, serverInfo*>::const_iterator it = _clientMap.begin(); it != _clientMap.end(); it++) {
+		close(it->second->socket);
+		delete it->second->serverInst;
+		delete it->second;
+		_clientMap.erase(it->first);
+	}
+	std::
 }
 
 Webserv& Webserv::operator=(const Webserv &rhs) {
@@ -53,8 +61,15 @@ void Webserv::acceptConnection(serverInfo *info) {
 	_clientMap.insert(std::make_pair(client->socket, client));
 }
 
+volatile int loopFlag = true;
+
+void signalhandler(int signal) {
+	loopFlag = false;
+}
+
 void Webserv::loop() {
-	while (1) {
+	std::signal(SIGINT, signalhandler);
+	while (loopFlag) {
 		std::cout << timestamp() << " Number of connection on the webserv: [" << _nbClients << "]" << std::endl;
 		struct kevent events[10];
 		std:timespec time = {10, 0};
