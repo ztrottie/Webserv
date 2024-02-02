@@ -21,7 +21,8 @@ bool	parsing::parseConfigFile(){
 			return false;
 		if (checkHost(line) == -2)
 			return false;
-		checkListen(line);
+		if (checkListen(line) == -2)
+			return false;
 		nbLine++;
 	}
 	return true;
@@ -33,7 +34,14 @@ int	parsing::checkHost(std::string const &line){
 		return -1;
 	if (checkIdentationParsing("host", 1, line, false, defaultIfError, "host line") == false)
 		return -2;
-	
+	if (line.rfind(" ") > line.rfind("	")){
+		if (isThereSomethingInMyString(line, "host", &line[line.rfind(" ")], defaultIfError) == true && defaultIfError == false)
+			return -2;
+	}
+	else{
+		if (isThereSomethingInMyString(line, "host", &line[line.rfind("	")], defaultIfError) == true && defaultIfError == false)
+			return -2;
+	}
 	writeTimestamp(GREEN, "Host is ok!");
 	return true;
 }
@@ -41,12 +49,25 @@ int	parsing::checkHost(std::string const &line){
 int	parsing::checkListen(std::string const &line){
 	if (line.find("listen") == string::npos)
 		return -1;
+	if (checkIdentationParsing("listen", 1, line, false, defaultIfError, "listen line") == false)
+		return -2;
+	if (line.rfind(" ") > line.rfind("	") && line.rfind("	") != string::npos){
+		if (isThereSomethingInMyString(line, "listen", &line[line.rfind(" ")], defaultIfError) == true && defaultIfError == false)
+			return -2;
+		if (containsNonDigit(&line[line.rfind(" ") + 1], defaultIfError) == true)
+			return -2;
+	}
+	else if(line.rfind(" ") < line.rfind("	") && line.rfind(" ") != string::npos){
+		if (isThereSomethingInMyString(line, "listen", &line[line.rfind("	")], defaultIfError) == true && defaultIfError == false)
+			return -2;
+		if (containsNonDigit(&line[line.rfind("	") + 1], defaultIfError) == true)
+			return -2;
+	}
 	writeTimestamp(GREEN, "Listen is ok!");
 	return true;
 }
 
 int	parsing::checkServer(std::string const &line){
-	// writeTimestamp(YELLOW, "In checkServer: " + line);
 	if (line.find("server") == string::npos || line.find("server_name") != string::npos)
 		return -1;
 	if (line.find("server") > 0){
@@ -148,4 +169,5 @@ void	parsing::error(int errorCode){
 }
 
 parsing::~parsing(){
+	writeTimestamp(PURPLE, "Parsing done!");
 }

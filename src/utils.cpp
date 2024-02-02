@@ -52,9 +52,23 @@ bool	checkIdentationParsing(std::string const &firstWord, int nbIndentation, std
 	return true;
 }
 
+bool containsNonDigit(const std::string& str, bool defaultIfError){
+	for (size_t i = 0; i < str.length(); ++i){
+		if (!isdigit(str[i]) && str[i] != ';'){
+			if (defaultIfError == false){
+				writeTimestamp(RED, "Non-digit is not accepted in the line: " + str);
+				return true;
+			}
+			else {
+				writeTimestamp(YELLOW, "Non-digit is not accepted in the line: " + str + " switching to default!");
+				return false;
+			}
+		}
+	}
+	return false;
+}
 
 bool isThereSomethingInMyString(std::string const &input, std::string const &beginning, std::string const& end, bool write){
-
 	size_t start;
 	size_t finish;
 	std::string impostor;
@@ -66,6 +80,9 @@ bool isThereSomethingInMyString(std::string const &input, std::string const &beg
 	if (impostor.length() > 0){
 		if (write == false){
 			std::cout << RED << timestamp() << " The \"" << impostor << "\" inside de string \"" << input << "\" is not accepted!" << RESET << std::endl;
+		}
+		else {
+			std::cout << YELLOW << timestamp() << " The \"" << impostor << "\" inside de string \"" << input << "\" is not accepted, switching to default!" << RESET << std::endl;
 		}
 		return true;
 	}
