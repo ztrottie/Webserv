@@ -38,6 +38,7 @@ public:
 	void contentLengthGenerator(std::string &contentLength, std::string const &path);
 	void contentGenerator(std::string const &path, std::string &response);
 	void internalServerError(std::string &response);
+	int recieveRequest(serverInfo *client, std::string &data);
 };
 
 // Server_HPP
