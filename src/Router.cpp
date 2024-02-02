@@ -34,6 +34,10 @@ void Router::addErrorPage(const int errorNumber, std::string pathToError) {
 	_errorPagesLocation.insert(std::make_pair(errorNumber, pathToError));
 }
 
+void Router::addLocation(std::string const &key, Location *loc){
+	_locations.insert(std::make_pair(key, loc));
+}
+
 void Router::trimURI(std::string &uri){
 	std::cout << uri << std::endl;
 	size_t index = uri.rfind('/');
@@ -42,10 +46,6 @@ void Router::trimURI(std::string &uri){
 		return ;
 	}
 	uri = uri.substr(0, index);
-}
-
-void Router::addLocation(std::string const &key, Location *loc){
-	_locations.insert(std::make_pair(key, loc));
 }
 
 int Router::checkIfFileIsValid(std::string const &path){

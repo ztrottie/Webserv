@@ -16,6 +16,7 @@ int main(void) {
 	Location *loc = new Location();
 	Webserv	webserv;
 	bob->addAllowedMethod("GET");
+	bob->addAllowedMethod("POST");
 	bob->setIndex("index.html");
 	bob->setRoot("./www");
 	bob->addErrorPage(404, "./www/erros/404.html");

@@ -7,7 +7,7 @@
 #include <unistd.h>
 #include "../include/utils.hpp"
 
-Webserv::Webserv() : _nbServer(0), _nbClients(0), _loop(true) {
+Webserv::Webserv() : _nbServer(0), _nbClients(0){
 	std::cout << "Default Webserv constructor " << std::endl;
 	_kq = kqueue();
 }
@@ -26,7 +26,6 @@ Webserv::~Webserv() {
 		delete it->second;
 		_clientMap.erase(it->first);
 	}
-	std::
 }
 
 Webserv& Webserv::operator=(const Webserv &rhs) {
