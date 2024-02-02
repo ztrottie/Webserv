@@ -66,7 +66,7 @@ int Router::getErrorPage(std::string &path, int errorCode){
 	std::map<int, std::string>::const_iterator it = _errorPagesLocation.find(errorCode);
 	if (it == _errorPagesLocation.end())
 		return 500;
-	path = _errorPagesLocation[errorCode];
+	path = _errorPagesLocation[errorCode];	
 	return errorCode;
 }
 
