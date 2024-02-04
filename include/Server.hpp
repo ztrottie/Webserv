@@ -21,7 +21,7 @@ private:
 
 public:
 	// Constructors / Destructor
-	Server(uint16_t port, const char *host, std::string name, Router *router, serverInfo *server);
+	Server(uint16_t port, const char *host, std::string name, Router *router, socketInfo *server);
 	Server(const Server &inst);
 	~Server();
 
@@ -29,8 +29,8 @@ public:
 	Server& operator=(const Server &rhs);
 
 	// Functions
-	int acceptConnection(serverInfo *client);
-	int handleClient(serverInfo *client);
+	int acceptConnection(socketInfo *client);
+	int handleClient(socketInfo *client, int type);
 	Router *getRouter() const;
 	void codeMessage(int code, std::string &message);
 	int headerGenerator(int code, std::string const &path, std::string &response);
@@ -38,7 +38,8 @@ public:
 	void contentLengthGenerator(std::string &contentLength, std::string const &path);
 	void contentGenerator(std::string const &path, std::string &response);
 	void internalServerError(std::string &response);
-	int recieveRequest(serverInfo *client, std::string &data);
+	int recieveRequest(socketInfo *client, std::string &data);
+	void	handlePost(socketInfo *client, std::string &data);
 };
 
 // Server_HPP

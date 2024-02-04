@@ -1,5 +1,6 @@
 #pragma once
 #include <arpa/inet.h>
+#include <string>
 
 class Server;
 
@@ -13,11 +14,13 @@ enum socketStatus {
 	CLOSE
 };
 
-struct serverInfo {
-	int socket;
-	int type;
-	struct sockaddr_in client_address;
-	Server	*serverInst;
+struct socketInfo {
+	int					socket;
+	int					type;
+	int 				mode;
+	std::string			data;
+	struct sockaddr_in	client_address;
+	Server				*serverInst;
 };
 
 enum Codes {

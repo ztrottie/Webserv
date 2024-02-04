@@ -10,6 +10,7 @@
 #include <sys/_endian.h>
 #include <sys/_types/_socklen_t.h>
 #include <sys/_types/_ssize_t.h>
+#include <sys/event.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <fcntl.h>
@@ -17,7 +18,7 @@
 #include <fstream>
 #include <sstream>
 
-Server::Server(uint16_t port, const char *host, std::string name, Router *router, serverInfo *server) : _port(port), _host(host), _name(name) {
+Server::Server(uint16_t port, const char *host, std::string name, Router *router, socketInfo *server) : _port(port), _host(host), _name(name) {
 	std::cout << YELLOW << timestamp() << " Initializing a Server named " << _name << " on " << _host << ":" << _port << RESET << std::endl;
 	server->socket = socket(AF_INET, SOCK_STREAM, 0);
 	int reuse = 1;
@@ -58,7 +59,7 @@ Server& Server::operator=(const Server &rhs) {
 	return *this;
 }
 
-int Server::acceptConnection(serverInfo *client) {
+int Server::acceptConnection(socketInfo *client) {
 	std::cout << YELLOW << timestamp() << " incomming connection trying to connect to " << _name << RESET << std::endl;
 	struct sockaddr_in clientAddress = {};
 	socklen_t clientAdressLen = sizeof(client->client_address);
@@ -209,15 +210,14 @@ void Server::contentGenerator(std::string const &path, std::string &response) {
 	file.close();
 }
 
-int Server::recieveRequest(serverInfo *client, std::string &data) {
+int Server::recieveRequest(socketInfo *client, std::string &data) {
 	char buffer[1024];
 	ssize_t totalNbytes = 0;
 	ssize_t	nbytes = 1024;
-	while (nbytes > 0) {
+	while (nbytes == 1024) {
 		std::memset(buffer, 0, sizeof(buffer));
 		nbytes = recv(client->socket, buffer, sizeof(buffer), 0);
 		data += buffer;
-		std::cout << nbytes << std::endl;
 		totalNbytes += nbytes;
 	}
 	std::cout << timestamp() << " client sokcet: " << client->socket << std::endl;
@@ -232,46 +232,43 @@ int Server::recieveRequest(serverInfo *client, std::string &data) {
 	return (KEEP);
 }
 
-int Server::handleClient(serverInfo *client) {
-	std::string data;
-	if (recieveRequest(client, data) == CLOSE)
-		return CLOSE;
-	std::stringstream ss(data);
-	std::string uri;
-	std::string method;
-	std::getline(ss, method, ' ');
-	std::getline(ss, uri, ' ');
-	std::cout << data << std::endl;
-	if (method == "POST") {
-		ssize_t start = data.find("boundary=") + 9;
-		ssize_t len = data.find("\r\n", start);
-		std::cout << start << std::endl;
-		std::cout << len << std::endl;
-		if (len != std::string::npos && start != std::string::npos) {
-			std::string boundary = data.substr(start, len - start);
+int Server::handleClient(socketInfo *client, int type) {
+	if (type == EVFILT_READ) {
+		std::cout << "read request" << std::endl;
+		return recieveRequest(client, client->data);
+	}
+	else if (!client->data.empty() && type == EVFILT_WRITE) {
+		std::cout << "write request" << std::endl;
+		std::stringstream ss(client->data);
+		std::string uri;
+		std::string method;
+		std::getline(ss, method, ' ');
+		std::getline(ss, uri, ' ');
+		if (method == "POST") {
+			send(client->socket, "HTTP/1.1 200 OK", 15, 0);
+			return KEEP;
+		} else if (method == "GET") {
+			std::cout << uri << std::endl;
+			std::string path;
+			int code = _serverRouter->getFile(method, uri, path);
+			std::string response;
+			if (code == INTERNALSERVERROR)
+				internalServerError(response);
+			if (code != INTERNALSERVERROR && headerGenerator(code, path, response) != INTERNALSERVERROR)
+				contentGenerator(path, response);
+			int totalSent = 0;
+			while (totalSent < response.size()) {
+				int sent = send(client->socket, response.c_str() + totalSent, response.size() - totalSent, 0);
+				totalSent += sent;
+			}
+			if (code >= 300 || code == OK)
+				return (CLOSE);
+			return (KEEP);
 		}
 		send(client->socket, "HTTP/1.1 200 OK", 15, 0);
-		return (KEEP);
-	} else if (method == "GET") {
-		std::cout << uri << std::endl;
-		std::string path;
-		int code = _serverRouter->getFile(method, uri, path);
-		std::string response;
-		if (code == INTERNALSERVERROR)
-			internalServerError(response);
-		if (code != INTERNALSERVERROR && headerGenerator(code, path, response) != INTERNALSERVERROR)
-			contentGenerator(path, response);
-		int totalSent = 0;
-		while (totalSent < response.size()) {
-			int sent = send(client->socket, response.c_str() + totalSent, response.size() - totalSent, 0);
-			totalSent += sent;
-		}
-		if (code >= 300 || code == OK)
-			return (CLOSE);
-		return (KEEP);
+		return (CLOSE);
 	}
-	send(client->socket, "HTTP/1.1 200 OK", 15, 0);
-	return (CLOSE);
+	return KEEP;
 }
 
 Router *Server::getRouter() const {

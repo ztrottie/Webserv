@@ -22,20 +22,24 @@ Webserv::Webserv(const Webserv &inst) {
 
 Webserv::~Webserv() {
 	std::cout << "Webserv destructor" << std::endl;
-	for (std::map<int, serverInfo*>::iterator it = _clientMap.begin(); it != _clientMap.end();) {
+	for (std::map<int, socketInfo*>::iterator it = _clientMap.begin(); it != _clientMap.end();) {
 		struct kevent clientChanges;
-		EV_SET(&clientChanges, it->first, EVFILT_READ, EV_DELETE, 0, 0, NULL);
+		int flags;
+		if (it->second->type == SERVER)
+			flags = EVFILT_READ;
+		else
+			flags = EVFILT_READ | EVFILT_WRITE;
+		EV_SET(&clientChanges, it->first, flags, EV_DELETE, 0, 0, NULL);
 		kevent(_kq,	&clientChanges, 1, NULL, 0, NULL);
 		close(it->first);
 		if (it->second->type == SERVER)
 			delete it->second->serverInst;
 		delete it->second;
-		std::map<int, serverInfo*>::iterator tempit = it;
+		std::map<int, socketInfo*>::iterator tempit = it;
 		it++;
 		_clientMap.erase(tempit);
 	}
 	close(_kq);
-	std::cout << "tessir" << std::endl;
 }
 
 Webserv& Webserv::operator=(const Webserv &rhs) {
@@ -47,7 +51,7 @@ Webserv& Webserv::operator=(const Webserv &rhs) {
 }
 
 void Webserv::addNewServer(uint16_t port, const char *host, std::string name, Router *router) {
-	serverInfo *server = new serverInfo;
+	socketInfo *server = new socketInfo;
 	try {
 		server->serverInst = new Server(port, host, name, router, server);
 	} catch (std::exception &e) {
@@ -60,16 +64,19 @@ void Webserv::addNewServer(uint16_t port, const char *host, std::string name, Ro
 	_nbServer++;
 }
 
-void Webserv::acceptConnection(serverInfo *info) {
-	serverInfo *client = new serverInfo;
+void Webserv::acceptConnection(socketInfo *info) {
+	socketInfo *client = new socketInfo;
 	if (info->serverInst->acceptConnection(client) == CLOSE) {
 		close(client->socket);
 		delete client;
 		return ;
 	}
-	struct kevent clientChanges;
-	EV_SET(&clientChanges, client->socket, EVFILT_READ, EV_ADD, 0, 0, nullptr);
-	kevent(_kq, &clientChanges, 1, nullptr, 0, nullptr);
+	struct kevent readEvent;
+	EV_SET(&readEvent, client->socket, EVFILT_READ, EV_ADD, 0, 0, nullptr);
+	kevent(_kq, &readEvent, 1, nullptr, 0, nullptr);
+	struct kevent writeEvent;
+	EV_SET(&writeEvent, client->socket, EVFILT_WRITE, EV_ADD, 0, 0, nullptr);
+	kevent(_kq, &writeEvent, 1, nullptr, 0, nullptr);
 	_nbClients++;
 	_clientMap.insert(std::make_pair(client->socket, client));
 }
@@ -83,19 +90,23 @@ void signalhandler(int signal) {
 void Webserv::loop() {
 	std::signal(SIGQUIT, signalhandler);
 	while (loopFlag) {
-		std::cout << timestamp() << " Number of connection on the webserv: [" << _nbClients << "]" << std::endl;
+		sleep(1);
+		// std::cout << timestamp() << " Number of connection on the webserv: [" << _nbClients << "]" << std::endl;
 		struct kevent events[10];
 		std:timespec time = {10, 0};
 		int numEvents = kevent(_kq, nullptr, 0, events, 10, &time);
 		for (int i = 0; i < numEvents; i++) {
-			serverInfo *info = _clientMap[events[i].ident];
+			socketInfo *info = _clientMap[events[i].ident];
 			if (info->type == SERVER) {
 				acceptConnection(info);
 			} else {
-				if (info->serverInst->handleClient(info) == CLOSE) {
-					struct kevent clientChanges;
-					EV_SET(&clientChanges, info->socket, EVFILT_READ, EV_DELETE, 0, 0, nullptr);
-					kevent(_kq,	&clientChanges, 1, nullptr, 0, nullptr);
+				if (info->serverInst->handleClient(info, events[i].filter) == CLOSE) {
+					struct kevent readEvent;
+					EV_SET(&readEvent, info->socket, EVFILT_READ, EV_DELETE, 0, 0, nullptr);
+					kevent(_kq,	&readEvent, 1, nullptr, 0, nullptr);
+					struct kevent writeEvent;
+					EV_SET(&writeEvent, info->socket, EVFILT_WRITE, EV_DELETE, 0, 0, nullptr);
+					kevent(_kq,	&writeEvent, 1, nullptr, 0, nullptr);
 					_nbClients--;
 					close(info->socket);
 					_clientMap.erase(info->socket);
