@@ -129,6 +129,9 @@ int	parsing::checkLocation(string &line){
 		return -1;
 	}
 	while (isThisTheEnd(line) != true){
+		if (checkValid(line) == -2){
+			
+		}
 		if (checkIndexLocation(line) == -2){
 
 		}

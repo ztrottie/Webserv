@@ -1,7 +1,72 @@
 #include "../include/parsing.hpp"
+#include <vector>
 
 parsing::parsing(string path): pathConfigFile(path){
 	defaultIfError = false;
+}
+
+int	parsing::checkValid(string const &line){
+	size_t	space = line.rfind(" ");
+	string	res;
+	if (space == std::string::npos)
+		space = 0;
+	size_t tabs = line.rfind("	");
+	if (tabs == std::string::npos)
+		tabs = 0;
+	if (space > tabs){
+		std::vector<std::string> ret = splitString(line, ' ');
+		for (int i = 0; i < ret.size(); i++){
+			ret[i].erase(std::remove_if(ret[i].begin(), ret[i].end(), ::isspace), ret[i].end());
+			if (ret[i].length() > 0){
+				res = ret[i];
+				break ;
+			}
+		}
+	}
+	else if (tabs > space){
+		std::vector<std::string> ret = splitString(line, '	');
+		for (int i = 0; i < ret.size(); i++){
+			ret[i].erase(std::remove_if(ret[i].begin(), ret[i].end(), ::isspace), ret[i].end());
+			if (ret[i].length() > 0){
+				res = ret[i];
+				break ;
+			}
+		}
+	}
+	else{
+		res = line;
+		res.erase(std::remove_if(res.begin(), res.end(), ::isspace), res.end());
+	}
+	if (res == "acceptDefault")
+		return CORRECT;
+	else if (res == "server")
+		return CORRECT;
+	else if (res == "host")
+		return CORRECT;
+	else if (res == "server_name")
+		return CORRECT;
+	else if (res == "listen")
+		return CORRECT;
+	else if (res == "root")
+		return CORRECT;
+	else if (res == "index")
+		return CORRECT;
+	else if (res == "error_page")
+		return CORRECT;
+	else if (res == "location")
+		return CORRECT;
+	else if (res == "allowedMethods")
+		return CORRECT;
+	else if (res == "return")
+		return CORRECT;
+	else if (res == "client_max_body_size")
+		return CORRECT;
+	else if (res == "}")
+		return CORRECT;
+	else if (res.empty())
+		return CORRECT;
+	writeTimestamp(RED, "CHING CHONG WON TONG \"" + res + "\" ins\'t something valid");
+	return -2;
 }
 
 bool	parsing::parseConfigFile(){
@@ -15,7 +80,8 @@ bool	parsing::parseConfigFile(){
 		return false;
 	}
 	while (std::getline(configFile, line)){
-		// cout << line << endl;
+		if (checkValid(line) == -2)
+			return false;
 		if (nbLine == 0)
 			checkDefault(line);
 		if (checkServer(line) == -2)
@@ -254,10 +320,8 @@ int	parsing::checkDefault(string const &line){
 			defaultIfError = false;
 		}
 	}
-	if (begin.length() > 0 && end.length() > 0){
-		if (isThereSomethingInMyString(line, "acceptDefault", false, false, false) == true)
-			return -1;
-	}
+	if (isThereSomethingInMyString(line, "acceptDefault", false, false, false) == true)
+		return -1;
 	else if (end.length() <= 0){
 		ret = false;
 	}

@@ -50,7 +50,13 @@ bool containsNonDigit(const std::string& str){
 bool isThereSomethingInMyString(std::string const &line, std::string const &begin, bool _defaultIfError, bool inLocation, bool checkNumber){
 	std::string impasta;
 	
-	if (line.rfind(" ") > line.rfind("	")){
+	size_t space = line.rfind(" ");
+	if (space == std::string::npos)
+		space = 0;
+	size_t tabs = line.rfind("	");
+	if (tabs == std::string::npos)
+		tabs = 0;
+	if (space > tabs){
 		impasta = retIsThereSomethingInMyString(line, begin, &line[line.rfind(" ")], !checkNumber);
 		if (inLocation == false){
 			if (checkNumber == true){
@@ -93,9 +99,8 @@ bool isThereSomethingInMyString(std::string const &line, std::string const &begi
 			}
 		}
 	}
-	else if (line.rfind(" ") < line.rfind("	")){
+	else if (space < tabs){
 		impasta = retIsThereSomethingInMyString(line, begin, &line[line.rfind("	")], !checkNumber);
-		std::cout << impasta << std::endl;
 		if (inLocation == false){
 			if (checkNumber == true){
 				if (containsNonDigit(impasta) == true){

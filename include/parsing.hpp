@@ -49,6 +49,7 @@ class parsing{
 		bool	defaultIfError;
 		void	error(int errorCode);
 		bool	checkFile();
+		int		checkValid(string const &line);
 		int		isThisTheEnd(string const &line);
 		int		checkDefault(string const &line);
 		int		checkServer(string const &line);
