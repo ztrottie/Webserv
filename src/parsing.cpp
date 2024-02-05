@@ -38,7 +38,7 @@ void	parsing::error(int errorCode){
 		case 1:
 			cout << timestamp() << RED << "Le fichier d'entré est non existant" << RESET << endl;
 			break;
-		case 2:
+		case 2: 
 			cout << timestamp() << RED << "Le \"Fichier\" n'en est pas un, c'est un dossier" << RESET << endl;
 			break;
 		case 3:

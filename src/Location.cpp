@@ -13,6 +13,7 @@ Location::Location(std::string const &name) : _name(name) {
 }
 
 Location::Location(const Location &inst) {
+	(void)inst;
 	std::cout << "Copy Location constructor " << std::endl;
 }
 
@@ -21,6 +22,7 @@ Location::~Location() {
 }
 
 Location& Location::operator=(const Location &rhs) {
+	(void) rhs;
 	std::cout << "Location operator = overide" << std::endl;
 	return *this;
 }

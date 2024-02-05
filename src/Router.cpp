@@ -1,4 +1,7 @@
 #include "../include/Router.hpp"
+#include <cstddef>
+#include <cstdlib>
+#include <sys/stat.h>
 
 Router::Router(){
 	std::cout << timestamp() << " Initializing the server Router!" << std::endl;
@@ -14,6 +17,7 @@ Router::~Router() {
 }
 
 Router& Router::operator=(const Router &rhs) {
+	(void)rhs;
 	std::cout << "Router operator = overload" << std::endl;
 	return *this;
 }
@@ -54,12 +58,22 @@ int Router::checkIfFileIsValid(std::string const &path){
 	if (access(path.c_str(), F_OK) != 0)
 		return 404;
 	if (stat(path.c_str(), &fileStat) == 0){
+		std::size_t index = path.rfind(".php");
+		if (index != std::string::npos)
+			return checkIfCanExec(path);
 		if (S_ISDIR(fileStat.st_mode)) 
 			return IS_DIR;
 		if (S_ISREG(fileStat.st_mode))
 			return IS_FILE;
 	}
 	return 500;
+}
+
+int Router::checkIfCanExec(std::string const &path){
+	if (std::system(path.c_str()) == 0)
+		return OK;
+	else
+		return INTERNALSERVERROR;
 }
 
 int Router::getErrorPage(std::string &path, int errorCode){

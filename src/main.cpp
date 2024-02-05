@@ -21,7 +21,7 @@ int main(void) {
 	bob->setRoot("./www");
 	bob->addErrorPage(404, "./www/erros/404.html");
 	bob->addLocation("/", loc);
-	webserv.addNewServer(8081, "127.0.0.1", "default", bob);
+	webserv.addNewServer(8080, "127.0.0.1", "default", bob);
 	webserv.loop();
     return 0;
 }
