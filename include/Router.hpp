@@ -26,15 +26,12 @@ private:
 	std::vector<std::string> 			_allowedMethod;
 
 public:
-	// Constructors / Destructor
 	Router();
 	Router(const Router &inst);
 	~Router();
 
-	// Operator Overload
 	Router& operator=(const Router &rhs);
 
-	//Setters
 	void setRoot(std::string const &root);
 	void setIndex(std::string const &index);
 	void addErrorPage(const int errorNumber, std::string pathToError);
@@ -48,4 +45,5 @@ public:
 	int checkIfFileIsValid(std::string const &path);
 	int getErrorPage(std::string &path, int errorCode);
 	int checkAllowedMethod(std::string const &method, Location *loc);
+	int checkIfCanExec(std::string const &path);
 };

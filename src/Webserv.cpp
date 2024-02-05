@@ -39,7 +39,7 @@ Webserv::~Webserv() {
 		it++;
 		_clientMap.erase(tempit);
 	}
-	close(_kq);
+	std::
 }
 
 Webserv& Webserv::operator=(const Webserv &rhs) {
@@ -84,8 +84,7 @@ void Webserv::acceptConnection(socketInfo *info) {
 volatile bool loopFlag = true;
 
 void signalhandler(int signal) {
-	if (signal == SIGQUIT)
-		loopFlag = false;
+	loopFlag = false;
 }
 
 void Webserv::loop() {

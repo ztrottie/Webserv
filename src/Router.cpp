@@ -1,4 +1,7 @@
 #include "../include/Router.hpp"
+#include <cstddef>
+#include <cstdlib>
+#include <sys/stat.h>
 
 Router::Router(){
 	std::cout << timestamp() << " Initializing the server Router!" << std::endl;
@@ -14,6 +17,7 @@ Router::~Router() {
 }
 
 Router& Router::operator=(const Router &rhs) {
+	(void)rhs;
 	std::cout << "Router operator = overload" << std::endl;
 	if (this != &rhs) {
 
@@ -37,6 +41,10 @@ void Router::addErrorPage(const int errorNumber, std::string pathToError) {
 	_errorPagesLocation.insert(std::make_pair(errorNumber, pathToError));
 }
 
+void Router::addLocation(std::string const &key, Location *loc){
+	_locations.insert(std::make_pair(key, loc));
+}
+
 void Router::trimURI(std::string &uri){
 	std::cout << uri << std::endl;
 	size_t index = uri.rfind('/');
@@ -47,22 +55,28 @@ void Router::trimURI(std::string &uri){
 	uri = uri.substr(0, index);
 }
 
-void Router::addLocation(std::string const &key, Location *loc){
-	_locations.insert(std::make_pair(key, loc));
-}
-
 int Router::checkIfFileIsValid(std::string const &path){
 	struct stat fileStat;
 
 	if (access(path.c_str(), F_OK) != 0)
 		return 404;
 	if (stat(path.c_str(), &fileStat) == 0){
+		std::size_t index = path.rfind(".php");
+		if (index != std::string::npos)
+			return checkIfCanExec(path);
 		if (S_ISDIR(fileStat.st_mode)) 
 			return IS_DIR;
 		if (S_ISREG(fileStat.st_mode))
 			return IS_FILE;
 	}
 	return 500;
+}
+
+int Router::checkIfCanExec(std::string const &path){
+	if (std::system(path.c_str()) == 0)
+		return OK;
+	else
+		return INTERNALSERVERROR;
 }
 
 int Router::getErrorPage(std::string &path, int errorCode){
