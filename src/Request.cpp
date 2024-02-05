@@ -49,7 +49,7 @@ std::string Request::_search(std::string const &searching, char endChar) {
 
 void Request::_uriParser() {
 	size_t fileStart = _uri.find('.');
-	size_t fileEnd;
+	size_t fileEnd = 0;
 	if (fileStart != std::string::npos) {
 		fileEnd = _uri.find('/', fileStart);
 		if (fileEnd != std::string::npos) {
