@@ -42,7 +42,7 @@ public:
 	void addAllowedMethod(std::string const &method);
 
 	// Functions
-	int getFile(std::string const &method, std::string const &URI, std::string &path);
+	int getFile(Request *request, std::string &path);
 	void trimURI(std::string &URI);
 	int checkFilePerm(std::string const &path);
 	int checkIfFileIsValid(std::string const &path);

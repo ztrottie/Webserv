@@ -1,14 +1,17 @@
 #include "../include/Webserv.hpp"
 #include <csignal>
+#include <cstddef>
 #include <ctime>
+#include <exception>
 #include <iostream>
 #include <sys/event.h>
+#include <sys/signal.h>
 #include <utility>
 #include <unistd.h>
 #include "../include/utils.hpp"
 
-Webserv::Webserv() : _nbServer(0), _nbClients(0), _loop(true) {
-	std::cout << "Default Webserv constructor " << std::endl;
+Webserv::Webserv() : _nbServer(0), _nbClients(0) {
+	std::cout << GREEN << timestamp() << " Starting the webserv..." << RESET << std::endl;
 	_kq = kqueue();
 }
 
@@ -19,14 +22,24 @@ Webserv::Webserv(const Webserv &inst) {
 
 Webserv::~Webserv() {
 	std::cout << "Webserv destructor" << std::endl;
-	close(_kq);
-	for (std::map<int, serverInfo*>::const_iterator it = _clientMap.begin(); it != _clientMap.end(); it++) {
-		close(it->second->socket);
-		delete it->second->serverInst;
+	for (std::map<int, socketInfo*>::iterator it = _clientMap.begin(); it != _clientMap.end();) {
+		struct kevent clientChanges;
+		int flags;
+		if (it->second->type == SERVER)
+			flags = EVFILT_READ;
+		else
+			flags = EVFILT_READ | EVFILT_WRITE;
+		EV_SET(&clientChanges, it->first, flags, EV_DELETE, 0, 0, NULL);
+		kevent(_kq,	&clientChanges, 1, NULL, 0, NULL);
+		close(it->first);
+		if (it->second->type == SERVER)
+			delete it->second->serverInst;
 		delete it->second;
-		_clientMap.erase(it->first);
+		std::map<int, socketInfo*>::iterator tempit = it;
+		it++;
+		_clientMap.erase(tempit);
 	}
-	std::
+	close(_kq);
 }
 
 Webserv& Webserv::operator=(const Webserv &rhs) {
@@ -37,9 +50,13 @@ Webserv& Webserv::operator=(const Webserv &rhs) {
 	return *this;
 }
 
-void Webserv::addNewServer(uint16_t port, const char *host, std::string name, Router *router) {
-	serverInfo *server = new serverInfo;
-	server->serverInst = new Server(port, host, name, router, server);
+void Webserv::addNewServer(uint16_t port, const char *host, std::string name, Router *router, unsigned int const &clientBodySize) {
+	socketInfo *server = new socketInfo;
+	try {
+		server->serverInst = new Server(port, host, name, router, clientBodySize, server);
+	} catch (std::exception &e) {
+		std::cout << RED << timestamp() << " " << e.what() << RESET << std::endl;
+	}
 	_clientMap.insert(std::make_pair(server->socket, server));
 	struct kevent changes;
 	EV_SET(&changes, server->socket, EVFILT_READ, EV_ADD, 0, 0, nullptr);
@@ -47,39 +64,50 @@ void Webserv::addNewServer(uint16_t port, const char *host, std::string name, Ro
 	_nbServer++;
 }
 
-void Webserv::acceptConnection(serverInfo *info) {
-	serverInfo *client = new serverInfo;
+void Webserv::acceptConnection(socketInfo *info) {
+	socketInfo *client = new socketInfo;
 	if (info->serverInst->acceptConnection(client) == CLOSE) {
 		close(client->socket);
 		delete client;
 		return ;
 	}
-	struct kevent clientChanges;
-	EV_SET(&clientChanges, client->socket, EVFILT_READ, EV_ADD, 0, 0, nullptr);
-	kevent(_kq, &clientChanges, 1, nullptr, 0, nullptr);
+	struct kevent readEvent;
+	EV_SET(&readEvent, client->socket, EVFILT_READ, EV_ADD, 0, 0, nullptr);
+	kevent(_kq, &readEvent, 1, nullptr, 0, nullptr);
+	struct kevent writeEvent;
+	EV_SET(&writeEvent, client->socket, EVFILT_WRITE, EV_ADD, 0, 0, nullptr);
+	kevent(_kq, &writeEvent, 1, nullptr, 0, nullptr);
 	_nbClients++;
 	_clientMap.insert(std::make_pair(client->socket, client));
 }
 
-volatile int loopFlag = true;
+volatile bool loopFlag = true;
 
 void signalhandler(int signal) {
-	loopFlag = false;
+	if (signal == SIGQUIT)
+		loopFlag = false;
 }
 
 void Webserv::loop() {
-	std::signal(SIGINT, signalhandler);
+	std::signal(SIGQUIT, signalhandler);
 	while (loopFlag) {
-		std::cout << timestamp() << " Number of connection on the webserv: [" << _nbClients << "]" << std::endl;
+		sleep(1);
+		// std::cout << timestamp() << " Number of connection on the webserv: [" << _nbClients << "]" << std::endl;
 		struct kevent events[10];
-		std:timespec time = {10, 0};
+		timespec time = {10, 0};
 		int numEvents = kevent(_kq, nullptr, 0, events, 10, &time);
 		for (int i = 0; i < numEvents; i++) {
-			serverInfo *info = _clientMap[events[i].ident];
+			socketInfo *info = _clientMap[events[i].ident];
 			if (info->type == SERVER) {
 				acceptConnection(info);
 			} else {
-				if (info->serverInst->handleClient(info) == CLOSE) {
+				if (info->serverInst->handleClient(info, events[i].filter) == CLOSE) {
+					struct kevent readEvent;
+					EV_SET(&readEvent, info->socket, EVFILT_READ, EV_DELETE, 0, 0, nullptr);
+					kevent(_kq,	&readEvent, 1, nullptr, 0, nullptr);
+					struct kevent writeEvent;
+					EV_SET(&writeEvent, info->socket, EVFILT_WRITE, EV_DELETE, 0, 0, nullptr);
+					kevent(_kq,	&writeEvent, 1, nullptr, 0, nullptr);
 					_nbClients--;
 					close(info->socket);
 					_clientMap.erase(info->socket);

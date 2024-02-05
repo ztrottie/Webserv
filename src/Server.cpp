@@ -1,13 +1,18 @@
 #include "../include/Server.hpp"
 #include "../include/color.h"
 #include "../include/utils.hpp"
+#include "../include/Request.hpp"
 #include <arpa/inet.h>
+#include <cstdio>
+#include <cstring>
 #include <iosfwd>
 #include <iostream>
 #include <stdexcept>
 #include <string>
 #include <sys/_endian.h>
 #include <sys/_types/_socklen_t.h>
+#include <sys/_types/_ssize_t.h>
+#include <sys/event.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <fcntl.h>
@@ -15,9 +20,14 @@
 #include <fstream>
 #include <sstream>
 
-Server::Server(uint16_t port, const char *host, std::string name, Router *router, serverInfo *server) : _port(port), _host(host), _name(name) {
+
+Server::Server(uint16_t port, const char *host, std::string name, Router *router, unsigned int const &clientBodySize, socketInfo *server) : _port(port), _host(host), _name(name), _clientBodySize(clientBodySize) {
 	std::cout << YELLOW << timestamp() << " Initializing a Server named " << _name << " on " << _host << ":" << _port << RESET << std::endl;
 	server->socket = socket(AF_INET, SOCK_STREAM, 0);
+	int reuse = 1;
+	if (setsockopt(server->socket, SOL_SOCKET, SO_REUSEADDR, &reuse, sizeof(reuse)) == -1) {
+		throw std::invalid_argument("Error setting setsockopt");
+	}
 	if (server->socket == -1)
 		throw std::invalid_argument("Socket creation Failed");
 	fcntl(server->socket, F_SETFL, O_NONBLOCK, FD_CLOEXEC);
@@ -52,7 +62,7 @@ Server& Server::operator=(const Server &rhs) {
 	return *this;
 }
 
-int Server::acceptConnection(serverInfo *client) {
+int Server::acceptConnection(socketInfo *client) {
 	std::cout << YELLOW << timestamp() << " incomming connection trying to connect to " << _name << RESET << std::endl;
 	struct sockaddr_in clientAddress = {};
 	socklen_t clientAdressLen = sizeof(client->client_address);
@@ -137,6 +147,8 @@ int Server::contentTypeGenerator(std::string &contentType, std::string const &pa
 	contentTypeMap[".html"] = "text/html";
 	contentTypeMap[".css"] = "text/css";
 	contentTypeMap[".ico"] = "image/ico";
+	contentTypeMap[".png"] = "image/png";
+	contentTypeMap[".php"] = "application.php";
 	int pos = path.rfind('.');
 	std::string fileExtension = path.substr(pos, path.size());
 	std::cout << fileExtension << std::endl;
@@ -191,68 +203,88 @@ void Server::contentGenerator(std::string const &path, std::string &response) {
 		internalServerError(response);
 		return ;
 	}
-	// std::string line;
-	// while (std::getline(file, line)) {
-	// 	response += line + "\r\n";
-	// }
 	std::ostringstream oss;
     oss << file.rdbuf();
     response += oss.str();
 	file.close();
 }
 
-ssize_t sendAll(int socket, const char *buffer, size_t length) {
-    size_t totalSent = 0;
-
-    while (totalSent < length) {
-        ssize_t sent = send(socket, buffer + totalSent, length - totalSent, 0);
-
-        if (sent == -1) {
-            // Handle send error, e.g., print an error message or return an error code
-            return -1;
-        } else if (sent == 0) {
-            // Connection closed by the other end
-            return totalSent;
-        } else {
-            // Update the total number of bytes sent
-            totalSent += sent;
-        }
-    }
-
-    return totalSent;
-}
-
-int Server::handleClient(serverInfo *client) {
-	char buffer[1024] = {0};
-	ssize_t nbytes;
-	nbytes = recv(client->socket, buffer, sizeof(buffer), 0);
-	std::string data = buffer;
+int Server::recieveRequest(socketInfo *client) {
+	char buffer[1025];
+	ssize_t totalNbytes = 0;
+	ssize_t	nbytes = 1024;
+	std::string data;
+	while (nbytes == 1024) {
+		std::memset(buffer, 0, sizeof(buffer));
+		nbytes = recv(client->socket, buffer, 1024, 0);
+		buffer[nbytes] = 0;
+		data += buffer;
+		totalNbytes += nbytes;
+	}
 	std::cout << timestamp() << " client sokcet: " << client->socket << std::endl;
-	std::cout << timestamp() << " nbytes recv: " << nbytes << std::endl;
-	if (nbytes == 0) {
+	std::cout << timestamp() << " nbytes recv: " << totalNbytes << std::endl;
+	if (totalNbytes == 0) {
 		std::cout << timestamp() << RED << " client closed the connection!" << RESET << std::endl;
 		return (CLOSE);
-    } else if (nbytes == -1) {
+    } else if (totalNbytes == -1) {
 		std::cout << timestamp() << RED << " problem while recieving data closing connection" << RESET << std::endl;
-	}
-	std::stringstream ss(data);
-	std::string uri;
-	std::string method;
-	std::getline(ss, method, ' ');
-	std::getline(ss, uri, ' ');
-	std::cout << uri << std::endl;
-	std::cout << data << std::endl;
-	std::string path;
-	int code = _serverRouter->getFile(method, uri, path);
-	std::string response;
-	if (code == INTERNALSERVERROR)
-		internalServerError(response);
-	if (code != INTERNALSERVERROR && headerGenerator(code, path, response) != INTERNALSERVERROR)
-		contentGenerator(path, response);
-	sendAll(client->socket, response.c_str(), response.size());
-	if (code >= 300 || code == OK)
 		return (CLOSE);
+	}
+	client->request = new Request(data, client);
 	return (KEEP);
+}
+
+std::string Server::findKeyWord(std::string const &from, std::string const &find) {
+	size_t start = from.find(find);
+	if (start != std::string::npos) {
+		start += find.size();
+		size_t end = from.find("\n", start);
+		return from.substr(start, end - start);
+	}
+	return "";
+}
+
+int Server::handlePostMethod(socketInfo *client) {
+	(void)client;
+	return (CLOSE);
+}
+
+int Server::handleRequest(socketInfo *client) {
+	std::cout << "write request" << std::endl;
+	if (client->request->getMethod() == "POST") {
+		return handlePostMethod(client);
+	} else if (client->request->getMethod() == "GET") {
+		std::string path;
+		int code = _serverRouter->getFile(client->request, path);
+		std::string response;
+		if (code == INTERNALSERVERROR)
+			internalServerError(response);
+		if (code != INTERNALSERVERROR && headerGenerator(code, path, response) != INTERNALSERVERROR)
+			contentGenerator(path, response);
+		unsigned long totalSent = 0;
+		while (totalSent < response.size()) {
+			int sent = send(client->socket, response.c_str() + totalSent, response.size() - totalSent, 0);
+			totalSent += sent;
+		}
+		if (code >= 300 || code == OK)
+			return (CLOSE);
+		return (KEEP);
+	}
+	send(client->socket, "HTTP/1.1 200 OK", 15, 0);
+	return (CLOSE);
+}
+
+int Server::handleClient(socketInfo *client, int type) {
+	if (type == EVFILT_READ) {
+		std::cout << "read request" << std::endl;
+		if (recieveRequest(client) == CLOSE)
+			return CLOSE;
+		return (KEEP);
+	}
+	// else if (type == EVFILT_WRITE) {
+	// 	return handleRequest(client);
+	// }
+	return KEEP;
 }
 
 Router *Server::getRouter() const {

@@ -1,7 +1,9 @@
 #pragma once
 #include <arpa/inet.h>
+#include <string>
 
 class Server;
+class Request;
 
 enum socketType {
 	CLIENT,
@@ -13,11 +15,13 @@ enum socketStatus {
 	CLOSE
 };
 
-struct serverInfo {
-	int socket;
-	int type;
-	struct sockaddr_in client_address;
-	Server	*serverInst;
+struct socketInfo {
+	int					socket;
+	int					type;
+	int 				mode;
+	Request				*request;
+	struct sockaddr_in	client_address;
+	Server				*serverInst;
 };
 
 enum Codes {

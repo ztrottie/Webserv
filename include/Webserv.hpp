@@ -12,7 +12,7 @@ private:
 	int								_kq;
 	int								_nbServer;
 	int								_nbClients;
-	std::map<int, serverInfo*>		_clientMap;
+	std::map<int, socketInfo*>		_clientMap;
 public:
 	// Constructors / Destructor
 	Webserv();
@@ -23,8 +23,8 @@ public:
 	Webserv& operator=(const Webserv &rhs);
 
 	// Functions
-	void addNewServer(uint16_t port, const char *host, std::string name, Router *router);
-	void acceptConnection(serverInfo *info);
+	void addNewServer(uint16_t port, const char *host, std::string name, Router *router, unsigned int const &clientBodySize);
+	void acceptConnection(socketInfo *info);
 	void loop();
 };
 
