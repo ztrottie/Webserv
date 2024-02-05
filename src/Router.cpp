@@ -7,22 +7,8 @@ Router::Router(){
 	std::cout << timestamp() << " Initializing the server Router!" << std::endl;
 }
 
-Router::Router(const Router &inst) {
-	std::cout << "Copy Router constructor " << std::endl;
-	*this = inst;
-}
-
 Router::~Router() {
 	std::cout << "Router destructor" << std::endl;
-}
-
-Router& Router::operator=(const Router &rhs) {
-	(void)rhs;
-	std::cout << "Router operator = overload" << std::endl;
-	if (this != &rhs) {
-
-	}
-	return *this;
 }
 
 void Router::setRoot(std::string const &root){
@@ -101,7 +87,8 @@ int Router::checkAllowedMethod(std::string const &method, Location *loc){
 }
 
 int Router::getFile(Request *request, std::string &path) {
-	std::string uriCopy = URI;
+
+	std::string uriCopy = request->getFilePath();
 	for (std::map<std::string, Location*>::const_iterator it = _locations.end(); it == _locations.end();){
 		it = _locations.find(uriCopy);
 		if (it == _locations.end()){
@@ -109,12 +96,12 @@ int Router::getFile(Request *request, std::string &path) {
 		}
 	}
 	Location *loc = _locations[uriCopy];
-	int methodCode = checkAllowedMethod(method, loc);
+	int methodCode = checkAllowedMethod(request->getMethod(), loc);
 	if (methodCode == NOT_FOUND && methodCode == METHNOTALLOWED)
 		return getErrorPage(path, methodCode);
 	if (loc->getRoot(path) == NOT_FOUND)
 		path = _root;
-	path += URI;
+	path += request->getFilePath();
 	for (int i = 0; i < 2;i++){
 		int code = checkIfFileIsValid(path);
 		if (code == INTERNALSERVERROR)

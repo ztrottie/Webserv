@@ -1,6 +1,8 @@
 #pragma once
 #include "struct.hpp"
 #include "Location.hpp"
+#include "Request.hpp"
+
 #include <array>
 #include <string>
 #include <map>
@@ -38,7 +40,6 @@ public:
 	void addLocation(std::string const &key, Location *loc);
 	void addAllowedMethod(std::string const &method);
 
-	// Functions
 	int getFile(Request *request, std::string &path);
 	void trimURI(std::string &URI);
 	int checkFilePerm(std::string const &path);
