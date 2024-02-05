@@ -35,4 +35,15 @@ public:
 
 	// Functions
 	std::string const &getMethod() const;
+	std::string const &getRaw() const;
+	std::string const &getUri() const;
+	std::string const &getFilePath() const;
+	std::string const &getExtraPath() const;
+	std::string const &getStringQuerry() const;
+	std::string const &getHost() const;
+	std::string const &getPort() const;
+	std::string const &getType() const;
+	std::string const &getBoundary() const;
+	std::string const &getClientAddress() const;
+	std::string const &getClientBody() const;
 };

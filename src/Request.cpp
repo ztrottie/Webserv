@@ -101,3 +101,47 @@ void Request::_requestBodyParser() {
 std::string const &Request::getMethod() const {
 	return _method;
 }
+
+std::string const &Request::getRaw() const {
+	return _raw;
+}
+
+std::string const &Request::getUri() const {
+	return _uri;
+}
+
+std::string const &Request::getFilePath() const {
+	return _filePath;
+}
+
+std::string const &Request::getExtraPath() const {
+	return _extraPath;
+}
+
+std::string const &Request::getStringQuerry() const {
+	return _stringQuerry;
+}
+
+std::string const &Request::getHost() const {
+	return _host;
+}
+
+std::string const &Request::getPort() const {
+	return _port;
+}
+
+std::string const &Request::getType() const {
+	return _type;
+}
+
+std::string const &Request::getBoundary() const {
+	return _boundary;
+}
+
+std::string const &Request::getClientAddress() const {
+	return _clientAddr;
+}
+
+std::string const &Request::getClientBody() const {
+	return _clientBody;
+}
