@@ -16,12 +16,12 @@ private:
 	uint16_t	 											_port;
 	const char												*_host;
 	std::string												_name;
-	// unsigned int											_clientBodySize;
+	unsigned int											_clientBodySize;
 	Router													*_serverRouter;
 
 public:
 	// Constructors / Destructor
-	Server(uint16_t port, const char *host, std::string name, Router *router, socketInfo *server);
+	Server(uint16_t port, const char *host, std::string name, Router *router, unsigned int const &clientBodySize, socketInfo *server);
 	Server(const Server &inst);
 	~Server();
 
@@ -38,8 +38,11 @@ public:
 	void contentLengthGenerator(std::string &contentLength, std::string const &path);
 	void contentGenerator(std::string const &path, std::string &response);
 	void internalServerError(std::string &response);
-	int recieveRequest(socketInfo *client, std::string &data);
+	int recieveRequest(socketInfo *client);
 	void	handlePost(socketInfo *client, std::string &data);
+	int handleRequest(socketInfo *client);
+	int handlePostMethod(socketInfo *client);
+	std::string findKeyWord(std::string const &from, std::string const &find);
 };
 
 // Server_HPP

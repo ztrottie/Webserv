@@ -3,6 +3,7 @@
 #include <string>
 
 class Server;
+class Request;
 
 enum socketType {
 	CLIENT,
@@ -18,7 +19,7 @@ struct socketInfo {
 	int					socket;
 	int					type;
 	int 				mode;
-	std::string			data;
+	Request				*request;
 	struct sockaddr_in	client_address;
 	Server				*serverInst;
 };

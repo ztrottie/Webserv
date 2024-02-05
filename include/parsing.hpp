@@ -24,7 +24,7 @@ using std::endl;
 class parsing{
 	private:
 		string	pathConfigFile;
-		bool	defaultIfError;
+		// bool	defaultIfError;
 		void	error(int errorCode);
 		bool	checkFile();
 

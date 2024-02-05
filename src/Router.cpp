@@ -15,6 +15,9 @@ Router::~Router() {
 
 Router& Router::operator=(const Router &rhs) {
 	std::cout << "Router operator = overload" << std::endl;
+	if (this != &rhs) {
+
+	}
 	return *this;
 }
 
@@ -83,7 +86,7 @@ int Router::checkAllowedMethod(std::string const &method, Location *loc){
 	return FOUND;
 }
 
-int Router::getFile(std::string const &method, std::string const &URI, std::string &path) {
+int Router::getFile(Request *request, std::string &path) {
 	std::string uriCopy = URI;
 	for (std::map<std::string, Location*>::const_iterator it = _locations.end(); it == _locations.end();){
 		it = _locations.find(uriCopy);

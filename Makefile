@@ -1,7 +1,7 @@
 NAME	=	webserv
 
 CC		=	c++
-CFLAGS	=	#-Wall -Werror -Wextra -std=c++98 -Wno-shadow -Wshadow
+CFLAGS	=	-Wall -Werror -Wextra -std=c++98
 
 SRC_DIR	=	src/
 BIN_DIR	=	bin/
@@ -14,6 +14,7 @@ SRCS	=	main.cpp \
 			utils.cpp \
 			Router.cpp\
 			Location.cpp\
+			Request.cpp
 
 OBJS	=	$(addprefix $(BIN_DIR), ${SRCS:.cpp=.o})
 

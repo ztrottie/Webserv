@@ -50,10 +50,10 @@ Webserv& Webserv::operator=(const Webserv &rhs) {
 	return *this;
 }
 
-void Webserv::addNewServer(uint16_t port, const char *host, std::string name, Router *router) {
+void Webserv::addNewServer(uint16_t port, const char *host, std::string name, Router *router, unsigned int const &clientBodySize) {
 	socketInfo *server = new socketInfo;
 	try {
-		server->serverInst = new Server(port, host, name, router, server);
+		server->serverInst = new Server(port, host, name, router, clientBodySize, server);
 	} catch (std::exception &e) {
 		std::cout << RED << timestamp() << " " << e.what() << RESET << std::endl;
 	}
@@ -84,7 +84,8 @@ void Webserv::acceptConnection(socketInfo *info) {
 volatile bool loopFlag = true;
 
 void signalhandler(int signal) {
-	loopFlag = false;
+	if (signal == SIGQUIT)
+		loopFlag = false;
 }
 
 void Webserv::loop() {
@@ -93,7 +94,7 @@ void Webserv::loop() {
 		sleep(1);
 		// std::cout << timestamp() << " Number of connection on the webserv: [" << _nbClients << "]" << std::endl;
 		struct kevent events[10];
-		std:timespec time = {10, 0};
+		timespec time = {10, 0};
 		int numEvents = kevent(_kq, nullptr, 0, events, 10, &time);
 		for (int i = 0; i < numEvents; i++) {
 			socketInfo *info = _clientMap[events[i].ident];
