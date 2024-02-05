@@ -33,41 +33,63 @@ bool	parsing::parseConfigFile(){
 			return (error(INDEX_ERR), false);
 		if (checkErrorPage(line, 1) == -2)
 			return (error(ERROR_PAGE_ERR), false);
-		// if (checkClientMaxBodySize(line) == -2)
-			// return (error(CLIENT_MAX_BODY_SIZE_ERR), false);
-		// if (checkReturns(line, 1) == -2)
-			// return (error(RETURN_ERR), false);
+		if (checkClientMaxBodySize(line) == -2)
+			return (error(CLIENT_MAX_BODY_SIZE_ERR), false);
+		if (checkReturns(line) == -2)
+			return (error(RETURN_ERR), false);
 		nbLine++;
 	}
 	return true;
 }
 
+int	parsing::checkClientMaxBodySize(string const &line){
+	size_t pos = line.find("client_max_body_size");
+	if (pos == string::npos)
+		return -1;
+	if (checkVargule(line, defaultIfError, false) == false)
+		return -2;
+	return CORRECT;
+}
+
+int	parsing::checkReturns(string const &line){
+	size_t pos = line.find("return");
+	if (pos == string::npos)
+		return -1;
+	if (checkVargule(line, defaultIfError, false) == false)
+		return -2;
+	if (checkIdentationParsing("return", 1, line, defaultIfError, "return line") == false)
+		return -2;
+	if (isThereSomethingInMyString(line, "return", defaultIfError, false, true) == true)
+		return -2;
+	string str = line;
+	str.erase(std::remove_if(str.begin(), str.end(), ::isspace), str.end());
+	if (str.length() < 8){
+		writeTimestamp(YELLOW, "The return line must have another arguments, like an error code and an html or url!");
+		return -2;
+	}
+	writeTimestamp(GREEN, "Return is ok!");
+	return CORRECT;
+}
+
 int	parsing::checkErrorPage(string const &line, int iden){
 	if (line.find("error_page") == string::npos)
 		return -1;
-	if (line.find(";") != line.length() - 1){
+	if (checkVargule(line, defaultIfError, false) == false)
+		return -2;
+	if (checkIdentationParsing("error_page", iden, line, defaultIfError, "error_page line") == false)
+		return -2;
+	if (isThereSomethingInMyString(line, "error_page", defaultIfError, false, true) == true)
+		return -2;
+	string str = line;
+	str.erase(std::remove_if(str.begin(), str.end(), ::isspace), str.end());
+	if (str.length() < 12){
 		if (defaultIfError == false){
-			writeTimestamp(RED, "You need to have a \";\" at the end of the error_page line");
+			writeTimestamp(RED, "The error_page line must have another arguments, like an error code and html!");
 			return -2;
 		}
 		else
-			writeTimestamp(YELLOW, "You need to have a \";\" at the end of the error_page line, switching to default!");
-	}
-	if (checkIdentationParsing("error_page", iden, line, defaultIfError, "error_page line") == false)
-		return -2;
-	if (line.rfind(" ") > line.rfind("	")){
-		string ret = retIsThereSomethingInMyString(line, "error_page", &line[line.rfind(" ")], false);
-		if (containsNonDigit(ret, defaultIfError) == true){
-			if (defaultIfError == false)
-				return -2;
-		}
-	}
-	else{
-		string ret = retIsThereSomethingInMyString(line, "error_page", &line[line.rfind("	")], false);
-		if (containsNonDigit(ret, defaultIfError) == true){
-			if (defaultIfError == false)
-				return -2;
-		}
+			writeTimestamp(YELLOW, "The error_page line must have another arguments, like an error code and html, switching to default!");
+		return -1;
 	}
 	writeTimestamp(GREEN, "Error_page is ok!");
 	return true;
@@ -76,23 +98,22 @@ int	parsing::checkErrorPage(string const &line, int iden){
 int	parsing::checkIndex(string const &line, int iden){
 	if (line.find("index") == string::npos || line.find("index") == 2)
 		return -1;
-	if (line.find(";") != line.length() - 1){
+	if (checkVargule(line, defaultIfError, false) == false)
+		return -2;
+	if (checkIdentationParsing("index", iden, line, defaultIfError, "index line") == false)
+		return -2;
+	if (isThereSomethingInMyString(line, "index", defaultIfError, false, false) == true)
+		return -2;
+	string str = line;
+	str.erase(std::remove_if(str.begin(), str.end(), ::isspace), str.end());
+	if (str.length() < 7){
 		if (defaultIfError == false){
-			writeTimestamp(RED, "You need to have a \";\" at the end of the index line");
+			writeTimestamp(RED, "The index line must have another arguments, like an html file!");
 			return -2;
 		}
 		else
-			writeTimestamp(YELLOW, "You need to have a \";\" at the end of the index line, switching to default!");
-	}
-	if (checkIdentationParsing("index", iden, line, defaultIfError, "index line") == false)
-		return -2;
-	if (line.rfind(" ") > line.rfind("	")){
-		if (isThereSomethingInMyString(line, "index", &line[line.rfind(" ")], defaultIfError) == true && defaultIfError == false)
-			return -2;
-	}
-	else{
-		if (isThereSomethingInMyString(line, "index", &line[line.rfind("	")], defaultIfError) == true && defaultIfError == false)
-			return -2;
+			writeTimestamp(YELLOW, "The index line must have another arguments, like an html file, switching to default!");
+		return -1;
 	}
 	writeTimestamp(GREEN, "Index is ok!");
 	return true;
@@ -101,23 +122,22 @@ int	parsing::checkIndex(string const &line, int iden){
 int	parsing::checkRoot(string const &line, int iden){
 	if (line.find("root") == string::npos || line.find("root") == 2)
 		return -1;
-	if (line.find(";") != line.length() - 1){
+	if (checkVargule(line, defaultIfError, false) == false)
+		return -2;
+	if (checkIdentationParsing("root", iden, line, defaultIfError, "root line") == false)
+		return -2;
+	if (isThereSomethingInMyString(line, "root", defaultIfError, false, false) == true)
+		return -2;
+	string str = line;
+	str.erase(std::remove_if(str.begin(), str.end(), ::isspace), str.end());
+	if (str.length() < 6){
 		if (defaultIfError == false){
-			writeTimestamp(RED, "You need to have a \";\" at the end of the root line");
+			writeTimestamp(RED, "The root line must have another arguments, like a path to the root!");
 			return -2;
 		}
 		else
-			writeTimestamp(YELLOW, "You need to have a \";\" at the end of the root line, switching to default!");
-	}
-	if (checkIdentationParsing("root", iden, line, defaultIfError, "root line") == false)
-		return -2;
-	if (line.rfind(" ") > line.rfind("	")){
-		if (isThereSomethingInMyString(line, "root", &line[line.rfind(" ")], defaultIfError) == true && defaultIfError == false)
-			return -2;
-	}
-	else{
-		if (isThereSomethingInMyString(line, "root", &line[line.rfind("	")], defaultIfError) == true && defaultIfError == false)
-			return -2;
+			writeTimestamp(YELLOW, "The root line must have another arguments, like a path to the root, switching to default!");
+		return -1;
 	}
 	writeTimestamp(GREEN, "Root is ok!");
 	return true;
@@ -126,23 +146,22 @@ int	parsing::checkRoot(string const &line, int iden){
 int	parsing::checkServerName(string const &line){
 	if (line.find("server_name") == string::npos)
 		return -1;
-	if (line.find(";") != line.length() - 1){
+	if (checkVargule(line, defaultIfError, false) == false)
+		return -2;
+	if (checkIdentationParsing("server_name", 1, line, defaultIfError, "server_name line") == false)
+		return -2;
+	if (isThereSomethingInMyString(line, "server_name", defaultIfError, false, false) == true)
+		return -2;
+	string str = line;
+	str.erase(std::remove_if(str.begin(), str.end(), ::isspace), str.end());
+	if (str.length() < 13){
 		if (defaultIfError == false){
-			writeTimestamp(RED, "You need to have a \";\" at the end of the server_name line");
+			writeTimestamp(RED, "The server_name line must have another arguments, like a name!");
 			return -2;
 		}
 		else
-			writeTimestamp(YELLOW, "You need to have a \";\" at the end of the server_name line, switching to default!");
-	}
-	if (checkIdentationParsing("server_name", 1, line, defaultIfError, "server_name line") == false)
-		return -2;
-	if (line.rfind(" ") > line.rfind("	")){
-		if (isThereSomethingInMyString(line, "server_name", &line[line.rfind(" ")], defaultIfError) == true && defaultIfError == false)
-			return -2;
-	}
-	else{
-		if (isThereSomethingInMyString(line, "server_name", &line[line.rfind("	")], defaultIfError) == true && defaultIfError == false)
-			return -2;
+			writeTimestamp(YELLOW, "The server_name line must have another arguments, like a name, switching to default!");
+		return -1;
 	}
 	writeTimestamp(GREEN, "Server_name is ok!");
 	return true;
@@ -152,23 +171,22 @@ int	parsing::checkHost(string const &line){
 
 	if (line.find("host") == string::npos)
 		return -1;
-	if (line.find(";") != line.length() - 1){
+	if (checkVargule(line, defaultIfError, false) == false)
+		return -2;
+	if (checkIdentationParsing("host", 1, line, defaultIfError, "host line") == false)
+		return -2;
+	if (isThereSomethingInMyString(line, "host", defaultIfError, false, false) == true)
+		return -2;
+	string str = line;
+	str.erase(std::remove_if(str.begin(), str.end(), ::isspace), str.end());
+	if (str.length() < 6){
 		if (defaultIfError == false){
-			writeTimestamp(RED, "You need to have a \";\" at the end of the host line");
+			writeTimestamp(RED, "The host line must have another arguments, like an IP!");
 			return -2;
 		}
 		else
-			writeTimestamp(YELLOW, "You need to have a \";\" at the end of the host line, switching to default!");
-	}
-	if (checkIdentationParsing("host", 1, line, defaultIfError, "host line") == false)
-		return -2;
-	if (line.rfind(" ") > line.rfind("	")){
-		if (isThereSomethingInMyString(line, "host", &line[line.rfind(" ")], defaultIfError) == true && defaultIfError == false)
-			return -2;
-	}
-	else{
-		if (isThereSomethingInMyString(line, "host", &line[line.rfind("	")], defaultIfError) == true && defaultIfError == false)
-			return -2;
+			writeTimestamp(YELLOW, "The host line must have another arguments, like an IP, switching to default!");
+		return -1;
 	}
 	writeTimestamp(GREEN, "Host is ok!");
 	return true;
@@ -177,27 +195,22 @@ int	parsing::checkHost(string const &line){
 int	parsing::checkListen(string const &line){
 	if (line.find("listen") == string::npos)
 		return -1;
-	if (line.find(";") != line.length() - 1){
+	if (checkVargule(line, defaultIfError, false) == false)
+		return -2;
+	if (checkIdentationParsing("listen", 1, line, defaultIfError, "listen line") == false)
+		return -2;
+	if (isThereSomethingInMyString(line, "listen", defaultIfError, false, false) == true)
+		return -2;
+	string str = line;
+	str.erase(std::remove_if(str.begin(), str.end(), ::isspace), str.end());
+	if (str.length() < 8){
 		if (defaultIfError == false){
-			writeTimestamp(RED, "You need to have a \";\" at the end of the listen line");
+			writeTimestamp(RED, "The listen line must have another arguments, like a Port!");
 			return -2;
 		}
 		else
-			writeTimestamp(YELLOW, "You need to have a \";\" at the end of the listen line, switching to default!");
-	}
-	if (checkIdentationParsing("listen", 1, line, defaultIfError, "listen line") == false)
-		return -2;
-	if (line.rfind(" ") > line.rfind("	") && line.rfind("	") != string::npos){
-		if (isThereSomethingInMyString(line, "listen", &line[line.rfind(" ")], defaultIfError) == true && defaultIfError == false)
-			return -2;
-		if (containsNonDigit(&line[line.rfind(" ") + 1], defaultIfError) == true)
-			return -2;
-	}
-	else if(line.rfind(" ") < line.rfind("	") && line.rfind(" ") != string::npos){
-		if (isThereSomethingInMyString(line, "listen", &line[line.rfind("	")], defaultIfError) == true && defaultIfError == false)
-			return -2;
-		if (containsNonDigit(&line[line.rfind("	") + 1], defaultIfError) == true)
-			return -2;
+			writeTimestamp(YELLOW, "The listen line must have another arguments, like a Port, switching to default!");
+		return -1;
 	}
 	writeTimestamp(GREEN, "Listen is ok!");
 	return true;
@@ -210,14 +223,8 @@ int	parsing::checkServer(std::string const &line){
 		writeTimestamp(RED, "The server line mustn\'t have indentation!");
 		return -2;
 	}
-	if (line.find("server") != string::npos && line.find("{") != string::npos){
-		if (isThereSomethingInMyString(line, "server", "{", false) == false){
-			writeTimestamp(GREEN, "Server is being created...");
-		}
-		else{
-			return -2;
-		}
-	}
+	if (isThereSomethingInMyString(line, "server", false, false, false) == true)
+		return -2;
 	else if (line.find("server") != string::npos && line.find("{") == string::npos){
 		writeTimestamp(RED, "Error in the server line, you didnt put the \"{\" at the end!");
 		return -2;
@@ -235,14 +242,8 @@ int	parsing::checkDefault(string const &line){
 		writeTimestamp(YELLOW, "If you don't want that, you must include a the beginning of the ConfigFile : \"acceptDefault true\"");
 		return -1;
 	}
-	if (line.find(";") != line.length() - 1){
-		if (defaultIfError == false){
-			writeTimestamp(RED, "You need to have a \";\" at the end of the acceptDefault line");
-			return -2;
-		}
-		else
-			writeTimestamp(YELLOW, "You need to have a \";\" at the end of the acceptDefault line, switching to default!");
-	}
+	if (checkVargule(line, defaultIfError, false) == false)
+		return -2;
 	if (line.find("acceptDefault ") < string::npos || line.find("acceptDefault	") < string::npos){
 		if (line.find("true;") < string::npos && line.find("true;") + 5 == line.length()){
 			end = "true;";
@@ -254,9 +255,8 @@ int	parsing::checkDefault(string const &line){
 		}
 	}
 	if (begin.length() > 0 && end.length() > 0){
-		if (isThereSomethingInMyString(line, begin, end, defaultIfError) == true){
+		if (isThereSomethingInMyString(line, "acceptDefault", false, false, false) == true)
 			return -1;
-		}
 	}
 	else if (end.length() <= 0){
 		ret = false;
