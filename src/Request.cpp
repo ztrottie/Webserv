@@ -49,26 +49,34 @@ std::string Request::_search(std::string const &searching, char endChar) {
 
 void Request::_uriParser() {
 	size_t fileStart = _uri.find('.');
-	size_t fileEnd = 0;
 	if (fileStart != std::string::npos) {
-		fileEnd = _uri.find('/', fileStart);
-		if (fileEnd != std::string::npos) {
-			_filePath = _uri.substr(0, fileEnd);
+		size_t extraStart = _uri.find('/', fileStart);
+		if (extraStart != std::string::npos) {
+			_filePath = _uri.substr(0, extraStart);
+			size_t queryStart = _uri.find('?', extraStart);
+			if (queryStart != std::string::npos) {
+				_extraPath = _uri.substr(extraStart, queryStart - extraStart);
+				_stringQuerry = _uri.substr(queryStart, _uri.size() - queryStart);
+			} else {
+				_extraPath = _uri.substr(extraStart, _uri.size() - extraStart);
+			}
+		} else {
+			size_t querryStart = _uri.find('?');
+			if (querryStart != std::string::npos) {
+				_filePath = _uri.substr(0, querryStart);
+				_stringQuerry = _uri.substr(querryStart, _uri.size() - querryStart);
+			} else {
+				_filePath = _uri;
+			}
+		}
+	} else {
+		size_t querryStart = _uri.find('?');
+		if (querryStart != std::string::npos) {
+			_filePath = _uri.substr(0, querryStart);
+			_stringQuerry = _uri.substr(querryStart, _uri.size() - querryStart);
 		} else {
 			_filePath = _uri;
 		}
-	}
-	if (fileEnd != std::string::npos) {
-		size_t extraEnd = _uri.find('?', fileEnd);
-		if (extraEnd != std::string::npos) {
-			_extraPath = _uri.substr(fileEnd, extraEnd - fileEnd);
-		} else {
-			_extraPath = _uri.substr(fileEnd, _uri.size());
-		}
-	}
-	size_t querryStart = _uri.find('?');
-	if (querryStart != std::string::npos) {
-		_stringQuerry = _uri.substr(querryStart, _uri.size() - querryStart);
 	}
 }
 
@@ -81,7 +89,7 @@ void Request::_setHostPort() {
 			_host = _raw.substr(hostStart, hostEnd - hostStart);
 			size_t portEnd = _raw.find('\n', hostEnd);
 			if (portEnd != std::string::npos) {
-				_port = _raw.substr(hostEnd, portEnd - hostEnd);
+				_port = _raw.substr(hostEnd + 1, portEnd - hostEnd);
 			}
 		}
 	}

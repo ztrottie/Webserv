@@ -55,6 +55,7 @@ int Router::checkIfFileIsValid(std::string const &path){
 		if (S_ISREG(fileStat.st_mode))
 			return IS_FILE;
 	}
+	std::cout << "ayo" << std::endl;
 	return 500;
 }
 
@@ -87,8 +88,8 @@ int Router::checkAllowedMethod(std::string const &method, Location *loc){
 }
 
 int Router::getFile(Request *request, std::string &path) {
-
 	std::string uriCopy = request->getFilePath();
+	std::cout << request->getUri() << std::endl;
 	for (std::map<std::string, Location*>::const_iterator it = _locations.end(); it == _locations.end();){
 		it = _locations.find(uriCopy);
 		if (it == _locations.end()){

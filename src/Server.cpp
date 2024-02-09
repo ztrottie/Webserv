@@ -74,6 +74,7 @@ int Server::acceptConnection(socketInfo *client) {
 	}
 	client->client_address = clientAddress;
 	client->serverInst = this;
+	client->hasRequest = false;
 	std::cout << GREEN << timestamp() << " incomming connnection from " << inet_ntoa(client->client_address.sin_addr) << " accepted and setted to the socket: " << client->socket << "!" << RESET << std::endl;
 	return (KEEP);
 }
@@ -221,6 +222,7 @@ int Server::recieveRequest(socketInfo *client) {
 		data += buffer;
 		totalNbytes += nbytes;
 	}
+	std::cout << data << std::endl;
 	std::cout << timestamp() << " client sokcet: " << client->socket << std::endl;
 	std::cout << timestamp() << " nbytes recv: " << totalNbytes << std::endl;
 	if (totalNbytes == 0) {
@@ -231,17 +233,20 @@ int Server::recieveRequest(socketInfo *client) {
 		return (CLOSE);
 	}
 	client->request = new Request(data, client);
+	client->hasRequest = true;
+	std::cout << "Client adress: " << client->request->getClientAddress() << std::endl;
+	std::cout << "body: " << client->request->getClientBody() << std::endl;
+	std::cout << "boundary: " << client->request->getBoundary() << std::endl;
+	std::cout << "extra Path: " << client->request->getExtraPath() << std::endl;
+	std::cout << "file path: " << client->request->getFilePath() << std::endl;
+	std::cout << "host: " << client->request->getHost() << std::endl;
+	std::cout << "method: " << client->request->getMethod() << std::endl;
+	std::cout << "Port: " << client->request->getPort() << std::endl;
+	std::cout << "raw: " << client->request->getRaw() << std::endl;
+	std::cout << "string querry: " << client->request->getStringQuerry() << std::endl;
+	std::cout << "type: " << client->request->getType() << std::endl;
+	std::cout << "Uri: " << client->request->getUri() << std::endl;
 	return (KEEP);
-}
-
-std::string Server::findKeyWord(std::string const &from, std::string const &find) {
-	size_t start = from.find(find);
-	if (start != std::string::npos) {
-		start += find.size();
-		size_t end = from.find("\n", start);
-		return from.substr(start, end - start);
-	}
-	return "";
 }
 
 int Server::handlePostMethod(socketInfo *client) {
@@ -250,13 +255,11 @@ int Server::handlePostMethod(socketInfo *client) {
 }
 
 int Server::handleRequest(socketInfo *client) {
-	std::cout << "write request" << std::endl;
-	if (client->request->getMethod() == "POST") {
-		return handlePostMethod(client);
-	} else if (client->request->getMethod() == "GET") {
+	if (client->request->getMethod() == "GET") {
 		std::string path;
 		int code = _serverRouter->getFile(client->request, path);
 		std::string response;
+		std::cout << "hello?!?" << std::endl;
 		if (code == INTERNALSERVERROR)
 			internalServerError(response);
 		if (code != INTERNALSERVERROR && headerGenerator(code, path, response) != INTERNALSERVERROR)
@@ -271,6 +274,8 @@ int Server::handleRequest(socketInfo *client) {
 		return (KEEP);
 	}
 	send(client->socket, "HTTP/1.1 200 OK", 15, 0);
+	delete client->request;
+	client->hasRequest = false;
 	return (CLOSE);
 }
 
@@ -281,9 +286,10 @@ int Server::handleClient(socketInfo *client, int type) {
 			return CLOSE;
 		return (KEEP);
 	}
-	// else if (type == EVFILT_WRITE) {
-	// 	return handleRequest(client);
-	// }
+	else if (client->hasRequest && type == EVFILT_WRITE) {
+		std::cout << "write request" << std::endl;
+		return handleRequest(client);
+	}
 	return KEEP;
 }
 
