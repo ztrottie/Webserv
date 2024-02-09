@@ -1,9 +1,4 @@
 #include "../include/Request.hpp"
-#include <arpa/inet.h>
-#include <cstddef>
-#include <iostream>
-#include <sstream>
-#include <string>
 
 Request::Request(std::string const &received, socketInfo *client) : _raw(received) {
 	std::stringstream ss(received);

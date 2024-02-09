@@ -1,8 +1,4 @@
 #include "../include/Location.hpp"
-#include <iostream>
-#include <map>
-#include <utility>
-#include <vector>
 
 Location::Location() {
 	std::cout << "Default Location constructor " << std::endl;

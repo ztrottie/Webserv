@@ -1,7 +1,7 @@
 #include "../include/Router.hpp"
-#include <cstddef>
-#include <cstdlib>
 #include <sys/stat.h>
+#include <sys/unistd.h>
+#include <unistd.h>
 
 Router::Router(){
 	std::cout << timestamp() << " Initializing the server Router!" << std::endl;
@@ -31,6 +31,15 @@ void Router::addLocation(std::string const &key, Location *loc){
 	_locations.insert(std::make_pair(key, loc));
 }
 
+void Router::parseUri(Request *request, std::string cpy){
+	for (std::map<std::string, Location*>::const_iterator it = _locations.end(); it == _locations.end();){
+		it = _locations.find(cpy);
+		if (it == _locations.end()){
+			trimURI(cpy);
+		}
+	}
+}
+
 void Router::trimURI(std::string &uri){
 	std::cout << uri << std::endl;
 	size_t index = uri.rfind('/');
@@ -43,26 +52,20 @@ void Router::trimURI(std::string &uri){
 
 int Router::checkIfFileIsValid(std::string const &path){
 	struct stat fileStat;
-
 	if (access(path.c_str(), F_OK) != 0)
 		return 404;
 	if (stat(path.c_str(), &fileStat) == 0){
-		std::size_t index = path.rfind(".php");
-		if (index != std::string::npos)
-			return checkIfCanExec(path);
 		if (S_ISDIR(fileStat.st_mode)) 
 			return IS_DIR;
 		if (S_ISREG(fileStat.st_mode))
+		{
+			std::size_t index = path.rfind(".php");
+			if (access(path.c_str(), X_OK) != 0)
+				return INTERNALSERVERROR;
 			return IS_FILE;
+		}
 	}
 	return 500;
-}
-
-int Router::checkIfCanExec(std::string const &path){
-	if (std::system(path.c_str()) == 0)
-		return OK;
-	else
-		return INTERNALSERVERROR;
 }
 
 int Router::getErrorPage(std::string &path, int errorCode){
@@ -89,12 +92,7 @@ int Router::checkAllowedMethod(std::string const &method, Location *loc){
 int Router::getFile(Request *request, std::string &path) {
 
 	std::string uriCopy = request->getFilePath();
-	for (std::map<std::string, Location*>::const_iterator it = _locations.end(); it == _locations.end();){
-		it = _locations.find(uriCopy);
-		if (it == _locations.end()){
-			trimURI(uriCopy);
-		}
-	}
+	parseUri(request, uriCopy);
 	Location *loc = _locations[uriCopy];
 	int methodCode = checkAllowedMethod(request->getMethod(), loc);
 	if (methodCode == NOT_FOUND && methodCode == METHNOTALLOWED)
@@ -106,13 +104,13 @@ int Router::getFile(Request *request, std::string &path) {
 		int code = checkIfFileIsValid(path);
 		if (code == INTERNALSERVERROR)
 			return code;
-		if (code == 1){
+		if (code == IS_DIR){
 			if (path.at(path.size() - 1) != '/')
 				path += "/";
 			path += _index;
 			continue;
 		}
-		else if (code == 2)
+		else if (code == IS_FILE)
 			break;
 		else if (code == NOTFOUND)
 			return code;

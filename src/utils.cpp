@@ -1,5 +1,4 @@
 #include "../include/utils.hpp"
-#include <ctime>
 
 
 std::string	timestamp() {

@@ -1,6 +1,8 @@
 #pragma once
 #include <string>
 #include "struct.hpp"
+#include <iostream>
+#include <sstream>
 
 class Request
 {

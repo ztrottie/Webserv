@@ -1,25 +1,4 @@
 #include "../include/Server.hpp"
-#include "../include/color.h"
-#include "../include/utils.hpp"
-#include "../include/Request.hpp"
-#include <arpa/inet.h>
-#include <cstdio>
-#include <cstring>
-#include <iosfwd>
-#include <iostream>
-#include <stdexcept>
-#include <string>
-#include <sys/_endian.h>
-#include <sys/_types/_socklen_t.h>
-#include <sys/_types/_ssize_t.h>
-#include <sys/event.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <fcntl.h>
-#include <unistd.h>
-#include <fstream>
-#include <sstream>
-
 
 Server::Server(uint16_t port, const char *host, std::string name, Router *router, unsigned int const &clientBodySize, socketInfo *server) : _port(port), _host(host), _name(name), _clientBodySize(clientBodySize) {
 	std::cout << YELLOW << timestamp() << " Initializing a Server named " << _name << " on " << _host << ":" << _port << RESET << std::endl;

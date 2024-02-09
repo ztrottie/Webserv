@@ -1,14 +1,4 @@
 #include "../include/Webserv.hpp"
-#include <csignal>
-#include <cstddef>
-#include <ctime>
-#include <exception>
-#include <iostream>
-#include <sys/event.h>
-#include <sys/signal.h>
-#include <utility>
-#include <unistd.h>
-#include "../include/utils.hpp"
 
 Webserv::Webserv() : _nbServer(0), _nbClients(0) {
 	std::cout << GREEN << timestamp() << " Starting the webserv..." << RESET << std::endl;

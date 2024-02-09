@@ -8,6 +8,13 @@
 #include <sys/time.h>
 #include "struct.hpp"
 #include "Router.hpp"
+#include <fcntl.h>
+#include <fstream>
+#include <sstream>
+#include "../include/color.h"
+#include "../include/utils.hpp"
+#include "../include/Request.hpp"
+
 
 class Server
 {

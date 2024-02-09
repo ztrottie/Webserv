@@ -1,10 +1,13 @@
 #pragma once
-#include <map>
 #include <sys/types.h>
 #include <sys/event.h>
 #include <sys/time.h>
 #include "Server.hpp"
 #include "struct.hpp"
+
+#include <csignal>
+#include <map>
+
 
 class Webserv
 {
