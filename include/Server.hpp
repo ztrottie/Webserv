@@ -49,7 +49,6 @@ public:
 	void	handlePost(socketInfo *client, std::string &data);
 	int handleRequest(socketInfo *client);
 	int handlePostMethod(socketInfo *client);
-	std::string findKeyWord(std::string const &from, std::string const &find);
 };
 
 // Server_HPP

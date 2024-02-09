@@ -80,7 +80,7 @@ void signalhandler(int signal) {
 void Webserv::loop() {
 	std::signal(SIGQUIT, signalhandler);
 	while (loopFlag) {
-		sleep(1);
+		// sleep(1);
 		// std::cout << timestamp() << " Number of connection on the webserv: [" << _nbClients << "]" << std::endl;
 		struct kevent events[10];
 		timespec time = {10, 0};

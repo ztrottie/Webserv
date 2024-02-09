@@ -20,6 +20,7 @@ struct socketInfo {
 	int					type;
 	int 				mode;
 	Request				*request;
+	bool				hasRequest;
 	struct sockaddr_in	client_address;
 	Server				*serverInst;
 };
