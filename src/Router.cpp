@@ -31,7 +31,7 @@ void Router::addLocation(std::string const &key, Location *loc){
 	_locations.insert(std::make_pair(key, loc));
 }
 
-void Router::parseUri(Request *request, std::string cpy){
+void Router::parseUri(std::string cpy){
 	for (std::map<std::string, Location*>::const_iterator it = _locations.end(); it == _locations.end();){
 		it = _locations.find(cpy);
 		if (it == _locations.end()){
@@ -60,7 +60,7 @@ int Router::checkIfFileIsValid(std::string const &path){
 		if (S_ISREG(fileStat.st_mode))
 		{
 			std::size_t index = path.rfind(".php");
-			if (access(path.c_str(), X_OK) != 0)
+			if (index != std::string::npos && access(path.c_str(), X_OK) != 0)
 				return INTERNALSERVERROR;
 			return IS_FILE;
 		}
@@ -92,7 +92,7 @@ int Router::checkAllowedMethod(std::string const &method, Location *loc){
 int Router::getFile(Request *request, std::string &path) {
 
 	std::string uriCopy = request->getFilePath();
-	parseUri(request, uriCopy);
+	parseUri(uriCopy);
 	Location *loc = _locations[uriCopy];
 	int methodCode = checkAllowedMethod(request->getMethod(), loc);
 	if (methodCode == NOT_FOUND && methodCode == METHNOTALLOWED)
