@@ -31,7 +31,7 @@ void Router::addLocation(std::string const &key, Location *loc){
 	_locations.insert(std::make_pair(key, loc));
 }
 
-void Router::parseUri(std::string cpy){
+void Router::parseUri(std::string &cpy){
 	for (std::map<std::string, Location*>::const_iterator it = _locations.end(); it == _locations.end();){
 		it = _locations.find(cpy);
 		if (it == _locations.end()){

@@ -97,6 +97,7 @@ void Request::_requestBodyParser() {
 		size_t bodyEnd = _raw.find(_boundary + "--", bodyStart);
 		if (bodyEnd != std::string::npos) {
 			_clientBody = _raw.substr(bodyStart, bodyEnd - bodyStart);
+			std::cout << _clientBody << std::endl;
 		}
 	}
 }

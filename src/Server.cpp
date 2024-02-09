@@ -1,4 +1,5 @@
 #include "../include/Server.hpp"
+#include <sys/_types/_ssize_t.h>
 
 Server::Server(uint16_t port, const char *host, std::string name, Router *router, unsigned int const &clientBodySize, socketInfo *server) : _port(port), _host(host), _name(name), _clientBodySize(clientBodySize) {
 	std::cout << YELLOW << timestamp() << " Initializing a Server named " << _name << " on " << _host << ":" << _port << RESET << std::endl;
@@ -197,9 +198,31 @@ int Server::recieveRequest(socketInfo *client) {
 	while (nbytes == 1024) {
 		std::memset(buffer, 0, sizeof(buffer));
 		nbytes = recv(client->socket, buffer, 1024, 0);
+		if (nbytes == -1)
+			break;
 		buffer[nbytes] = 0;
 		data += buffer;
 		totalNbytes += nbytes;
+	}
+	size_t found = data.find("Content-Length: ");
+	if (found != std::string::npos) {
+		size_t end = data.find('\n', found);
+		if (end != std::string::npos) {
+			ssize_t limit = std::stol(data.substr(found + 16, end - (found + 16)));
+			ssize_t bodyNbytes = 0;
+			std::cout << RED << "limits: " << limit << RESET << std::endl;
+			while (bodyNbytes != limit) {
+				std::memset(buffer, 0, sizeof(buffer));
+				nbytes = recv(client->socket, buffer, 1024, 0);
+				bodyNbytes += nbytes;
+				if (nbytes == -1)
+					break;
+				buffer[nbytes] = 0;
+				data += buffer;
+				std::cout << RED << "nbytes: " << nbytes << RESET << std::endl;
+			}
+			std::cout << RED << "content len: " << bodyNbytes << RESET << std::endl;
+		}
 	}
 	std::cout << data << std::endl;
 	std::cout << timestamp() << " client sokcet: " << client->socket << std::endl;
@@ -207,7 +230,7 @@ int Server::recieveRequest(socketInfo *client) {
 	if (totalNbytes == 0) {
 		std::cout << timestamp() << RED << " client closed the connection!" << RESET << std::endl;
 		return (CLOSE);
-    } else if (totalNbytes == -1) {
+    } else if (nbytes == -1) {
 		std::cout << timestamp() << RED << " problem while recieving data closing connection" << RESET << std::endl;
 		return (CLOSE);
 	}
@@ -238,7 +261,6 @@ int Server::handleRequest(socketInfo *client) {
 		std::string path;
 		int code = _serverRouter->getFile(client->request, path);
 		std::string response;
-		std::cout << "hello?!?" << std::endl;
 		if (code == INTERNALSERVERROR)
 			internalServerError(response);
 		if (code != INTERNALSERVERROR && headerGenerator(code, path, response) != INTERNALSERVERROR)
@@ -251,10 +273,12 @@ int Server::handleRequest(socketInfo *client) {
 		if (code >= 300 || code == OK)
 			return (CLOSE);
 		return (KEEP);
+	} else if (client->request->getMethod() == "POST") {
+		send(client->socket, "HTTP/1.1 200 OK", 15, 0);
+		delete client->request;
+		client->hasRequest = false;
+		return (CLOSE);
 	}
-	send(client->socket, "HTTP/1.1 200 OK", 15, 0);
-	delete client->request;
-	client->hasRequest = false;
 	return (CLOSE);
 }
 

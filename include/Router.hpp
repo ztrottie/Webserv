@@ -42,7 +42,7 @@ public:
 
 	int getFile(Request *request, std::string &path);
 	void trimURI(std::string &URI);
-	void parseUri(std::string cpy);
+	void parseUri(std::string &cpy);
 	int checkFilePerm(std::string const &path);
 	int checkIfFileIsValid(std::string const &path);
 	int getErrorPage(std::string &path, int errorCode);
