@@ -4,6 +4,7 @@
 #include <string>
 #include <iostream>
 #include <sys/stat.h>
+#include <vector>
 #include "color.h"
 #include "utils.hpp"
 
@@ -14,6 +15,12 @@
 #define DEFAULTMETHODS "GET, PUT, POST, PATCH, DELETE, CONNECT, OPTIONS, TRACE"
 #define DEFAULTLOCATION DEFAULTMETHODS
 #define DEFAILTBODYSIZE "1M"
+
+enum verifFlags{
+	OKPARS,
+	SWITCH,
+	DONT
+};
 
 enum flags{
 	CORRECT,
@@ -44,28 +51,29 @@ class parsing{
 		~parsing();
 
 	private:
-		string	pathConfigFile;
-		std::ifstream	configFile;
-		bool	defaultIfError;
-		void	error(int errorCode);
-		bool	checkFile();
-		int		checkValid(string const &line);
-		int		isThisTheEnd(string const &line);
-		int		checkDefault(string const &line);
-		int		checkServer(string const &line);
-		int		checkHost(string const &line);
-		int		checkListen(string const &line);
-		int		checkServerName(string const &line);
-		int		checkRoot(string const &line, int inden);
-		int		checkIndex(string const &line, int inden);
-		int		checkErrorPage(string const &line, int inden);
-		int		checkClientMaxBodySize(string const &line);
-		int		checkReturns(string const &line);
+		string				pathConfigFile;
+		std::vector<int>	verifLine;
+		std::ifstream		configFile;
+		bool				defaultIfError;
+		void				error(int errorCode);
+		bool				checkFile();
+		int					checkValid(string const &line);
+		int					isThisTheEnd(string const &line);
+		int					checkDefault(string const &line);
+		int					checkServer(string const &line);
+		int					checkHost(string const &line);
+		int					checkListen(string const &line);
+		int					checkServerName(string const &line);
+		int					checkRoot(string const &line, int inden);
+		int					checkIndex(string const &line, int inden);
+		int					checkErrorPage(string const &line, int inden);
+		int					checkClientMaxBodySize(string const &line);
+		int					checkReturns(string const &line);
 		// Dans location
-		int		checkLocation(string &line);
-		int		checkIndexLocation(string const &line);
-		int		checkRootLocation(string const &line);
-		int		checkAllowedMethods(string const &line);
-		int		checkErrorPageLocation(string const &line);
-		int		checkReturnsLocation(string const &line);
+		int					checkLocation(string &line);
+		int					checkIndexLocation(string const &line);
+		int					checkRootLocation(string const &line);
+		int					checkAllowedMethods(string const &line);
+		int					checkErrorPageLocation(string const &line);
+		int					checkReturnsLocation(string const &line);
 };

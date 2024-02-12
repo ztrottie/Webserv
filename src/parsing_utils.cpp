@@ -28,7 +28,8 @@ int	parsing::checkIndexLocation(string const &line){
 		writeTimestamp(YELLOW, "The index line must have another arguments, like an HTML file!");
 		return -2;
 	}
-	writeTimestamp(GREEN, "Index is ok!");
+	writeTimestamp(GREEN, "Index is OKPARS!");
+	verifLine.push_back(OKPARS);
 	return CORRECT;
 }
 
@@ -50,7 +51,8 @@ int	parsing::checkRootLocation(string const &line){
 		writeTimestamp(YELLOW, "The root line must have another arguments, like a path to the server root!");
 		return -2;
 	}
-	writeTimestamp(GREEN, "Root is ok!");
+	writeTimestamp(GREEN, "Root is OKPARS!");
+	verifLine.push_back(OKPARS);
 	return CORRECT;
 }
 
@@ -71,7 +73,8 @@ int	parsing::checkAllowedMethods(string const &line){
 		return -2;
 	}
 	verifyAllowedMethods(line);
-	writeTimestamp(GREEN, "AllowedMethods is ok!");
+	writeTimestamp(GREEN, "AllowedMethods is OKPARS!");
+	verifLine.push_back(OKPARS);
 	return CORRECT;
 }
 
@@ -93,7 +96,8 @@ int	parsing::checkErrorPageLocation(string const &line){
 		writeTimestamp(YELLOW, "The error_page line must have another arguments, like an error code and html!");
 		return -2;
 	}
-	writeTimestamp(GREEN, "Error_page is ok!");
+	writeTimestamp(GREEN, "Error_page is OKPARS!");
+	verifLine.push_back(OKPARS);
 	return CORRECT;
 }
 
@@ -115,7 +119,8 @@ int	parsing::checkReturnsLocation(string const &line){
 		writeTimestamp(YELLOW, "The return line must have another arguments, like an error code and an html or url!");
 		return -2;
 	}
-	writeTimestamp(GREEN, "Return is ok!");
+	writeTimestamp(GREEN, "Return is OKPARS!");
+	verifLine.push_back(OKPARS);
 	return CORRECT;
 }
 
@@ -128,27 +133,29 @@ int	parsing::checkLocation(string &line){
 		writeTimestamp(YELLOW, "The \"" + ret + "\" that is in : \"" + line + "\" is not accepted, so this location will not be used");
 		return -1;
 	}
+	verifLine.push_back(OKPARS);
 	while (isThisTheEnd(line) != true){
 		if (checkValid(line) == -2){
-			
+			return -1;
 		}
 		if (checkIndexLocation(line) == -2){
-
+			verifLine.push_back(DONT);
 		}
 		if (checkRootLocation(line) == -2){
-
+			verifLine.push_back(DONT);
 		}
 		if (checkAllowedMethods(line) == -2){
-
+			verifLine.push_back(DONT);
 		}
 		if (checkErrorPageLocation(line) == -2){
-
+			verifLine.push_back(DONT);
 		}
 		if (checkReturnsLocation(line) == -2){
-
+			verifLine.push_back(DONT);
 		}
 		std::getline(configFile, line);
 	}
-	writeTimestamp(BLUE, "The Location is ok!");
+	writeTimestamp(BLUE, "The Location is OKPARS!");
+	verifLine.push_back(DONT);
 	return true;
 }

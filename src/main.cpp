@@ -11,7 +11,5 @@ int main(void) {
 		writeTimestamp(RED, "ERROR IN PARSING QUITTING....");
 		return 1;
 	}
-	// webserv.addNewServer(8080, "10.13.3.3", "serv1");
-	// webserv.loop();
 	return 0;
 }

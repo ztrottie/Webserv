@@ -1,5 +1,4 @@
 #include "../include/parsing.hpp"
-#include <vector>
 
 parsing::parsing(string path): pathConfigFile(path){
 	defaultIfError = false;
@@ -73,7 +72,7 @@ bool	parsing::parseConfigFile(){
 	int	ret;
 	string line;
 	int	nbLine = 0;
-	int serverLineCheck;
+	int	serverLineCheck;
 
 	writeTimestamp(PURPLE, "Parsing is starting...");
 	if (checkFile() == false){
@@ -105,6 +104,10 @@ bool	parsing::parseConfigFile(){
 			return (error(RETURN_ERR), false);
 		nbLine++;
 	}
+	verifLine.push_back(DONT);
+	for (int i = 0; i < verifLine.size(); i++) {
+		cout << verifLine[i] << endl;
+	}
 	return true;
 }
 
@@ -114,6 +117,7 @@ int	parsing::checkClientMaxBodySize(string const &line){
 		return -1;
 	if (checkVargule(line, defaultIfError, false) == false)
 		return -2;
+	verifLine.push_back(OKPARS);
 	return CORRECT;
 }
 
@@ -121,115 +125,155 @@ int	parsing::checkReturns(string const &line){
 	size_t pos = line.find("return");
 	if (pos == string::npos)
 		return -1;
-	if (checkVargule(line, defaultIfError, false) == false)
+	if (checkVargule(line, defaultIfError, false) == false){
+		verifLine.push_back(DONT);
 		return -2;
-	if (checkIdentationParsing("return", 1, line, defaultIfError, "return line") == false)
+	}
+	if (checkIdentationParsing("return", 1, line, defaultIfError, "return line") == false){
+		verifLine.push_back(DONT);
 		return -2;
-	if (isThereSomethingInMyString(line, "return", defaultIfError, false, true) == true)
+	}
+	if (isThereSomethingInMyString(line, "return", defaultIfError, false, true) == true){
+		verifLine.push_back(DONT);
 		return -2;
+	}
 	string str = line;
 	str.erase(std::remove_if(str.begin(), str.end(), ::isspace), str.end());
 	if (str.length() < 8){
 		writeTimestamp(YELLOW, "The return line must have another arguments, like an error code and an html or url!");
+		verifLine.push_back(DONT);
 		return -2;
 	}
-	writeTimestamp(GREEN, "Return is ok!");
+	writeTimestamp(GREEN, "Return is OK!");
+	verifLine.push_back(OKPARS);
 	return CORRECT;
 }
 
 int	parsing::checkErrorPage(string const &line, int iden){
 	if (line.find("error_page") == string::npos)
 		return -1;
-	if (checkVargule(line, defaultIfError, false) == false)
+	if (checkVargule(line, defaultIfError, false) == false){
+		verifLine.push_back(DONT);
 		return -2;
-	if (checkIdentationParsing("error_page", iden, line, defaultIfError, "error_page line") == false)
+	}
+	if (checkIdentationParsing("error_page", iden, line, defaultIfError, "error_page line") == false){
+		verifLine.push_back(DONT);
 		return -2;
-	if (isThereSomethingInMyString(line, "error_page", defaultIfError, false, true) == true)
+	}
+	if (isThereSomethingInMyString(line, "error_page", defaultIfError, false, true) == true){
+		verifLine.push_back(DONT);
 		return -2;
+	}
 	string str = line;
 	str.erase(std::remove_if(str.begin(), str.end(), ::isspace), str.end());
 	if (str.length() < 12){
 		if (defaultIfError == false){
 			writeTimestamp(RED, "The error_page line must have another arguments, like an error code and html!");
+			verifLine.push_back(DONT);
 			return -2;
 		}
 		else
 			writeTimestamp(YELLOW, "The error_page line must have another arguments, like an error code and html, switching to default!");
 		return -1;
 	}
-	writeTimestamp(GREEN, "Error_page is ok!");
+	writeTimestamp(GREEN, "Error_page is OK!");
+	verifLine.push_back(OKPARS);
 	return true;
 }
 
 int	parsing::checkIndex(string const &line, int iden){
 	if (line.find("index") == string::npos || line.find("index") == 2)
 		return -1;
-	if (checkVargule(line, defaultIfError, false) == false)
+	if (checkVargule(line, defaultIfError, false) == false){
+		verifLine.push_back(DONT);
 		return -2;
-	if (checkIdentationParsing("index", iden, line, defaultIfError, "index line") == false)
+	}
+	if (checkIdentationParsing("index", iden, line, defaultIfError, "index line") == false){
+		verifLine.push_back(DONT);
 		return -2;
-	if (isThereSomethingInMyString(line, "index", defaultIfError, false, false) == true)
+	}
+	if (isThereSomethingInMyString(line, "index", defaultIfError, false, false) == true){
+		verifLine.push_back(DONT);
 		return -2;
+	}
 	string str = line;
 	str.erase(std::remove_if(str.begin(), str.end(), ::isspace), str.end());
 	if (str.length() < 7){
 		if (defaultIfError == false){
 			writeTimestamp(RED, "The index line must have another arguments, like an html file!");
+			verifLine.push_back(DONT);
 			return -2;
 		}
 		else
 			writeTimestamp(YELLOW, "The index line must have another arguments, like an html file, switching to default!");
 		return -1;
 	}
-	writeTimestamp(GREEN, "Index is ok!");
+	writeTimestamp(GREEN, "Index is OK!");
+	verifLine.push_back(OKPARS);
 	return true;
 }
 
 int	parsing::checkRoot(string const &line, int iden){
 	if (line.find("root") == string::npos || line.find("root") == 2)
 		return -1;
-	if (checkVargule(line, defaultIfError, false) == false)
+	if (checkVargule(line, defaultIfError, false) == false){
+		verifLine.push_back(DONT);
 		return -2;
-	if (checkIdentationParsing("root", iden, line, defaultIfError, "root line") == false)
+	}
+	if (checkIdentationParsing("root", iden, line, defaultIfError, "root line") == false){
+		verifLine.push_back(DONT);
 		return -2;
-	if (isThereSomethingInMyString(line, "root", defaultIfError, false, false) == true)
+	}
+	if (isThereSomethingInMyString(line, "root", defaultIfError, false, false) == true){
+		verifLine.push_back(DONT);
 		return -2;
+	}
 	string str = line;
 	str.erase(std::remove_if(str.begin(), str.end(), ::isspace), str.end());
 	if (str.length() < 6){
 		if (defaultIfError == false){
 			writeTimestamp(RED, "The root line must have another arguments, like a path to the root!");
+			verifLine.push_back(DONT);
 			return -2;
 		}
 		else
 			writeTimestamp(YELLOW, "The root line must have another arguments, like a path to the root, switching to default!");
 		return -1;
 	}
-	writeTimestamp(GREEN, "Root is ok!");
+	writeTimestamp(GREEN, "Root is OK!");
+	verifLine.push_back(OKPARS);
 	return true;
 }
 
 int	parsing::checkServerName(string const &line){
 	if (line.find("server_name") == string::npos)
 		return -1;
-	if (checkVargule(line, defaultIfError, false) == false)
+	if (checkVargule(line, defaultIfError, false) == false){
+		verifLine.push_back(DONT);
 		return -2;
-	if (checkIdentationParsing("server_name", 1, line, defaultIfError, "server_name line") == false)
+	}
+	if (checkIdentationParsing("server_name", 1, line, defaultIfError, "server_name line") == false){
+		verifLine.push_back(DONT);
 		return -2;
-	if (isThereSomethingInMyString(line, "server_name", defaultIfError, false, false) == true)
+	}
+	if (isThereSomethingInMyString(line, "server_name", defaultIfError, false, false) == true){
+		verifLine.push_back(DONT);
 		return -2;
+	}
 	string str = line;
 	str.erase(std::remove_if(str.begin(), str.end(), ::isspace), str.end());
 	if (str.length() < 13){
 		if (defaultIfError == false){
 			writeTimestamp(RED, "The server_name line must have another arguments, like a name!");
+			verifLine.push_back(DONT);
 			return -2;
 		}
 		else
 			writeTimestamp(YELLOW, "The server_name line must have another arguments, like a name, switching to default!");
 		return -1;
 	}
-	writeTimestamp(GREEN, "Server_name is ok!");
+	writeTimestamp(GREEN, "Server_name is OK!");
+	verifLine.push_back(OKPARS);
 	return true;
 }
 
@@ -237,48 +281,75 @@ int	parsing::checkHost(string const &line){
 
 	if (line.find("host") == string::npos)
 		return -1;
-	if (checkVargule(line, defaultIfError, false) == false)
+	if (checkVargule(line, defaultIfError, false) == false){
+		verifLine.push_back(DONT);
 		return -2;
-	if (checkIdentationParsing("host", 1, line, defaultIfError, "host line") == false)
+	}
+	if (checkIdentationParsing("host", 1, line, defaultIfError, "host line") == false){
+		verifLine.push_back(DONT);
 		return -2;
-	if (isThereSomethingInMyString(line, "host", defaultIfError, false, false) == true)
+	}
+	if (isThereSomethingInMyString(line, "host", defaultIfError, false, false) == true){
+		verifLine.push_back(DONT);
 		return -2;
+	}
 	string str = line;
 	str.erase(std::remove_if(str.begin(), str.end(), ::isspace), str.end());
 	if (str.length() < 6){
 		if (defaultIfError == false){
 			writeTimestamp(RED, "The host line must have another arguments, like an IP!");
+			verifLine.push_back(DONT);
 			return -2;
 		}
 		else
 			writeTimestamp(YELLOW, "The host line must have another arguments, like an IP, switching to default!");
 		return -1;
 	}
-	writeTimestamp(GREEN, "Host is ok!");
+	writeTimestamp(GREEN, "Host is OK!");
+	verifLine.push_back(OKPARS);
 	return true;
 }
 
 int	parsing::checkListen(string const &line){
 	if (line.find("listen") == string::npos)
 		return -1;
-	if (checkVargule(line, defaultIfError, false) == false)
+	if (checkVargule(line, defaultIfError, false) == false){
+		verifLine.push_back(DONT);
 		return -2;
-	if (checkIdentationParsing("listen", 1, line, defaultIfError, "listen line") == false)
+	}
+	if (checkIdentationParsing("listen", 1, line, defaultIfError, "listen line") == false){
+		verifLine.push_back(DONT);
 		return -2;
-	if (isThereSomethingInMyString(line, "listen", defaultIfError, false, false) == true)
+	}
+	if (isThereSomethingInMyString(line, "listen", defaultIfError, false, false) == true){
+		verifLine.push_back(DONT);
 		return -2;
+	}
+	if (containsNonDigit(&line[line.find("listen") + 6]) == true){
+		if (defaultIfError == false){
+			writeTimestamp(RED, "The line \"" + line + "\" must only contain digit in the second arguments");
+			verifLine.push_back(DONT);
+			return -2;
+		}
+		else {
+			writeTimestamp(YELLOW, "The line \"" + line + "\" must only contain digit in the second arguments, switching to default");
+			return -1;
+		}
+	}
 	string str = line;
 	str.erase(std::remove_if(str.begin(), str.end(), ::isspace), str.end());
 	if (str.length() < 8){
 		if (defaultIfError == false){
 			writeTimestamp(RED, "The listen line must have another arguments, like a Port!");
+			verifLine.push_back(DONT);
 			return -2;
 		}
 		else
 			writeTimestamp(YELLOW, "The listen line must have another arguments, like a Port, switching to default!");
 		return -1;
 	}
-	writeTimestamp(GREEN, "Listen is ok!");
+	writeTimestamp(GREEN, "Listen is OK!");
+	verifLine.push_back(OKPARS);
 	return true;
 }
 
@@ -287,14 +358,18 @@ int	parsing::checkServer(std::string const &line){
 		return -1;
 	if (line.find("server") > 0){
 		writeTimestamp(RED, "The server line mustn\'t have indentation!");
+		verifLine.push_back(DONT);
 		return -2;
 	}
-	if (isThereSomethingInMyString(line, "server", false, false, false) == true)
+	if (isThereSomethingInMyString(line, "server", false, false, false) == true){
+		verifLine.push_back(DONT);
 		return -2;
+	}
 	else if (line.find("server") != string::npos && line.find("{") == string::npos){
 		writeTimestamp(RED, "Error in the server line, you didnt put the \"{\" at the end!");
 		return -2;
 	}
+	verifLine.push_back(OKPARS);
 	return CORRECT;
 }
 
@@ -308,8 +383,10 @@ int	parsing::checkDefault(string const &line){
 		writeTimestamp(YELLOW, "If you don't want that, you must include a the beginning of the ConfigFile : \"acceptDefault true\"");
 		return -1;
 	}
-	if (checkVargule(line, defaultIfError, false) == false)
+	if (checkVargule(line, defaultIfError, false) == false){
+		verifLine.push_back(DONT);
 		return -2;
+	}
 	if (line.find("acceptDefault ") < string::npos || line.find("acceptDefault	") < string::npos){
 		if (line.find("true;") < string::npos && line.find("true;") + 5 == line.length()){
 			end = "true;";
@@ -320,8 +397,10 @@ int	parsing::checkDefault(string const &line){
 			defaultIfError = false;
 		}
 	}
-	if (isThereSomethingInMyString(line, "acceptDefault", false, false, false) == true)
+	if (isThereSomethingInMyString(line, "acceptDefault", false, false, false) == true){
+		verifLine.push_back(DONT);
 		return -1;
+	}
 	else if (end.length() <= 0){
 		ret = false;
 	}
@@ -333,6 +412,7 @@ int	parsing::checkDefault(string const &line){
 		writeTimestamp(YELLOW, "You choose that the program will close if they're is an error in the ConfigFile");
 		writeTimestamp(YELLOW, "If you don't want that, you must include a the beginning of the ConfigFile : \"acceptDefault true\"");
 	}
+	verifLine.push_back(DONT);
 	return ret;
 }
 

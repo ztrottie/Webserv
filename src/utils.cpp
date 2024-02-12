@@ -221,6 +221,7 @@ bool	checkVargule(std::string const &line, bool _defaultIfError, bool insideLoca
 			}
 			else{
 				writeTimestamp(YELLOW, "You need to have a \";\" at the end of the line \"" + line + "\" , switching to default!");
+				verifLine.push_back(SWITCH);
 				return true;
 			}
 		}
