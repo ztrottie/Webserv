@@ -46,9 +46,10 @@ public:
 	void contentGenerator(std::string const &path, std::string &response);
 	void internalServerError(std::string &response);
 	int recieveRequest(socketInfo *client);
-	void	handlePost(socketInfo *client, std::string &data);
+	void handlePost(socketInfo *client, std::string &data);
 	int handleRequest(socketInfo *client);
-	int handlePostMethod(socketInfo *client);
+	void handlePostMethod(socketInfo *client);
+	void getEnv(socketInfo *client);
 };
 
 // Server_HPP

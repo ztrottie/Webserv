@@ -1,5 +1,9 @@
 #include "../include/Server.hpp"
+#include <cstdio>
+#include <ctime>
 #include <sys/_types/_ssize_t.h>
+#include <sys/socket.h>
+#include <unistd.h>
 
 Server::Server(uint16_t port, const char *host, std::string name, Router *router, unsigned int const &clientBodySize, socketInfo *server) : _port(port), _host(host), _name(name), _clientBodySize(clientBodySize) {
 	std::cout << YELLOW << timestamp() << " Initializing a Server named " << _name << " on " << _host << ":" << _port << RESET << std::endl;
@@ -204,27 +208,6 @@ int Server::recieveRequest(socketInfo *client) {
 		data += buffer;
 		totalNbytes += nbytes;
 	}
-	size_t found = data.find("Content-Length: ");
-	if (found != std::string::npos) {
-		size_t end = data.find('\n', found);
-		if (end != std::string::npos) {
-			ssize_t limit = std::stol(data.substr(found + 16, end - (found + 16)));
-			ssize_t bodyNbytes = 0;
-			std::cout << RED << "limits: " << limit << RESET << std::endl;
-			while (bodyNbytes != limit) {
-				std::memset(buffer, 0, sizeof(buffer));
-				nbytes = recv(client->socket, buffer, 1024, 0);
-				bodyNbytes += nbytes;
-				if (nbytes == -1)
-					break;
-				buffer[nbytes] = 0;
-				data += buffer;
-				std::cout << RED << "nbytes: " << nbytes << RESET << std::endl;
-			}
-			std::cout << RED << "content len: " << bodyNbytes << RESET << std::endl;
-		}
-	}
-	std::cout << data << std::endl;
 	std::cout << timestamp() << " client sokcet: " << client->socket << std::endl;
 	std::cout << timestamp() << " nbytes recv: " << totalNbytes << std::endl;
 	if (totalNbytes == 0) {
@@ -234,26 +217,64 @@ int Server::recieveRequest(socketInfo *client) {
 		std::cout << timestamp() << RED << " problem while recieving data closing connection" << RESET << std::endl;
 		return (CLOSE);
 	}
-	client->request = new Request(data, client);
-	client->hasRequest = true;
-	std::cout << "Client adress: " << client->request->getClientAddress() << std::endl;
-	std::cout << "body: " << client->request->getClientBody() << std::endl;
-	std::cout << "boundary: " << client->request->getBoundary() << std::endl;
-	std::cout << "extra Path: " << client->request->getExtraPath() << std::endl;
-	std::cout << "file path: " << client->request->getFilePath() << std::endl;
-	std::cout << "host: " << client->request->getHost() << std::endl;
-	std::cout << "method: " << client->request->getMethod() << std::endl;
-	std::cout << "Port: " << client->request->getPort() << std::endl;
-	std::cout << "raw: " << client->request->getRaw() << std::endl;
-	std::cout << "string querry: " << client->request->getStringQuerry() << std::endl;
-	std::cout << "type: " << client->request->getType() << std::endl;
-	std::cout << "Uri: " << client->request->getUri() << std::endl;
+	if (!client->hasRequest) {
+		client->request = new Request(data, client);
+		client->hasRequest = true;
+	} else {
+		client->request->setBody(data);
+		if (client->request->getBodyLen() != client->request->getClientBody().size()) {
+			std::cout << RED << timestamp() << "Bodylen error" << RESET << std::endl;
+		}
+	}
 	return (KEEP);
 }
 
-int Server::handlePostMethod(socketInfo *client) {
-	(void)client;
-	return (CLOSE);
+void Server::getEnv(socketInfo *client) {
+
+}
+
+void Server::handlePostMethod(socketInfo *client) {
+	std::string path;
+	int errorCode = _serverRouter->getFile(client->request, path);
+	if (errorCode == OK) {
+		const char *argv[] = {"/usr/bin/php", path.c_str(), NULL};
+		std::string gatewayInterface = "GATEWAY_INTERFACE=CGI/1.1";
+		std::string requestMethod = "REQUEST_METHOD=";
+		requestMethod += client->request->getMethod();
+		std::string queryString = "QUERY_STRING=";
+		queryString += client->request->getStringQuerry();
+		std::string contentType = "CONTENT_TYPE=";
+		contentType += client->request->getType();
+		std::string contentLength = "CONTENT_LENGTH=";
+		contentLength += client->request->getBodyLen();
+		std::string clientAddr = "REMOTE_ADDR=";
+		clientAddr += inet_ntoa(client->client_address.sin_addr);
+		std::string requestURI = "REQUEST_URI=";
+		requestURI += client->request->getUri();
+		std::string serverProtocol = "SERVER_PROTOCOL=HTTP/1.1";
+		std::string serverSoftware = "SERVER_SOFTWARE=webserv/1.0";
+		std::string serverName = "SERVER_NAME=";
+		serverName += _name;
+		std::string serverPort = "SERVER_PORT=";
+		serverPort += _port;
+		const char *envp[] = {gatewayInterface.c_str(), requestMethod.c_str(), queryString.c_str(), contentType.c_str(), contentLength.c_str(), clientAddr.c_str(), requestURI.c_str(), serverProtocol.c_str(), serverSoftware.c_str(), serverName.c_str(), serverPort.c_str(), NULL};
+		int end[2];
+		pipe(end);
+		int pid = fork();
+		if (pid == 0) {
+			dup2(end[], int)
+		}
+	}
+	std::string response;
+	if (errorCode == INTERNALSERVERROR)
+		internalServerError(response);
+	if (errorCode != INTERNALSERVERROR && headerGenerator(errorCode, path, response))
+		contentGenerator(path, response);
+	size_t totalSent = 0;
+	while (totalSent < response.size()) {
+		int sent = send(client->socket, response.c_str(), response.size(), 0);
+		totalSent += sent;
+	}
 }
 
 int Server::handleRequest(socketInfo *client) {
@@ -273,13 +294,16 @@ int Server::handleRequest(socketInfo *client) {
 		if (code >= 300 || code == OK)
 			return (CLOSE);
 		return (KEEP);
-	} else if (client->request->getMethod() == "POST") {
+	} else if (client->request->getMethod() == "POST" && client->request->getClientBody().empty()) {
 		send(client->socket, "HTTP/1.1 200 OK", 15, 0);
+		return (KEEP);
+	} else if (client->request->getMethod() == "POST" && !client->request->getClientBody().empty()) {
+		handlePostMethod(client);
 		delete client->request;
 		client->hasRequest = false;
 		return (CLOSE);
 	}
-	return (CLOSE);
+	return (KEEP);
 }
 
 int Server::handleClient(socketInfo *client, int type) {
