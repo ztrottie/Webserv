@@ -71,7 +71,7 @@ int	parsing::checkValid(string const &line){
 bool	parsing::parseConfigFile(){
 	int	ret;
 	string line;
-	int	nbLine = 0;
+	unsigned int	nbLine = 0;
 	int	serverLineCheck;
 
 	writeTimestamp(PURPLE, "Parsing is starting...");
@@ -83,57 +83,61 @@ bool	parsing::parseConfigFile(){
 			return false;
 		if (nbLine == 0)
 			checkDefault(line);
-		if (checkServer(line) == -2)
+		if (checkServer(line, nbLine) == -2)
 			return (error(SERVERPARS), false);
-		checkLocation(line);
-		if (checkHost(line) == -2)
+		checkLocation(line, &nbLine);
+		if (checkHost(line, nbLine) == -2)
 			return (error(HOST_ERR), false);
-		if (checkListen(line) == -2)
+		if (checkListen(line, nbLine) == -2)
 			return (error(LISTEN_ERR), false);
-		if (checkServerName(line) == -2)
+		if (checkServerName(line, nbLine) == -2)
 			return (error(SERVERNAME_ERR), false);
-		if (checkRoot(line, 1) == -2)
+		if (checkRoot(line, nbLine) == -2)
 			return (error(ROOT_ERR), false);
-		if (checkIndex(line, 1) == -2)
+		if (checkIndex(line, nbLine) == -2)
 			return (error(INDEX_ERR), false);
-		if (checkErrorPage(line, 1) == -2)
+		if (checkErrorPage(line, nbLine) == -2)
 			return (error(ERROR_PAGE_ERR), false);
-		if (checkClientMaxBodySize(line) == -2)
+		if (checkClientMaxBodySize(line, nbLine) == -2)
 			return (error(CLIENT_MAX_BODY_SIZE_ERR), false);
-		if (checkReturns(line) == -2)
+		if (checkReturns(line, nbLine) == -2)
 			return (error(RETURN_ERR), false);
 		nbLine++;
 	}
 	verifLine.push_back(DONT);
 	for (int i = 0; i < verifLine.size(); i++) {
-		cout << verifLine[i] << endl;
+		cout << "line " << i + 1 << " : " << verifLine[i] << endl;
 	}
 	return true;
 }
 
-int	parsing::checkClientMaxBodySize(string const &line){
+int	parsing::checkClientMaxBodySize(string const &line, unsigned int nbLine){
 	size_t pos = line.find("client_max_body_size");
 	if (pos == string::npos)
 		return -1;
-	if (checkVargule(line, defaultIfError, false) == false)
+	if (checkVargule(line, defaultIfError, false, verifLine, nbLine) == false){
+		verifLine.push_back(DONT);
 		return -2;
-	verifLine.push_back(OKPARS);
+	}
+	if (nbLine == verifLine.size())
+		verifLine.push_back(OKPARS);
+	cout << "Line : #" << verifLine.size() << " content \"" + line + "\"" << verifLine[verifLine.size() - 1] << endl;
 	return CORRECT;
 }
 
-int	parsing::checkReturns(string const &line){
+int	parsing::checkReturns(string const &line, unsigned int nbLine){
 	size_t pos = line.find("return");
 	if (pos == string::npos)
 		return -1;
-	if (checkVargule(line, defaultIfError, false) == false){
+	if (checkVargule(line, defaultIfError, false, verifLine, nbLine) == false){
 		verifLine.push_back(DONT);
 		return -2;
 	}
-	if (checkIdentationParsing("return", 1, line, defaultIfError, "return line") == false){
+	if (checkIdentationParsing("return", 1, line, defaultIfError, "return line", verifLine, nbLine) == false){
 		verifLine.push_back(DONT);
 		return -2;
 	}
-	if (isThereSomethingInMyString(line, "return", defaultIfError, false, true) == true){
+	if (isThereSomethingInMyString(line, "return", defaultIfError, false, true, verifLine, nbLine) == true){
 		verifLine.push_back(DONT);
 		return -2;
 	}
@@ -145,22 +149,24 @@ int	parsing::checkReturns(string const &line){
 		return -2;
 	}
 	writeTimestamp(GREEN, "Return is OK!");
-	verifLine.push_back(OKPARS);
+	if (nbLine == verifLine.size())
+		verifLine.push_back(OKPARS);
+	cout << "Line : #" << verifLine.size() << " content \"" + line + "\"" << verifLine[verifLine.size() - 1] << endl;
 	return CORRECT;
 }
 
-int	parsing::checkErrorPage(string const &line, int iden){
+int	parsing::checkErrorPage(string const &line, unsigned int nbLine){
 	if (line.find("error_page") == string::npos)
 		return -1;
-	if (checkVargule(line, defaultIfError, false) == false){
+	if (checkVargule(line, defaultIfError, false, verifLine, nbLine) == false){
 		verifLine.push_back(DONT);
 		return -2;
 	}
-	if (checkIdentationParsing("error_page", iden, line, defaultIfError, "error_page line") == false){
+	if (checkIdentationParsing("error_page", 1, line, defaultIfError, "error_page line", verifLine, nbLine) == false){
 		verifLine.push_back(DONT);
 		return -2;
 	}
-	if (isThereSomethingInMyString(line, "error_page", defaultIfError, false, true) == true){
+	if (isThereSomethingInMyString(line, "error_page", defaultIfError, false, true, verifLine, nbLine) == true){
 		verifLine.push_back(DONT);
 		return -2;
 	}
@@ -177,22 +183,24 @@ int	parsing::checkErrorPage(string const &line, int iden){
 		return -1;
 	}
 	writeTimestamp(GREEN, "Error_page is OK!");
-	verifLine.push_back(OKPARS);
+	if (nbLine == verifLine.size())
+		verifLine.push_back(OKPARS);
+	cout << "Line : #" << verifLine.size() << " content \"" + line + "\"" << verifLine[verifLine.size() - 1] << endl;
 	return true;
 }
 
-int	parsing::checkIndex(string const &line, int iden){
+int	parsing::checkIndex(string const &line, unsigned int nbLine){
 	if (line.find("index") == string::npos || line.find("index") == 2)
 		return -1;
-	if (checkVargule(line, defaultIfError, false) == false){
+	if (checkVargule(line, defaultIfError, false, verifLine, nbLine) == false){
 		verifLine.push_back(DONT);
 		return -2;
 	}
-	if (checkIdentationParsing("index", iden, line, defaultIfError, "index line") == false){
+	if (checkIdentationParsing("index", 1, line, defaultIfError, "index line", verifLine, nbLine) == false){
 		verifLine.push_back(DONT);
 		return -2;
 	}
-	if (isThereSomethingInMyString(line, "index", defaultIfError, false, false) == true){
+	if (isThereSomethingInMyString(line, "index", defaultIfError, false, false, verifLine, nbLine) == true){
 		verifLine.push_back(DONT);
 		return -2;
 	}
@@ -209,22 +217,24 @@ int	parsing::checkIndex(string const &line, int iden){
 		return -1;
 	}
 	writeTimestamp(GREEN, "Index is OK!");
-	verifLine.push_back(OKPARS);
+	if (nbLine == verifLine.size())
+		verifLine.push_back(OKPARS);
+	cout << "Line : #" << verifLine.size() << " content \"" + line + "\"" << verifLine[verifLine.size() - 1] << endl;
 	return true;
 }
 
-int	parsing::checkRoot(string const &line, int iden){
+int	parsing::checkRoot(string const &line, unsigned int nbLine){
 	if (line.find("root") == string::npos || line.find("root") == 2)
 		return -1;
-	if (checkVargule(line, defaultIfError, false) == false){
+	if (checkVargule(line, defaultIfError, false, verifLine, nbLine) == false){
 		verifLine.push_back(DONT);
 		return -2;
 	}
-	if (checkIdentationParsing("root", iden, line, defaultIfError, "root line") == false){
+	if (checkIdentationParsing("root", 1, line, defaultIfError, "root line", verifLine, nbLine) == false){
 		verifLine.push_back(DONT);
 		return -2;
 	}
-	if (isThereSomethingInMyString(line, "root", defaultIfError, false, false) == true){
+	if (isThereSomethingInMyString(line, "root", defaultIfError, false, false, verifLine, nbLine) == true){
 		verifLine.push_back(DONT);
 		return -2;
 	}
@@ -241,22 +251,24 @@ int	parsing::checkRoot(string const &line, int iden){
 		return -1;
 	}
 	writeTimestamp(GREEN, "Root is OK!");
-	verifLine.push_back(OKPARS);
+	if (nbLine == verifLine.size())
+		verifLine.push_back(OKPARS);
+	cout << "Line : #" << verifLine.size() << " content \"" + line + "\"" << verifLine[verifLine.size() - 1] << endl;
 	return true;
 }
 
-int	parsing::checkServerName(string const &line){
+int	parsing::checkServerName(string const &line, unsigned int nbLine){
 	if (line.find("server_name") == string::npos)
 		return -1;
-	if (checkVargule(line, defaultIfError, false) == false){
+	if (checkVargule(line, defaultIfError, false, verifLine, nbLine) == false){
 		verifLine.push_back(DONT);
 		return -2;
 	}
-	if (checkIdentationParsing("server_name", 1, line, defaultIfError, "server_name line") == false){
+	if (checkIdentationParsing("server_name", 1, line, defaultIfError, "server_name line", verifLine, nbLine) == false){
 		verifLine.push_back(DONT);
 		return -2;
 	}
-	if (isThereSomethingInMyString(line, "server_name", defaultIfError, false, false) == true){
+	if (isThereSomethingInMyString(line, "server_name", defaultIfError, false, false, verifLine, nbLine) == true){
 		verifLine.push_back(DONT);
 		return -2;
 	}
@@ -273,23 +285,25 @@ int	parsing::checkServerName(string const &line){
 		return -1;
 	}
 	writeTimestamp(GREEN, "Server_name is OK!");
-	verifLine.push_back(OKPARS);
+	if (nbLine == verifLine.size())
+		verifLine.push_back(OKPARS);
+	cout << "Line : #" << verifLine.size() << " content \"" + line + "\"" << verifLine[verifLine.size() - 1] << endl;
 	return true;
 }
 
-int	parsing::checkHost(string const &line){
+int	parsing::checkHost(string const &line, unsigned int nbLine){
 
 	if (line.find("host") == string::npos)
 		return -1;
-	if (checkVargule(line, defaultIfError, false) == false){
+	if (checkVargule(line, defaultIfError, false, verifLine, nbLine) == false){
 		verifLine.push_back(DONT);
 		return -2;
 	}
-	if (checkIdentationParsing("host", 1, line, defaultIfError, "host line") == false){
+	if (checkIdentationParsing("host", 1, line, defaultIfError, "host line", verifLine, nbLine) == false){
 		verifLine.push_back(DONT);
 		return -2;
 	}
-	if (isThereSomethingInMyString(line, "host", defaultIfError, false, false) == true){
+	if (isThereSomethingInMyString(line, "host", defaultIfError, false, false, verifLine, nbLine) == true){
 		verifLine.push_back(DONT);
 		return -2;
 	}
@@ -306,22 +320,24 @@ int	parsing::checkHost(string const &line){
 		return -1;
 	}
 	writeTimestamp(GREEN, "Host is OK!");
-	verifLine.push_back(OKPARS);
+	if (nbLine == verifLine.size())
+		verifLine.push_back(OKPARS);
+	cout << "Line : #" << verifLine.size() << " content \"" + line + "\"" << verifLine[verifLine.size() - 1] << endl;
 	return true;
 }
 
-int	parsing::checkListen(string const &line){
+int	parsing::checkListen(string const &line, unsigned int nbLine){
 	if (line.find("listen") == string::npos)
 		return -1;
-	if (checkVargule(line, defaultIfError, false) == false){
+	if (checkVargule(line, defaultIfError, false, verifLine, nbLine) == false){
 		verifLine.push_back(DONT);
 		return -2;
 	}
-	if (checkIdentationParsing("listen", 1, line, defaultIfError, "listen line") == false){
+	if (checkIdentationParsing("listen", 1, line, defaultIfError, "listen line", verifLine, nbLine) == false){
 		verifLine.push_back(DONT);
 		return -2;
 	}
-	if (isThereSomethingInMyString(line, "listen", defaultIfError, false, false) == true){
+	if (isThereSomethingInMyString(line, "listen", defaultIfError, false, false, verifLine, nbLine) == true){
 		verifLine.push_back(DONT);
 		return -2;
 	}
@@ -349,11 +365,13 @@ int	parsing::checkListen(string const &line){
 		return -1;
 	}
 	writeTimestamp(GREEN, "Listen is OK!");
-	verifLine.push_back(OKPARS);
+	if (nbLine == verifLine.size())
+		verifLine.push_back(OKPARS);
+	cout << "Line : #" << verifLine.size() << " content \"" + line + "\"" << verifLine[verifLine.size() - 1] << endl;
 	return true;
 }
 
-int	parsing::checkServer(std::string const &line){
+int	parsing::checkServer(std::string const &line, unsigned int nbLine){
 	if (line.find("server") == string::npos || line.find("server_name") != string::npos)
 		return -1;
 	if (line.find("server") > 0){
@@ -361,15 +379,18 @@ int	parsing::checkServer(std::string const &line){
 		verifLine.push_back(DONT);
 		return -2;
 	}
-	if (isThereSomethingInMyString(line, "server", false, false, false) == true){
+	if (isThereSomethingInMyString(line, "server", false, false, false, verifLine, nbLine) == true){
 		verifLine.push_back(DONT);
 		return -2;
 	}
 	else if (line.find("server") != string::npos && line.find("{") == string::npos){
 		writeTimestamp(RED, "Error in the server line, you didnt put the \"{\" at the end!");
+		verifLine.push_back(DONT);
 		return -2;
 	}
-	verifLine.push_back(OKPARS);
+	if (nbLine == verifLine.size())
+		verifLine.push_back(OKPARS);
+	cout << "Line : #" << verifLine.size() << " content \"" + line + "\"" << verifLine[verifLine.size() - 1] << endl;
 	return CORRECT;
 }
 
@@ -383,7 +404,7 @@ int	parsing::checkDefault(string const &line){
 		writeTimestamp(YELLOW, "If you don't want that, you must include a the beginning of the ConfigFile : \"acceptDefault true\"");
 		return -1;
 	}
-	if (checkVargule(line, defaultIfError, false) == false){
+	if (checkVargule(line, defaultIfError, false, verifLine, 0) == false){
 		verifLine.push_back(DONT);
 		return -2;
 	}
@@ -397,7 +418,7 @@ int	parsing::checkDefault(string const &line){
 			defaultIfError = false;
 		}
 	}
-	if (isThereSomethingInMyString(line, "acceptDefault", false, false, false) == true){
+	if (isThereSomethingInMyString(line, "acceptDefault", false, false, false, verifLine, 0) == true){
 		verifLine.push_back(DONT);
 		return -1;
 	}
@@ -413,6 +434,7 @@ int	parsing::checkDefault(string const &line){
 		writeTimestamp(YELLOW, "If you don't want that, you must include a the beginning of the ConfigFile : \"acceptDefault true\"");
 	}
 	verifLine.push_back(DONT);
+	cout << "Line : #" << verifLine.size() << " content \"" + line + "\"" << verifLine[verifLine.size() - 1] << endl;
 	return ret;
 }
 

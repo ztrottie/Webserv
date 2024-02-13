@@ -14,11 +14,13 @@ void writeTimestamp(std::string color, std::string const &message){
 	std::cout << color << timestamp() << " " << message << RESET << std::endl;
 }
 
-bool	checkIdentationParsing(std::string const &firstWord, int nbIndentation, std::string const &line, bool defaultIfError, std::string const &lineName){
+bool	checkIdentationParsing(std::string const &firstWord, int nbIndentation, std::string const &line, bool defaultIfError, std::string const &lineName, std::vector<int> &verifLine, unsigned int nbLine){
 	if (line.find(firstWord) != nbIndentation){
 		if(defaultIfError == true){
-				writeTimestamp(YELLOW, "Error of identation in " + lineName + ", switching to default setting");
-				return true;
+			writeTimestamp(YELLOW, "Error of identation in " + lineName + ", switching to default setting");
+			if (nbLine == verifLine.size())
+				verifLine.push_back(1);
+			return true;
 		}
 		else if(defaultIfError == false){
 			writeTimestamp(RED, "Error of identation in " + lineName + ", must have one, default setting is off, exiting program...");
@@ -28,6 +30,8 @@ bool	checkIdentationParsing(std::string const &firstWord, int nbIndentation, std
 	if (line.find("	") != 0){
 		if(defaultIfError == true){
 			writeTimestamp(YELLOW, "Error of identation in " + lineName + ", must have one, switching to default setting");
+			if (nbLine == verifLine.size())
+				verifLine.push_back(1);
 			return true;
 		}
 		else if(defaultIfError == false){
@@ -47,7 +51,7 @@ bool containsNonDigit(const std::string& str){
 	return false;
 }
 
-bool isThereSomethingInMyString(std::string const &line, std::string const &begin, bool _defaultIfError, bool inLocation, bool checkNumber){
+bool isThereSomethingInMyString(std::string const &line, std::string const &begin, bool _defaultIfError, bool inLocation, bool checkNumber, std::vector<int> &verifLine, unsigned int nbLine){
 	std::string impasta;
 	
 	size_t space = line.rfind(" ");
@@ -67,6 +71,8 @@ bool isThereSomethingInMyString(std::string const &line, std::string const &begi
 					}
 					else {
 						writeTimestamp(YELLOW, "The \"" + impasta + "\" in the line \"" + line + "\" must not contain any letter, switching to default setting");
+						if (nbLine == verifLine.size())
+							verifLine.push_back(1);
 						return false;
 					}
 				}
@@ -79,6 +85,8 @@ bool isThereSomethingInMyString(std::string const &line, std::string const &begi
 					}
 					else {
 						writeTimestamp(YELLOW, "The \"" + impasta + "\" in the line \"" + line + "\" isn\'t accepted, switching to default setting");
+						if (nbLine == verifLine.size())
+							verifLine.push_back(1);
 						return false;
 					}
 				}
@@ -88,13 +96,13 @@ bool isThereSomethingInMyString(std::string const &line, std::string const &begi
 			if (checkNumber == true){
 				if (containsNonDigit(impasta) == true){
 					writeTimestamp(YELLOW, "The \"" + impasta + "\" in the line \"" + line + "\" must not contain any letter, this line will not be used");
-					return false;
+					return true;
 				}
 			}
 			else {
 				if (impasta.length() > 0){
 					writeTimestamp(YELLOW, "The \"" + impasta + "\" in the line \"" + line + "\" isn\'t accepted, this line will not be used");
-					return false;
+					return true;
 				}
 			}
 		}
@@ -110,6 +118,8 @@ bool isThereSomethingInMyString(std::string const &line, std::string const &begi
 					}
 					else {
 						writeTimestamp(YELLOW, "The \"" + impasta + "\" in the line \"" + line + "\" must not contain any letter, switching to default setting");
+						if (nbLine == verifLine.size())
+							verifLine.push_back(1);
 						return false;
 					}
 				}
@@ -122,6 +132,8 @@ bool isThereSomethingInMyString(std::string const &line, std::string const &begi
 					}
 					else {
 						writeTimestamp(YELLOW, "The \"" + impasta + "\" in the line \"" + line + "\" isn\'t accepted, switching to default setting");
+						if (nbLine == verifLine.size())
+							verifLine.push_back(1);
 						return false;
 					}
 				}
@@ -131,13 +143,13 @@ bool isThereSomethingInMyString(std::string const &line, std::string const &begi
 			if (checkNumber == true){
 				if (containsNonDigit(impasta) == true){
 					writeTimestamp(YELLOW, "The \"" + impasta + "\" in the line \"" + line + "\" must not contain any letter, this line will not be used");
-					return false;
+					return true;
 				}
 			}
 			else {
 				if (impasta.length() > 0){
 					writeTimestamp(YELLOW, "The \"" + impasta + "\" in the line \"" + line + "\" isn\'t accepted, this line will not be used");
-					return false;
+					return true;
 				}
 			}
 		}
@@ -212,7 +224,7 @@ bool	verifyAllowedMethods(std::string const &line){
 	return true;
 }
 
-bool	checkVargule(std::string const &line, bool _defaultIfError, bool insideLocation){
+bool	checkVargule(std::string const &line, bool _defaultIfError, bool insideLocation, std::vector<int> &verifLine, unsigned int nbLine){
 	if (line.find(";") != line.length() - 1){
 		if (insideLocation == false){
 			if (_defaultIfError == false){
@@ -221,7 +233,8 @@ bool	checkVargule(std::string const &line, bool _defaultIfError, bool insideLoca
 			}
 			else{
 				writeTimestamp(YELLOW, "You need to have a \";\" at the end of the line \"" + line + "\" , switching to default!");
-				verifLine.push_back(SWITCH);
+				if (nbLine == verifLine.size())
+					verifLine.push_back(1);
 				return true;
 			}
 		}
