@@ -76,4 +76,6 @@ class parsing{
 		int					checkAllowedMethods(string const &line, unsigned int nbLine);
 		int					checkErrorPageLocation(string const &line, unsigned int nbLine);
 		int					checkReturnsLocation(string const &line, unsigned int nbLine);
+		// Assignation
+		
 };

@@ -1,4 +1,5 @@
 #include "../include/parsing.hpp"
+#include <variant>
 
 parsing::parsing(string path): pathConfigFile(path){
 	defaultIfError = false;
@@ -64,7 +65,7 @@ int	parsing::checkValid(string const &line){
 		return CORRECT;
 	else if (res.empty())
 		return CORRECT;
-	writeTimestamp(RED, "CHING CHONG WON TONG \"" + res + "\" ins\'t something valid");
+	writeTimestamp(RED, "\"" + res + "\" ins\'t something valid");
 	return -2;
 }
 
@@ -111,6 +112,11 @@ bool	parsing::parseConfigFile(){
 	return true;
 }
 
+// client_max_body_size 1B; = 1
+// client_max_body_size 1K; = 1000
+// client_max_body_size 1M; = 1 000 000
+// client_max_body_size 1G; = 1 000 000 000
+
 int	parsing::checkClientMaxBodySize(string const &line, unsigned int nbLine){
 	size_t pos = line.find("client_max_body_size");
 	if (pos == string::npos)
@@ -119,9 +125,51 @@ int	parsing::checkClientMaxBodySize(string const &line, unsigned int nbLine){
 		verifLine.push_back(DONT);
 		return -2;
 	}
+	if (checkIdentationParsing("client_max_body_size", 1, line, defaultIfError, "client max body size line", verifLine, nbLine) == false){
+		verifLine.push_back(DONT);
+		return -2;
+	}
+	if (isThereSomethingInMyString(line, "client_max_body_size", defaultIfError, false, false, verifLine, nbLine) == true){
+		verifLine.push_back(DONT);
+		return -2;
+	}
+	string str = line;
+	str.erase(std::remove_if(str.begin(), str.end(), ::isspace), str.end());
+	if (str.length() < 22){
+		writeTimestamp(YELLOW, "The client_max_body_size line must have another arguments, like an number of bytes (1B, 1K, 1M, 1G)");
+		verifLine.push_back(DONT);
+		return -2;
+	}
+	str.erase(0, 20); str.erase(str.size() - 1, str.size());
+	if (str.find("B") == string::npos && str.find("K") == string::npos && str.find("M") == string::npos && str.find("G") == string::npos){
+		if (defaultIfError == true){
+			writeTimestamp(YELLOW, "The arguments must be an number and a \'B\' or a \'K\' or a \'M\' or a \'G\', switching to default");
+			if (nbLine == verifLine.size())
+				verifLine.push_back(SWITCH);
+		}
+		else{
+			writeTimestamp(RED, "The arguments must be an number and a \'B\' or a \'K\' or a \'M\' or a \'G\'");
+			if (nbLine == verifLine.size())
+				verifLine.push_back(DONT);
+		}
+	}
+	str.erase(str.size() - 1, str.size());
+	cout << str << endl;
+	if (containsNonDigit(str) == true){
+		if (defaultIfError == true){
+			writeTimestamp(YELLOW, "The number of Bytes must only contains number, switching to default");
+			if (nbLine == verifLine.size())
+				verifLine.push_back(SWITCH);
+		}
+		else{
+			writeTimestamp(RED, "The number of Bytes must only contains number");
+			if (nbLine == verifLine.size())
+				verifLine.push_back(DONT);
+		}
+	}
 	if (nbLine == verifLine.size())
 		verifLine.push_back(OKPARS);
-	cout << "Line : #" << verifLine.size() << " content \"" + line + "\"" << verifLine[verifLine.size() - 1] << endl;
+	// cout << "Line : #" << verifLine.size() << " content \"" + line + "\"" << verifLine[verifLine.size() - 1] << endl;
 	return CORRECT;
 }
 
@@ -151,7 +199,7 @@ int	parsing::checkReturns(string const &line, unsigned int nbLine){
 	writeTimestamp(GREEN, "Return is OK!");
 	if (nbLine == verifLine.size())
 		verifLine.push_back(OKPARS);
-	cout << "Line : #" << verifLine.size() << " content \"" + line + "\"" << verifLine[verifLine.size() - 1] << endl;
+	// cout << "Line : #" << verifLine.size() << " content \"" + line + "\"" << verifLine[verifLine.size() - 1] << endl;
 	return CORRECT;
 }
 
@@ -185,7 +233,7 @@ int	parsing::checkErrorPage(string const &line, unsigned int nbLine){
 	writeTimestamp(GREEN, "Error_page is OK!");
 	if (nbLine == verifLine.size())
 		verifLine.push_back(OKPARS);
-	cout << "Line : #" << verifLine.size() << " content \"" + line + "\"" << verifLine[verifLine.size() - 1] << endl;
+	// cout << "Line : #" << verifLine.size() << " content \"" + line + "\"" << verifLine[verifLine.size() - 1] << endl;
 	return true;
 }
 
@@ -219,7 +267,7 @@ int	parsing::checkIndex(string const &line, unsigned int nbLine){
 	writeTimestamp(GREEN, "Index is OK!");
 	if (nbLine == verifLine.size())
 		verifLine.push_back(OKPARS);
-	cout << "Line : #" << verifLine.size() << " content \"" + line + "\"" << verifLine[verifLine.size() - 1] << endl;
+	// cout << "Line : #" << verifLine.size() << " content \"" + line + "\"" << verifLine[verifLine.size() - 1] << endl;
 	return true;
 }
 
@@ -253,7 +301,7 @@ int	parsing::checkRoot(string const &line, unsigned int nbLine){
 	writeTimestamp(GREEN, "Root is OK!");
 	if (nbLine == verifLine.size())
 		verifLine.push_back(OKPARS);
-	cout << "Line : #" << verifLine.size() << " content \"" + line + "\"" << verifLine[verifLine.size() - 1] << endl;
+	// cout << "Line : #" << verifLine.size() << " content \"" + line + "\"" << verifLine[verifLine.size() - 1] << endl;
 	return true;
 }
 
@@ -287,7 +335,7 @@ int	parsing::checkServerName(string const &line, unsigned int nbLine){
 	writeTimestamp(GREEN, "Server_name is OK!");
 	if (nbLine == verifLine.size())
 		verifLine.push_back(OKPARS);
-	cout << "Line : #" << verifLine.size() << " content \"" + line + "\"" << verifLine[verifLine.size() - 1] << endl;
+	// cout << "Line : #" << verifLine.size() << " content \"" + line + "\"" << verifLine[verifLine.size() - 1] << endl;
 	return true;
 }
 
@@ -322,7 +370,7 @@ int	parsing::checkHost(string const &line, unsigned int nbLine){
 	writeTimestamp(GREEN, "Host is OK!");
 	if (nbLine == verifLine.size())
 		verifLine.push_back(OKPARS);
-	cout << "Line : #" << verifLine.size() << " content \"" + line + "\"" << verifLine[verifLine.size() - 1] << endl;
+	// cout << "Line : #" << verifLine.size() << " content \"" + line + "\"" << verifLine[verifLine.size() - 1] << endl;
 	return true;
 }
 
@@ -367,7 +415,7 @@ int	parsing::checkListen(string const &line, unsigned int nbLine){
 	writeTimestamp(GREEN, "Listen is OK!");
 	if (nbLine == verifLine.size())
 		verifLine.push_back(OKPARS);
-	cout << "Line : #" << verifLine.size() << " content \"" + line + "\"" << verifLine[verifLine.size() - 1] << endl;
+	// cout << "Line : #" << verifLine.size() << " content \"" + line + "\"" << verifLine[verifLine.size() - 1] << endl;
 	return true;
 }
 
@@ -390,7 +438,7 @@ int	parsing::checkServer(std::string const &line, unsigned int nbLine){
 	}
 	if (nbLine == verifLine.size())
 		verifLine.push_back(OKPARS);
-	cout << "Line : #" << verifLine.size() << " content \"" + line + "\"" << verifLine[verifLine.size() - 1] << endl;
+	// cout << "Line : #" << verifLine.size() << " content \"" + line + "\"" << verifLine[verifLine.size() - 1] << endl;
 	return CORRECT;
 }
 
@@ -434,7 +482,7 @@ int	parsing::checkDefault(string const &line){
 		writeTimestamp(YELLOW, "If you don't want that, you must include a the beginning of the ConfigFile : \"acceptDefault true\"");
 	}
 	verifLine.push_back(DONT);
-	cout << "Line : #" << verifLine.size() << " content \"" + line + "\"" << verifLine[verifLine.size() - 1] << endl;
+	// cout << "Line : #" << verifLine.size() << " content \"" + line + "\"" << verifLine[verifLine.size() - 1] << endl;
 	return ret;
 }
 

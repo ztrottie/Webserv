@@ -30,7 +30,7 @@ int	parsing::checkIndexLocation(string const &line, unsigned int nbLine){
 	}
 	writeTimestamp(GREEN, "Index is OKPARS!");
 	verifLine.push_back(OKPARS);
-	cout << "Line : #" << verifLine.size() << " content \"" + line + "\"" << verifLine[verifLine.size() - 1] << endl;
+	// cout << "Line : #" << verifLine.size() << " content \"" + line + "\"" << verifLine[verifLine.size() - 1] << endl;
 	return CORRECT;
 }
 
@@ -54,7 +54,7 @@ int	parsing::checkRootLocation(string const &line, unsigned int nbLine){
 	}
 	writeTimestamp(GREEN, "Root is OKPARS!");
 	verifLine.push_back(OKPARS);
-	cout << "Line : #" << verifLine.size() << " content \"" + line + "\"" << verifLine[verifLine.size() - 1] << endl;
+	// cout << "Line : #" << verifLine.size() << " content \"" + line + "\"" << verifLine[verifLine.size() - 1] << endl;
 	return CORRECT;
 }
 
@@ -78,7 +78,7 @@ int	parsing::checkAllowedMethods(string const &line, unsigned int nbLine){
 		return -2;
 	writeTimestamp(GREEN, "AllowedMethods is OKPARS!");
 	verifLine.push_back(OKPARS);
-	cout << "Line : #" << verifLine.size() << " content \"" + line + "\"" << verifLine[verifLine.size() - 1] << endl;
+	// cout << "Line : #" << verifLine.size() << " content \"" + line + "\"" << verifLine[verifLine.size() - 1] << endl;
 	return CORRECT;
 }
 
@@ -102,7 +102,7 @@ int	parsing::checkErrorPageLocation(string const &line, unsigned int nbLine){
 	}
 	writeTimestamp(GREEN, "Error_page is OKPARS!");
 	verifLine.push_back(OKPARS);
-	cout << "Line : #" << verifLine.size() << " content \"" + line + "\"" << verifLine[verifLine.size() - 1] << endl;
+	// cout << "Line : #" << verifLine.size() << " content \"" + line + "\"" << verifLine[verifLine.size() - 1] << endl;
 	return CORRECT;
 }
 
@@ -126,7 +126,7 @@ int	parsing::checkReturnsLocation(string const &line, unsigned int nbLine){
 	}
 	writeTimestamp(GREEN, "Return is OKPARS!");
 	verifLine.push_back(OKPARS);
-	cout << "Line : #" << verifLine.size() << " content \"" + line + "\"" << verifLine[verifLine.size() - 1] << endl;
+	// cout << "Line : #" << verifLine.size() << " content \"" + line + "\"" << verifLine[verifLine.size() - 1] << endl;
 	return CORRECT;
 }
 
@@ -146,7 +146,6 @@ int	parsing::checkLocation(string &line, unsigned int *nbLine){
 		return -1;
 	}
 	verifLine.push_back(OKPARS);
-	cout << "IN LOC BONG Line : #" << verifLine.size() << " content \"" + line + "\"" << verifLine[verifLine.size() - 1] << endl;
 	while (isThisTheEnd(line) != true){
 		if (checkValid(line) == -2){
 			verifLine.push_back(DONT);
@@ -171,6 +170,6 @@ int	parsing::checkLocation(string &line, unsigned int *nbLine){
 	}
 	writeTimestamp(BLUE, "The Location is OKPARS!");
 	verifLine.push_back(DONT);
-	cout << "IN LOC Line : #" << verifLine.size() << " content \"" + line + "\"" << verifLine[verifLine.size() - 1] << endl;
+	// cout << "IN LOC Line : #" << verifLine.size() << " content \"" + line + "\"" << verifLine[verifLine.size() - 1] << endl;
 	return true;
 }
