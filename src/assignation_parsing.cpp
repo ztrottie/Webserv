@@ -6,7 +6,27 @@
 // client_max_body_size 1G; = 1 000 000 000
 
 void parsing::assignConfigFile(){
-	for (int i = 0; i < verifLine.size(); i++) {
-		cout << "line " << i + 1 << " : " << verifLine[i] << endl;
+	string line;
+	std::ifstream file;
+
+	file.open(pathConfigFile);
+	for (size_t i = 0; i < verifLine.size(); i++) {
+		std::getline(file, line);
+		cout << "line " << i + 1 << "	" << line << " : " << verifLine[i] << endl;
 	}
+	Router *rout = new Router();
+	// rout->setRoot(const std::string &root);
+	// rout->setIndex(const std::string &index);
+	// rout->addAllowedMethod(const std::string &method);
+	// rout->addErrorPage(const int errorNumber, std::string pathToError);
+	//si location
+	// Location *loc = new Location();
+	// loc->addAllowedMethod(const std::string &method);
+	// loc->addAllowedMethod(const std::string &method);
+	// loc->addAllowedMethod(const std::string &method);
+	// loc->addErrorPage(const int errorNumber, std::string pathToError);
+	// loc->setIndex(const std::string &index);
+	// loc->setRoot(const std::string &root);
+	// rout->addLocation(const std::string &key, Location *loc);
+	// Server *serv = new Server();
 }

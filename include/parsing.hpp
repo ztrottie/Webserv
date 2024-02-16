@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cstdint>
 #include <fstream>
 #include <string>
 #include <iostream>
@@ -7,6 +8,9 @@
 #include <vector>
 #include "color.h"
 #include "utils.hpp"
+#include "../include/Server.hpp"
+#include "../include/Router.hpp"
+#include "../include/Location.hpp"
 
 #define DEFAULTHOST "127.0.0.1"
 #define DEFAULTLISTEN "8080"
@@ -56,6 +60,12 @@ class parsing{
 		std::vector<int>	verifLine;
 		std::ifstream		configFile;
 		bool				defaultIfError;
+		//Assignation Server
+		string				_host;
+		uint16_t			_port;
+		string				_serverName;
+		unsigned int		_clientBodySize;
+		// Analyser ConfigFile
 		void				error(int errorCode);
 		bool				checkFile();
 		int					checkValid(string const &line);
@@ -70,7 +80,8 @@ class parsing{
 		int					checkErrorPage(string const &line, unsigned int nbLine);
 		int					checkClientMaxBodySize(string const &line, unsigned int nbLine);
 		int					checkReturns(string const &line, unsigned int nbLine);
-		// Dans location
+		int					checkServerAllowedMethods(string const &line, unsigned int nbLine);
+			// Dans location
 		int					checkLocation(string &line, unsigned int *nbLine);
 		int					checkIndexLocation(string const &line, unsigned int nbLine);
 		int					checkRootLocation(string const &line, unsigned int nbLine);
@@ -78,5 +89,18 @@ class parsing{
 		int					checkErrorPageLocation(string const &line, unsigned int nbLine);
 		int					checkReturnsLocation(string const &line, unsigned int nbLine);
 		// Assignation
-		
+			//Server
+		void				assignHost(const string &line);
+		void				assignServerName(const string &line);
+		void				assignPort(const string &line);
+			//Router
+		void				assignMaxBody(const string &line, Router &rout);
+		void				assignRoot(const string &line, Router &rout);
+		void				assignIndex(const string &line, Router &rout);
+		void				assignErrorPage(const string &line, Router &rout);
+		void				assignAllowedMethods(const string &line, Router &rout);
+		void				assignReturn(const string &line, Router &rout);
+			//Location
+		void				assignLocation(const string &line);
+
 };

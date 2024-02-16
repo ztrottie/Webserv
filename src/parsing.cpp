@@ -15,7 +15,7 @@ int	parsing::checkValid(string const &line){
 		tabs = 0;
 	if (space > tabs){
 		std::vector<std::string> ret = splitString(line, ' ');
-		for (int i = 0; i < ret.size(); i++){
+		for (size_t i = 0; i < ret.size(); i++){
 			ret[i].erase(std::remove_if(ret[i].begin(), ret[i].end(), ::isspace), ret[i].end());
 			if (ret[i].length() > 0){
 				res = ret[i];
@@ -25,7 +25,7 @@ int	parsing::checkValid(string const &line){
 	}
 	else if (tabs > space){
 		std::vector<std::string> ret = splitString(line, '	');
-		for (int i = 0; i < ret.size(); i++){
+		for (size_t i = 0; i < ret.size(); i++){
 			ret[i].erase(std::remove_if(ret[i].begin(), ret[i].end(), ::isspace), ret[i].end());
 			if (ret[i].length() > 0){
 				res = ret[i];
@@ -70,10 +70,8 @@ int	parsing::checkValid(string const &line){
 }
 
 bool	parsing::parseConfigFile(){
-	int	ret;
 	string line;
 	unsigned int	nbLine = 0;
-	int	serverLineCheck;
 
 	writeTimestamp(PURPLE, "Parsing is starting...");
 	if (checkFile() == false){
@@ -103,10 +101,38 @@ bool	parsing::parseConfigFile(){
 			return (error(CLIENT_MAX_BODY_SIZE_ERR), false);
 		if (checkReturns(line, nbLine) == -2)
 			return (error(RETURN_ERR), false);
+		if (checkServerAllowedMethods(line, nbLine) == -2)
+			return (error(RETURN_ERR), false);
 		nbLine++;
 	}
 	verifLine.push_back(DONT);
 	return true;
+}
+
+int	parsing::checkServerAllowedMethods(string const &line, unsigned int nbLine){
+	size_t pos = line.find("allowedMethods");
+	if (pos == string::npos)
+		return -1;
+	if (checkVargule(line, defaultIfError, false, verifLine, nbLine) == false){
+		verifLine.push_back(DONT);
+		return -2;
+	}
+	if (checkIdentationParsing("allowedMethods", 1, line, defaultIfError, "allowedMethods", verifLine, nbLine) == false){
+		verifLine.push_back(DONT);
+		return -2;
+	}
+	string str = line;
+	str.erase(std::remove_if(str.begin(), str.end(), ::isspace), str.end());
+	if (str.length() < 16){
+		writeTimestamp(YELLOW, "The allowedMethods line must have another arguments, like (GET, PUT, POST, PATCH, DELETE, CONNECT, OPTIONS, TRACE)!");
+		return -2;
+	}
+	if (verifyAllowedMethods(line) == false)
+		return -2;
+	writeTimestamp(GREEN, "AllowedMethods is OKPARS!");
+	verifLine.push_back(OKPARS);
+	// cout << "Line : #" << verifLine.size() << " content \"" + line + "\"" << verifLine[verifLine.size() - 1] << endl;
+	return CORRECT;
 }
 
 int	parsing::checkClientMaxBodySize(string const &line, unsigned int nbLine){
@@ -146,7 +172,6 @@ int	parsing::checkClientMaxBodySize(string const &line, unsigned int nbLine){
 		}
 	}
 	str.erase(str.size() - 1, str.size());
-	cout << str << endl;
 	if (containsNonDigit(str) == true){
 		if (defaultIfError == true){
 			writeTimestamp(YELLOW, "The number of Bytes must only contains number, switching to default");
