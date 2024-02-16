@@ -1,4 +1,5 @@
 #include "../include/parsing.hpp"
+#include <cstddef>
 #include <variant>
 
 parsing::parsing(string path): pathConfigFile(path){
@@ -15,7 +16,7 @@ int	parsing::checkValid(string const &line){
 		tabs = 0;
 	if (space > tabs){
 		std::vector<std::string> ret = splitString(line, ' ');
-		for (int i = 0; i < ret.size(); i++){
+		for (size_t i = 0; i < ret.size(); i++){
 			ret[i].erase(std::remove_if(ret[i].begin(), ret[i].end(), ::isspace), ret[i].end());
 			if (ret[i].length() > 0){
 				res = ret[i];
@@ -25,7 +26,7 @@ int	parsing::checkValid(string const &line){
 	}
 	else if (tabs > space){
 		std::vector<std::string> ret = splitString(line, '	');
-		for (int i = 0; i < ret.size(); i++){
+		for (size_t i = 0; i < ret.size(); i++){
 			ret[i].erase(std::remove_if(ret[i].begin(), ret[i].end(), ::isspace), ret[i].end());
 			if (ret[i].length() > 0){
 				res = ret[i];
@@ -70,10 +71,8 @@ int	parsing::checkValid(string const &line){
 }
 
 bool	parsing::parseConfigFile(){
-	int	ret;
 	string line;
 	unsigned int	nbLine = 0;
-	int	serverLineCheck;
 
 	writeTimestamp(PURPLE, "Parsing is starting...");
 	if (checkFile() == false){

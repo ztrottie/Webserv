@@ -15,7 +15,7 @@ void writeTimestamp(std::string color, std::string const &message){
 }
 
 bool	checkIdentationParsing(std::string const &firstWord, int nbIndentation, std::string const &line, bool defaultIfError, std::string const &lineName, std::vector<int> &verifLine, unsigned int nbLine){
-	if (line.find(firstWord) != nbIndentation){
+	if (line.find(firstWord) != static_cast<size_t>(nbIndentation)){
 		if(defaultIfError == true){
 			writeTimestamp(YELLOW, "Error of identation in " + lineName + ", switching to default setting");
 			if (nbLine == verifLine.size())
@@ -189,7 +189,7 @@ std::vector<std::string> splitString(std::string const &input, char delimiter){
 
 bool	verifyAllowedMethods(std::string const &line){
 	std::vector<std::string> res = splitString(line, ',');
-	for (int i = 0 ; i < res.size(); i++){
+	for (size_t i = 0 ; i < res.size(); i++){
 		if (i == 0)
 			res[i].erase(0, 17);
 		else if (i < res.size() - 1)
@@ -199,7 +199,7 @@ bool	verifyAllowedMethods(std::string const &line){
 			res[i].erase(res[i].size() - 1, res[i].size());
 		}
 	}
-	for (int i = 0 ; i < res.size(); i++){
+	for (size_t i = 0 ; i < res.size(); i++){
 		if (res[i] == "GET")
 			continue;
 		else if (res[i] == "PUT")
