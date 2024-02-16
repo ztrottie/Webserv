@@ -31,7 +31,7 @@ void Router::addLocation(std::string const &key, Location *loc){
 	_locations.insert(std::make_pair(key, loc));
 }
 
-void Router::parseUri(std::string cpy){
+void Router::parseUri(std::string &cpy){
 	for (std::map<std::string, Location*>::const_iterator it = _locations.end(); it == _locations.end();){
 		it = _locations.find(cpy);
 		if (it == _locations.end()){
@@ -65,8 +65,7 @@ int Router::checkIfFileIsValid(std::string const &path){
 			return IS_FILE;
 		}
 	}
-	std::cout << "ayo" << std::endl;
-	return 500;
+	return INTERNALSERVERROR;
 }
 
 int Router::getErrorPage(std::string &path, int errorCode){

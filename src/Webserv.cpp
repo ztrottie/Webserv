@@ -1,4 +1,5 @@
 #include "../include/Webserv.hpp"
+#include <sys/event.h>
 
 Webserv::Webserv() : _nbServer(0), _nbClients(0) {
 	std::cout << GREEN << timestamp() << " Starting the webserv..." << RESET << std::endl;
@@ -60,12 +61,10 @@ void Webserv::acceptConnection(socketInfo *info) {
 		delete client;
 		return ;
 	}
-	struct kevent readEvent;
-	EV_SET(&readEvent, client->socket, EVFILT_READ, EV_ADD, 0, 0, nullptr);
-	kevent(_kq, &readEvent, 1, nullptr, 0, nullptr);
-	struct kevent writeEvent;
-	EV_SET(&writeEvent, client->socket, EVFILT_WRITE, EV_ADD, 0, 0, nullptr);
-	kevent(_kq, &writeEvent, 1, nullptr, 0, nullptr);
+	struct kevent changes[2];
+	EV_SET(&changes[0], client->socket, EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0, nullptr);
+	EV_SET(&changes[1], client->socket, EVFILT_WRITE, EV_ADD | EV_ENABLE, 0, 0, nullptr);
+	kevent(_kq, changes, 2, nullptr, 0, nullptr);
 	_nbClients++;
 	_clientMap.insert(std::make_pair(client->socket, client));
 }
@@ -80,27 +79,25 @@ void signalhandler(int signal) {
 void Webserv::loop() {
 	std::signal(SIGQUIT, signalhandler);
 	while (loopFlag) {
-		// sleep(1);
-		// std::cout << timestamp() << " Number of connection on the webserv: [" << _nbClients << "]" << std::endl;
 		struct kevent events[10];
 		timespec time = {10, 0};
 		int numEvents = kevent(_kq, nullptr, 0, events, 10, &time);
 		for (int i = 0; i < numEvents; i++) {
-			socketInfo *info = _clientMap[events[i].ident];
-			if (info->type == SERVER) {
-				acceptConnection(info);
-			} else {
-				if (info->serverInst->handleClient(info, events[i].filter) == CLOSE) {
-					struct kevent readEvent;
-					EV_SET(&readEvent, info->socket, EVFILT_READ, EV_DELETE, 0, 0, nullptr);
-					kevent(_kq,	&readEvent, 1, nullptr, 0, nullptr);
-					struct kevent writeEvent;
-					EV_SET(&writeEvent, info->socket, EVFILT_WRITE, EV_DELETE, 0, 0, nullptr);
-					kevent(_kq,	&writeEvent, 1, nullptr, 0, nullptr);
-					_nbClients--;
-					close(info->socket);
-					_clientMap.erase(info->socket);
-					delete info;
+			std::map<int, socketInfo*>::const_iterator it = _clientMap.find(events[i].ident);
+			if (it != _clientMap.end()) {
+				socketInfo *info = _clientMap[events[i].ident];
+				if (info->type == SERVER) {
+					acceptConnection(info);
+				} else {
+					if (info->serverInst->handleClient(info, events[i].filter) == CLOSE) {
+						struct kevent changes;
+						EV_SET(&changes, info->socket, EVFILT_READ | EVFILT_WRITE, EV_DELETE, 0, 0, nullptr);
+						kevent(_kq, &changes, 1, nullptr, 0, nullptr);
+						_nbClients--;
+						close(info->socket);
+						_clientMap.erase(info->socket);
+						delete info;
+					}
 				}
 			}
 		}

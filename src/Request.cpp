@@ -1,4 +1,6 @@
 #include "../include/Request.hpp"
+#include "../include/color.h"
+#include <sys/_types/_ssize_t.h>
 
 Request::Request(std::string const &received, socketInfo *client) : _raw(received) {
 	std::stringstream ss(received);
@@ -9,6 +11,7 @@ Request::Request(std::string const &received, socketInfo *client) : _raw(receive
 	_uriParser();
 	if (_method == "POST") {
 		_type = _search("Content-Type: ", ';');
+		_bodyLen = std::stoul(_search("Content-Length: ", '\n'));
 		_boundary = _search("boundary=", '\n');
 		_requestBodyParser();
 	}
@@ -97,8 +100,13 @@ void Request::_requestBodyParser() {
 		size_t bodyEnd = _raw.find(_boundary + "--", bodyStart);
 		if (bodyEnd != std::string::npos) {
 			_clientBody = _raw.substr(bodyStart, bodyEnd - bodyStart);
+			std::cout << _clientBody << std::endl;
 		}
 	}
+}
+
+void Request::setBody(std::string &body) {
+	_clientBody = body;
 }
 
 std::string const &Request::getMethod() const {
@@ -147,4 +155,8 @@ std::string const &Request::getClientAddress() const {
 
 std::string const &Request::getClientBody() const {
 	return _clientBody;
+}
+
+size_t const &Request::getBodyLen() const {
+	return _bodyLen;
 }
