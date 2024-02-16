@@ -1,8 +1,10 @@
 #include "../include/Server.hpp"
+#include <cstddef>
 #include <cstdio>
 #include <ctime>
 #include <sys/_types/_ssize_t.h>
 #include <sys/socket.h>
+#include <sys/wait.h>
 #include <unistd.h>
 
 Server::Server(uint16_t port, const char *host, std::string name, Router *router, unsigned int const &clientBodySize, socketInfo *server) : _port(port), _host(host), _name(name), _clientBodySize(clientBodySize) {
@@ -229,13 +231,15 @@ int Server::recieveRequest(socketInfo *client) {
 	return (KEEP);
 }
 
-void Server::getEnv(socketInfo *client) {
-
-}
-
 void Server::handlePostMethod(socketInfo *client) {
+	std::string response;
+	std::string result;
 	std::string path;
 	int errorCode = _serverRouter->getFile(client->request, path);
+	std::cout << GREEN << path << RESET << std::endl;
+	if (errorCode == INTERNALSERVERROR) {
+		internalServerError(response);
+	}
 	if (errorCode == OK) {
 		const char *argv[] = {"/usr/bin/php", path.c_str(), NULL};
 		std::string gatewayInterface = "GATEWAY_INTERFACE=CGI/1.1";
@@ -258,18 +262,44 @@ void Server::handlePostMethod(socketInfo *client) {
 		std::string serverPort = "SERVER_PORT=";
 		serverPort += _port;
 		const char *envp[] = {gatewayInterface.c_str(), requestMethod.c_str(), queryString.c_str(), contentType.c_str(), contentLength.c_str(), clientAddr.c_str(), requestURI.c_str(), serverProtocol.c_str(), serverSoftware.c_str(), serverName.c_str(), serverPort.c_str(), NULL};
-		int end[2];
-		pipe(end);
+		int cgiInput[2];
+		int cgiOutput[2];
+		pipe(cgiInput);
+		pipe(cgiOutput);
 		int pid = fork();
-		if (pid == 0) {
-			dup2(end[], int)
+		int status;
+		if (pid == -1) {
+		} else if (pid == 0) {
+			dup2(cgiInput[0], STDIN_FILENO);
+			dup2(cgiOutput[1], STDOUT_FILENO);
+			close(cgiInput[0]);
+			close(cgiInput[1]);
+			close(cgiOutput[0]);
+			close(cgiOutput[1]);
+			execve(path.c_str(), const_cast<char * const *>(argv), const_cast<char * const *>(envp));
+			exit(0);
+		} else {
+			char buffer[1024];
+			size_t	nbytes;
+			close(cgiInput[0]);
+			write(cgiInput[1], client->request->getClientBody().c_str(), client->request->getClientBody().size());
+			close(cgiInput[1]);
+			close((cgiOutput[1]));
+			while ((nbytes = read(cgiOutput[0], buffer, sizeof(buffer))) > 0) {
+				buffer[nbytes] = 0;
+				result.append(buffer);
+			}
+			close(cgiOutput[0]);
+			waitpid(pid, &status, 0);
 		}
+		if (headerGenerator(errorCode, path, response)) {
+			response.append("\r\n\r\n");
+			response.append(response);
+		}
+	} else {
+		if (errorCode != INTERNALSERVERROR && headerGenerator(errorCode, path, response))
+			contentGenerator(path, response);
 	}
-	std::string response;
-	if (errorCode == INTERNALSERVERROR)
-		internalServerError(response);
-	if (errorCode != INTERNALSERVERROR && headerGenerator(errorCode, path, response))
-		contentGenerator(path, response);
 	size_t totalSent = 0;
 	while (totalSent < response.size()) {
 		int sent = send(client->socket, response.c_str(), response.size(), 0);

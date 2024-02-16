@@ -49,7 +49,7 @@ public:
 	void handlePost(socketInfo *client, std::string &data);
 	int handleRequest(socketInfo *client);
 	void handlePostMethod(socketInfo *client);
-	void getEnv(socketInfo *client);
+	void getEnv(socketInfo *client, char **envp);
 };
 
 // Server_HPP

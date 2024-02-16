@@ -65,8 +65,7 @@ int Router::checkIfFileIsValid(std::string const &path){
 			return IS_FILE;
 		}
 	}
-	std::cout << "ayo" << std::endl;
-	return 500;
+	return INTERNALSERVERROR;
 }
 
 int Router::getErrorPage(std::string &path, int errorCode){
