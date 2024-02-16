@@ -20,7 +20,7 @@ private:
 	std::string _boundary;
 	std::string _clientAddr;
 	std::string _clientBody;
-	size_t		_bodyLen;
+	ssize_t		_bodyLen;
 
 	//Functions
 	std::string _search(std::string const &searching, char endChar);
@@ -50,6 +50,6 @@ public:
 	std::string const &getBoundary() const;
 	std::string const &getClientAddress() const;
 	std::string const &getClientBody() const;
-	size_t const &getBodyLen() const;
+	ssize_t const &getBodyLen() const;
 	void	setBody(std::string &body);
 };

@@ -157,6 +157,6 @@ std::string const &Request::getClientBody() const {
 	return _clientBody;
 }
 
-size_t const &Request::getBodyLen() const {
+ssize_t const &Request::getBodyLen() const {
 	return _bodyLen;
 }

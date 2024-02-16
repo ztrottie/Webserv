@@ -201,15 +201,16 @@ int Server::recieveRequest(socketInfo *client) {
 	ssize_t totalNbytes = 0;
 	ssize_t	nbytes = 1024;
 	std::string data;
-	while (nbytes == 1024) {
+	std::cout << GREEN "fack u" RESET << std::endl;
+	while ((client->hasRequest && client->request->getBodyLen() > 0 && client->request->getBodyLen() != totalNbytes) || nbytes == 1024) {
 		std::memset(buffer, 0, sizeof(buffer));
 		nbytes = recv(client->socket, buffer, 1024, 0);
 		if (nbytes == -1)
 			break;
-		buffer[nbytes] = 0;
 		data += buffer;
 		totalNbytes += nbytes;
 	}
+	std::cout << data << std::endl;
 	std::cout << timestamp() << " client sokcet: " << client->socket << std::endl;
 	std::cout << timestamp() << " nbytes recv: " << totalNbytes << std::endl;
 	if (totalNbytes == 0) {
@@ -224,7 +225,8 @@ int Server::recieveRequest(socketInfo *client) {
 		client->hasRequest = true;
 	} else {
 		client->request->setBody(data);
-		if (client->request->getBodyLen() != client->request->getClientBody().size()) {
+		std::cout << client->request->getBodyLen() << " vs " << client->request->getClientBody().size() << std::endl;
+		if (client->request->getBodyLen() != static_cast<ssize_t>(client->request->getClientBody().size())) {
 			std::cout << RED << timestamp() << "Bodylen error" << RESET << std::endl;
 		}
 	}

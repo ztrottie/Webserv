@@ -19,12 +19,12 @@
 class Server
 {
 private:
-	int														_listSocket;
-	uint16_t	 											_port;
-	const char												*_host;
-	std::string												_name;
-	unsigned int											_clientBodySize;
-	Router													*_serverRouter;
+	int				_listSocket;
+	uint16_t	 	_port;
+	const char		*_host;
+	std::string		_name;
+	unsigned int	_clientBodySize;
+	Router			*_serverRouter;
 
 public:
 	// Constructors / Destructor
