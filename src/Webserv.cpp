@@ -79,9 +79,10 @@ void signalhandler(int signal) {
 void Webserv::loop() {
 	std::signal(SIGQUIT, signalhandler);
 	while (loopFlag) {
-		struct kevent events[10];
+		// sleep(1);
+		struct kevent events[1];
 		timespec time = {10, 0};
-		int numEvents = kevent(_kq, nullptr, 0, events, 10, &time);
+		int numEvents = kevent(_kq, nullptr, 0, events, 1, &time);
 		for (int i = 0; i < numEvents; i++) {
 			std::map<int, socketInfo*>::const_iterator it = _clientMap.find(events[i].ident);
 			if (it != _clientMap.end()) {

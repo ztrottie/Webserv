@@ -6,13 +6,14 @@ Request::Request(std::string const &received, socketInfo *client) : _raw(receive
 	std::stringstream ss(received);
 	std::getline(ss, _method, ' ');
 	std::getline(ss, _uri, ' ');
-	_clientAddr = inet_ntoa(client->client_address.sin_addr);
+	if (client)
+		_clientAddr = inet_ntoa(client->client_address.sin_addr);
 	_setHostPort();
 	_uriParser();
 	if (_method == "POST") {
 		_type = _search("Content-Type: ", ';');
-		_bodyLen = std::stoul(_search("Content-Length: ", '\n'));
-		_boundary = _search("boundary=", '\n');
+		_bodyLen = std::stoul(_search("Content-Length: ", '\r'));
+		_boundary = _search("boundary=", '\r');
 		_requestBodyParser();
 	}
 }
@@ -94,19 +95,19 @@ void Request::_setHostPort() {
 }
 
 void Request::_requestBodyParser() {
-	size_t bodyStart = _raw.find(_boundary);
+	std::string tempBoundary("\r\n\r\n--");
+	tempBoundary.append(_boundary);
+	size_t bodyStart = _raw.rfind(tempBoundary);
 	if (bodyStart != std::string::npos) {
-		bodyStart += _boundary.size();
-		size_t bodyEnd = _raw.find(_boundary + "--", bodyStart);
-		if (bodyEnd != std::string::npos) {
-			_clientBody = _raw.substr(bodyStart, bodyEnd - bodyStart);
-			std::cout << _clientBody << std::endl;
-		}
+		_clientBody = _raw.substr(bodyStart, _raw.size() - bodyStart);
 	}
 }
 
 void Request::setBody(std::string &body) {
-	_clientBody = body;
+	if (_clientBody.empty())
+		_clientBody = body;
+	else
+		_clientBody.append(body);
 }
 
 std::string const &Request::getMethod() const {
@@ -159,4 +160,17 @@ std::string const &Request::getClientBody() const {
 
 ssize_t const &Request::getBodyLen() const {
 	return _bodyLen;
+}
+
+bool Request::isBodyValid() const {
+	std::string tempBoundary("--");
+	tempBoundary.append(_boundary);
+	tempBoundary.append("--\r\n");
+	std::string end = _clientBody.substr(_clientBody.size() - tempBoundary.size(), tempBoundary.size());
+	std::cout << _clientBody << std::endl;
+	std::cout << tempBoundary.size() << ":" << end.size() << std::endl;
+	std::cout << tempBoundary << ":" << end << std::endl;
+	if (tempBoundary == end)
+		return true;
+	return false;
 }

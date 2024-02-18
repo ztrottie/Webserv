@@ -1,4 +1,5 @@
 #include "../include/Router.hpp"
+#include <ctime>
 #include <sys/stat.h>
 #include <sys/unistd.h>
 #include <unistd.h>
@@ -58,12 +59,7 @@ int Router::checkIfFileIsValid(std::string const &path){
 		if (S_ISDIR(fileStat.st_mode)) 
 			return IS_DIR;
 		if (S_ISREG(fileStat.st_mode))
-		{
-			std::size_t index = path.rfind(".php");
-			if (index != std::string::npos && access(path.c_str(), X_OK) != 0)
-				return INTERNALSERVERROR;
 			return IS_FILE;
-		}
 	}
 	return INTERNALSERVERROR;
 }

@@ -130,7 +130,6 @@ void Server::codeMessage(int code, std::string &message) {
 int Server::contentTypeGenerator(std::string &contentType, std::string const &path) {
 	std::map<std::string, std::string> contentTypeMap;
 
-	std::cout << path << std::endl;
 	contentTypeMap[".html"] = "text/html";
 	contentTypeMap[".css"] = "text/css";
 	contentTypeMap[".ico"] = "image/ico";
@@ -201,8 +200,7 @@ int Server::recieveRequest(socketInfo *client) {
 	ssize_t totalNbytes = 0;
 	ssize_t	nbytes = 1024;
 	std::string data;
-	std::cout << GREEN "fack u" RESET << std::endl;
-	while ((client->hasRequest && client->request->getBodyLen() > 0 && client->request->getBodyLen() != totalNbytes) || nbytes == 1024) {
+	while (nbytes == 1024) {
 		std::memset(buffer, 0, sizeof(buffer));
 		nbytes = recv(client->socket, buffer, 1024, 0);
 		if (nbytes == -1)
@@ -270,21 +268,24 @@ void Server::handlePostMethod(socketInfo *client) {
 		pipe(cgiOutput);
 		int pid = fork();
 		int status;
+		write(cgiInput[1], client->request->getClientBody().c_str(), client->request->getClientBody().size());
 		if (pid == -1) {
 		} else if (pid == 0) {
 			dup2(cgiInput[0], STDIN_FILENO);
-			dup2(cgiOutput[1], STDOUT_FILENO);
+			// dup2(cgiOutput[1], STDOUT_FILENO);
 			close(cgiInput[0]);
 			close(cgiInput[1]);
 			close(cgiOutput[0]);
 			close(cgiOutput[1]);
-			execve(path.c_str(), const_cast<char * const *>(argv), const_cast<char * const *>(envp));
+			if (execve(argv[0], const_cast<char * const *>(argv), const_cast<char * const *>(envp)) == -1) {
+				perror("execve failed");
+				exit(EXIT_FAILURE);
+			}
 			exit(0);
 		} else {
 			char buffer[1024];
 			size_t	nbytes;
 			close(cgiInput[0]);
-			write(cgiInput[1], client->request->getClientBody().c_str(), client->request->getClientBody().size());
 			close(cgiInput[1]);
 			close((cgiOutput[1]));
 			while ((nbytes = read(cgiOutput[0], buffer, sizeof(buffer))) > 0) {
@@ -296,13 +297,14 @@ void Server::handlePostMethod(socketInfo *client) {
 		}
 		if (headerGenerator(errorCode, path, response)) {
 			response.append("\r\n\r\n");
-			response.append(response);
+			response.append(result);
 		}
 	} else {
 		if (errorCode != INTERNALSERVERROR && headerGenerator(errorCode, path, response))
 			contentGenerator(path, response);
 	}
 	size_t totalSent = 0;
+	std::cout << response << std::endl;
 	while (totalSent < response.size()) {
 		int sent = send(client->socket, response.c_str(), response.size(), 0);
 		totalSent += sent;
@@ -327,9 +329,11 @@ int Server::handleRequest(socketInfo *client) {
 			return (CLOSE);
 		return (KEEP);
 	} else if (client->request->getMethod() == "POST" && client->request->getClientBody().empty()) {
+		std::cout << "body not complete" << std::endl;
 		send(client->socket, "HTTP/1.1 200 OK", 15, 0);
 		return (KEEP);
-	} else if (client->request->getMethod() == "POST" && !client->request->getClientBody().empty()) {
+	} else if (client->request->getMethod() == "POST" && client->request->isBodyValid()) {
+		std::cout << "responding to full request" << std::endl;
 		handlePostMethod(client);
 		delete client->request;
 		client->hasRequest = false;

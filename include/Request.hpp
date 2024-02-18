@@ -51,5 +51,6 @@ public:
 	std::string const &getClientAddress() const;
 	std::string const &getClientBody() const;
 	ssize_t const &getBodyLen() const;
-	void	setBody(std::string &body);
+	void setBody(std::string &body);
+	bool isBodyValid() const;
 };
