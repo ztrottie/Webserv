@@ -19,6 +19,7 @@ private:
 	std::map<int, std::string>	_errorPagesLocation;
 	std::string					_rewrite;
 	std::vector<std::string> 	_allowedMethod;
+	bool						_uploadEnable;
 
 public:
 	// Constructors / Destructor
@@ -31,6 +32,7 @@ public:
 	Location& operator=(const Location &rhs);
 
 	//Setters
+	void setUploadEnable(bool enable);
 	void setRoot(std::string const &root);
 	void setIndex(std::string const &index);
 	void addErrorPage(const int errorNumber, std::string pathToError);
@@ -40,6 +42,7 @@ public:
 	int isMethodAllowed(std::string const &method);
 	int isErrorCodeValid(int const &errorCode, std::string &path);
 	int getRoot(std::string &root);
+	bool getUploadEnable();
 };
 
 // Location_HPP

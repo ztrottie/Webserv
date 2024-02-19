@@ -67,3 +67,11 @@ void Location::addErrorPage(const int errorNumber, std::string pathToError) {
 void Location::addAllowedMethod(std::string const &method) {
 	_allowedMethod.push_back(method);
 }
+
+void Location::setUploadEnable(bool enable){
+	_uploadEnable = enable;
+}
+
+bool Location::getUploadEnable(){
+	return _uploadEnable;
+}
