@@ -6,6 +6,7 @@
 #include <iostream>
 #include <sys/stat.h>
 #include <vector>
+#include "Webserv.hpp"
 #include "color.h"
 #include "utils.hpp"
 #include "../include/Server.hpp"
@@ -53,6 +54,7 @@ class parsing{
 		parsing(string path);
 		bool parseConfigFile();
 		void assignConfigFile();
+		Webserv webserv;
 		~parsing();
 
 	private:
@@ -90,17 +92,18 @@ class parsing{
 		int					checkReturnsLocation(string const &line, unsigned int nbLine);
 		// Assignation
 			//Server
-		void				assignHost(const string &line);
-		void				assignServerName(const string &line);
-		void				assignPort(const string &line);
+		void				createServer(string &line, std::ifstream &file, size_t *i);
+		uint16_t			assignPort(const string &line);
+		string				assignHost(const string &line);
+		string				assignServerName(const string &line);
+		unsigned long		assignMaxBody(const string &line);
 			//Router
-		void				assignMaxBody(const string &line, Router &rout);
 		void				assignRoot(const string &line, Router &rout);
 		void				assignIndex(const string &line, Router &rout);
 		void				assignErrorPage(const string &line, Router &rout);
 		void				assignAllowedMethods(const string &line, Router &rout);
 		void				assignReturn(const string &line, Router &rout);
 			//Location
-		void				assignLocation(const string &line);
+		void				assignLocation(const string &line, std::ifstream &file, Router &rout);
 
 };

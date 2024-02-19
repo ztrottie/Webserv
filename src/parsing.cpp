@@ -61,6 +61,8 @@ int	parsing::checkValid(string const &line){
 		return CORRECT;
 	else if (res == "client_max_body_size")
 		return CORRECT;
+	// else if (res == "acceptUpload") upload un jour
+		// return CORRECT;
 	else if (res == "}")
 		return CORRECT;
 	else if (res.empty())
@@ -84,28 +86,30 @@ bool	parsing::parseConfigFile(){
 			checkDefault(line);
 		if (checkServer(line, nbLine) == -2)
 			return (error(SERVERPARS), false);
-		checkLocation(line, &nbLine);
-		if (checkHost(line, nbLine) == -2)
+		else if (checkLocation(line, &nbLine) == true)
+			writeTimestamp(BLUE, "The Location is OKPARS!");
+		else if (checkHost(line, nbLine) == -2)
 			return (error(HOST_ERR), false);
-		if (checkListen(line, nbLine) == -2)
+		else if (checkListen(line, nbLine) == -2)
 			return (error(LISTEN_ERR), false);
-		if (checkServerName(line, nbLine) == -2)
+		else if (checkServerName(line, nbLine) == -2)
 			return (error(SERVERNAME_ERR), false);
-		if (checkRoot(line, nbLine) == -2)
+		else if (checkRoot(line, nbLine) == -2)
 			return (error(ROOT_ERR), false);
-		if (checkIndex(line, nbLine) == -2)
+		else if (checkIndex(line, nbLine) == -2)
 			return (error(INDEX_ERR), false);
-		if (checkErrorPage(line, nbLine) == -2)
+		else if (checkErrorPage(line, nbLine) == -2)
 			return (error(ERROR_PAGE_ERR), false);
-		if (checkClientMaxBodySize(line, nbLine) == -2)
+		else if (checkClientMaxBodySize(line, nbLine) == -2)
 			return (error(CLIENT_MAX_BODY_SIZE_ERR), false);
-		if (checkReturns(line, nbLine) == -2)
+		else if (checkReturns(line, nbLine) == -2)
 			return (error(RETURN_ERR), false);
-		if (checkServerAllowedMethods(line, nbLine) == -2)
+		else if (checkServerAllowedMethods(line, nbLine) == -2)
 			return (error(RETURN_ERR), false);
+		else if (nbLine != verifLine.size() - 1)
+			verifLine.push_back(DONT);
 		nbLine++;
 	}
-	verifLine.push_back(DONT);
 	return true;
 }
 

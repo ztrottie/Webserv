@@ -247,8 +247,5 @@ bool	checkVargule(std::string const &line, bool _defaultIfError, bool insideLoca
 }
 
 bool checkIdentationLocation(std::string const &line){
-
-	if (line[0] != '	' || line[1] != '	')
-		return false;
-	return true;
+	return ((line[0] != '	' || line[1] != '	') ? false : true);
 }

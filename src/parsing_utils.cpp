@@ -16,7 +16,7 @@ int	parsing::checkIndexLocation(string const &line, unsigned int nbLine){
 		return -1;
 	if (checkVargule(line, defaultIfError, true, verifLine, nbLine) == false)
 		return -2;
-	if (checkIdentationLocation(line) == false){
+	if (checkIdentationLocation(line) == false || pos != 2){
 		writeTimestamp(YELLOW, "Inside the location scope, the \"" + line + "\" must have 2 tabs before the line, we will not use this line...");
 		return -2;
 	}
@@ -40,7 +40,7 @@ int	parsing::checkRootLocation(string const &line, unsigned int nbLine){
 		return -1;
 	if (checkVargule(line, defaultIfError, true, verifLine, nbLine) == false)
 		return -2;
-	if (checkIdentationLocation(line) == false){
+	if (checkIdentationLocation(line) == false || pos != 2){
 		writeTimestamp(YELLOW, "Inside the location scope, the \"" + line + "\" must have 2 tabs before the line, we will not use this line...");
 		return -2;
 	}
@@ -64,7 +64,7 @@ int	parsing::checkAllowedMethods(string const &line, unsigned int nbLine){
 		return -1;
 	if (checkVargule(line, defaultIfError, true, verifLine, nbLine) == false)
 		return -2;
-	if (checkIdentationLocation(line) == false){
+	if (checkIdentationLocation(line) == false || pos != 2){
 		writeTimestamp(YELLOW, "Inside the location scope, the \"" + line + "\" must have 2 tabs before the line, we will not use this line...");
 		return -2;
 	}
@@ -88,7 +88,7 @@ int	parsing::checkErrorPageLocation(string const &line, unsigned int nbLine){
 		return -1;
 	if (checkVargule(line, defaultIfError, true, verifLine, nbLine) == false)
 		return -2;
-	if (checkIdentationLocation(line) == false){
+	if (checkIdentationLocation(line) == false || pos != 2){
 		writeTimestamp(YELLOW, "Inside the location scope, the \"" + line + "\" must have 2 tabs before the line, we will not use this line...");
 		return -2;
 	}
@@ -112,7 +112,7 @@ int	parsing::checkReturnsLocation(string const &line, unsigned int nbLine){
 		return -1;
 	if (checkVargule(line, defaultIfError, true, verifLine, nbLine) == false)
 		return -2;
-	if (checkIdentationLocation(line) == false){
+	if (checkIdentationLocation(line) == false || pos != 2){
 		writeTimestamp(YELLOW, "Inside the location scope, the \"" + line + "\" must have 2 tabs before the line, we will not use this line...");
 		return -2;
 	}
@@ -168,7 +168,6 @@ int	parsing::checkLocation(string &line, unsigned int *nbLine){
 		(*nbLine)++;
 		std::getline(configFile, line);
 	}
-	writeTimestamp(BLUE, "The Location is OKPARS!");
 	verifLine.push_back(DONT);
 	// cout << "IN LOC Line : #" << verifLine.size() << " content \"" + line + "\"" << verifLine[verifLine.size() - 1] << endl;
 	return true;
