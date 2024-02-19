@@ -14,6 +14,7 @@
 #include "../include/color.h"
 #include "../include/utils.hpp"
 #include "../include/Request.hpp"
+#include "../include/Response.hpp"
 
 
 class Server
@@ -36,19 +37,14 @@ public:
 	Server& operator=(const Server &rhs);
 
 	// Functions
+	Router *getRouter() const;
 	int acceptConnection(socketInfo *client);
 	int handleClient(socketInfo *client, int type);
-	Router *getRouter() const;
 	void codeMessage(int code, std::string &message);
-	int headerGenerator(int code, std::string const &path, std::string &response);
-	int contentTypeGenerator(std::string &contentType, std::string const &path);
-	void contentLengthGenerator(std::string &contentLength, std::string const &path);
-	void contentGenerator(std::string const &path, std::string &response);
-	void internalServerError(std::string &response);
+	int headerGenerator(int code, std::string &header, Response const &response);
+	void contentTypeGenerator(std::string &contentType, std::string const &path);
 	int recieveRequest(socketInfo *client);
-	void handlePost(socketInfo *client, std::string &data);
 	int handleRequest(socketInfo *client);
-	void handlePostMethod(socketInfo *client);
 	void getEnv(socketInfo *client, char **envp);
 };
 
