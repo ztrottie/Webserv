@@ -111,7 +111,7 @@ bool	parsing::parseConfigFile(){
 
 int	parsing::checkServerAllowedMethods(string const &line, unsigned int nbLine){
 	size_t pos = line.find("allowedMethods");
-	if (pos == string::npos)
+	if (pos != 1)
 		return -1;
 	if (checkVargule(line, defaultIfError, false, verifLine, nbLine) == false){
 		verifLine.push_back(DONT);
@@ -137,7 +137,7 @@ int	parsing::checkServerAllowedMethods(string const &line, unsigned int nbLine){
 
 int	parsing::checkClientMaxBodySize(string const &line, unsigned int nbLine){
 	size_t pos = line.find("client_max_body_size");
-	if (pos == string::npos)
+	if (pos != 1)
 		return -1;
 	if (checkVargule(line, defaultIfError, false, verifLine, nbLine) == false){
 		verifLine.push_back(DONT);
@@ -192,7 +192,7 @@ int	parsing::checkClientMaxBodySize(string const &line, unsigned int nbLine){
 
 int	parsing::checkReturns(string const &line, unsigned int nbLine){
 	size_t pos = line.find("return");
-	if (pos == string::npos)
+	if (pos != 1)
 		return -1;
 	if (checkVargule(line, defaultIfError, false, verifLine, nbLine) == false){
 		verifLine.push_back(DONT);
@@ -221,7 +221,7 @@ int	parsing::checkReturns(string const &line, unsigned int nbLine){
 }
 
 int	parsing::checkErrorPage(string const &line, unsigned int nbLine){
-	if (line.find("error_page") == string::npos)
+	if (line.find("error_page") != 1)
 		return -1;
 	if (checkVargule(line, defaultIfError, false, verifLine, nbLine) == false){
 		verifLine.push_back(DONT);
@@ -255,7 +255,7 @@ int	parsing::checkErrorPage(string const &line, unsigned int nbLine){
 }
 
 int	parsing::checkIndex(string const &line, unsigned int nbLine){
-	if (line.find("index") == string::npos || line.find("index") == 2)
+	if (line.find("index") != 1)
 		return -1;
 	if (checkVargule(line, defaultIfError, false, verifLine, nbLine) == false){
 		verifLine.push_back(DONT);
@@ -289,7 +289,7 @@ int	parsing::checkIndex(string const &line, unsigned int nbLine){
 }
 
 int	parsing::checkRoot(string const &line, unsigned int nbLine){
-	if (line.find("root") == string::npos || line.find("root") == 2)
+	if (line.find("root") != 1)
 		return -1;
 	if (checkVargule(line, defaultIfError, false, verifLine, nbLine) == false){
 		verifLine.push_back(DONT);
@@ -323,7 +323,7 @@ int	parsing::checkRoot(string const &line, unsigned int nbLine){
 }
 
 int	parsing::checkServerName(string const &line, unsigned int nbLine){
-	if (line.find("server_name") == string::npos)
+	if (line.find("server_name") != 1)
 		return -1;
 	if (checkVargule(line, defaultIfError, false, verifLine, nbLine) == false){
 		verifLine.push_back(DONT);
@@ -357,8 +357,7 @@ int	parsing::checkServerName(string const &line, unsigned int nbLine){
 }
 
 int	parsing::checkHost(string const &line, unsigned int nbLine){
-
-	if (line.find("host") == string::npos)
+	if (line.find("host") != 1)
 		return -1;
 	if (checkVargule(line, defaultIfError, false, verifLine, nbLine) == false){
 		verifLine.push_back(DONT);
@@ -392,7 +391,7 @@ int	parsing::checkHost(string const &line, unsigned int nbLine){
 }
 
 int	parsing::checkListen(string const &line, unsigned int nbLine){
-	if (line.find("listen") == string::npos)
+	if (line.find("listen") != 1)
 		return -1;
 	if (checkVargule(line, defaultIfError, false, verifLine, nbLine) == false){
 		verifLine.push_back(DONT);

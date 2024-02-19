@@ -12,11 +12,11 @@ int parsing::isThisTheEnd(string const &line){
 
 int	parsing::checkIndexLocation(string const &line, unsigned int nbLine){
 	size_t pos = line.find("index");
-	if (pos == string::npos)
+	if (pos == std::string::npos)
 		return -1;
 	if (checkVargule(line, defaultIfError, true, verifLine, nbLine) == false)
 		return -2;
-	if (pos != 2){
+	if (checkIdentationLocation(line) == false){
 		writeTimestamp(YELLOW, "Inside the location scope, the \"" + line + "\" must have 2 tabs before the line, we will not use this line...");
 		return -2;
 	}
@@ -36,11 +36,11 @@ int	parsing::checkIndexLocation(string const &line, unsigned int nbLine){
 
 int	parsing::checkRootLocation(string const &line, unsigned int nbLine){
 	size_t pos = line.find("root");
-	if (pos == string::npos)
+	if (pos == std::string::npos)
 		return -1;
 	if (checkVargule(line, defaultIfError, true, verifLine, nbLine) == false)
 		return -2;
-	if (pos != 2){
+	if (checkIdentationLocation(line) == false){
 		writeTimestamp(YELLOW, "Inside the location scope, the \"" + line + "\" must have 2 tabs before the line, we will not use this line...");
 		return -2;
 	}
@@ -60,11 +60,11 @@ int	parsing::checkRootLocation(string const &line, unsigned int nbLine){
 
 int	parsing::checkAllowedMethods(string const &line, unsigned int nbLine){
 	size_t pos = line.find("allowedMethods");
-	if (pos == string::npos)
+	if (pos == std::string::npos)
 		return -1;
 	if (checkVargule(line, defaultIfError, true, verifLine, nbLine) == false)
 		return -2;
-	if (pos != 2){
+	if (checkIdentationLocation(line) == false){
 		writeTimestamp(YELLOW, "Inside the location scope, the \"" + line + "\" must have 2 tabs before the line, we will not use this line...");
 		return -2;
 	}
@@ -84,11 +84,11 @@ int	parsing::checkAllowedMethods(string const &line, unsigned int nbLine){
 
 int	parsing::checkErrorPageLocation(string const &line, unsigned int nbLine){
 	size_t pos = line.find("error_page");
-	if (pos == string::npos)
+	if (pos == std::string::npos)
 		return -1;
 	if (checkVargule(line, defaultIfError, true, verifLine, nbLine) == false)
 		return -2;
-	if (pos != 2){
+	if (checkIdentationLocation(line) == false){
 		writeTimestamp(YELLOW, "Inside the location scope, the \"" + line + "\" must have 2 tabs before the line, we will not use this line...");
 		return -2;
 	}
@@ -108,11 +108,11 @@ int	parsing::checkErrorPageLocation(string const &line, unsigned int nbLine){
 
 int	parsing::checkReturnsLocation(string const &line, unsigned int nbLine){
 	size_t pos = line.find("return");
-	if (pos == string::npos)
+	if (pos == std::string::npos)
 		return -1;
 	if (checkVargule(line, defaultIfError, true, verifLine, nbLine) == false)
 		return -2;
-	if (pos != 2){
+	if (checkIdentationLocation(line) == false){
 		writeTimestamp(YELLOW, "Inside the location scope, the \"" + line + "\" must have 2 tabs before the line, we will not use this line...");
 		return -2;
 	}
@@ -131,7 +131,7 @@ int	parsing::checkReturnsLocation(string const &line, unsigned int nbLine){
 }
 
 int	parsing::checkLocation(string &line, unsigned int *nbLine){
-	if (line.find("location") == string::npos)
+	if (line.find("location") != 1)
 		return -1;
 	writeTimestamp(BLUE, "Checking new location");
 	string ret = retIsThereSomethingInMyString(line, "location", "/", true);

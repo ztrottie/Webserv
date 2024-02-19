@@ -14,7 +14,7 @@ void parsing::assignConfigFile(){
 		std::getline(file, line);
 		cout << "line " << i + 1 << "	" << line << " : " << verifLine[i] << endl;
 	}
-	Router *rout = new Router();
+	// Router *rout = new Router();
 	// rout->setRoot(const std::string &root);
 	// rout->setIndex(const std::string &index);
 	// rout->addAllowedMethod(const std::string &method);
@@ -30,3 +30,27 @@ void parsing::assignConfigFile(){
 	// rout->addLocation(const std::string &key, Location *loc);
 	// Server *serv = new Server();
 }
+
+// void parsing::assignMaxBody(const string &line, Router &rout){
+
+// }
+
+// void parsing::assignRoot(const string &line, Router &rout){
+
+// }
+
+// void parsing::assignIndex(const string &line, Router &rout){
+
+// }
+
+// void parsing::assignErrorPage(const string &line, Router &rout){
+
+// }
+
+// void parsing::assignAllowedMethods(const string &line, Router &rout){
+
+// }
+
+// void parsing::assignReturn(const string &line, Router &rout){
+
+// }

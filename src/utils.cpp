@@ -245,3 +245,10 @@ bool	checkVargule(std::string const &line, bool _defaultIfError, bool insideLoca
 	}
 	return true;
 }
+
+bool checkIdentationLocation(std::string const &line){
+
+	if (line[0] != '	' || line[1] != '	')
+		return false;
+	return true;
+}
