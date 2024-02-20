@@ -2,6 +2,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <cstdlib>
+#include <fstream>
 
 // client_max_body_size 1B; = 1
 // client_max_body_size 1K; = 1000
@@ -29,8 +30,6 @@ void parsing::assignConfigFile(){
 	// rout->addErrorPage(const int errorNumber, std::string pathToError);
 	//si location
 	// Location *loc = new Location();
-	// loc->addAllowedMethod(const std::string &method);
-	// loc->addAllowedMethod(const std::string &method);
 	// loc->addAllowedMethod(const std::string &method);
 	// loc->addErrorPage(const int errorNumber, std::string pathToError);
 	// loc->setIndex(const std::string &index);
@@ -65,9 +64,8 @@ void	parsing::createServer(string &line, std::ifstream &file, size_t *i){
 			assignRoot(line, *router);
 			assignIndex(line, *router);
 			// assignErrorPage(line, *router);
-			// assignAllowedMethods(line, *router);
 			// assignReturn(line, *router);
-			// assignLocation(line, file, i, *router);
+			assignLocation(line, file, i, *router);
 		}
 		if (line.find("}") == 0){
 			cout << "SERVER TERMINER" << endl;
@@ -79,8 +77,6 @@ void	parsing::createServer(string &line, std::ifstream &file, size_t *i){
 	cout << "Host is " << host << endl;
 	cout << "ServerName is " << name << endl;
 	cout << "ClientMaxBodySize is " << clientBodySize << endl;
-	// cout << "Root is " <<  << endl;
-	// cout << "Index is " << clientBodySize << endl;
 
 	// if (anyAreNull)
 		// setDefault
@@ -147,11 +143,93 @@ void parsing::assignIndex(const string &line, Router &rout){
 }
 
 // void parsing::assignErrorPage(const string &line, Router &rout){
+	
 // }
 
-void parsing::assignAllowedMethods(const string &line, Router &rout){
+// void parsing::assignReturn(const string &line, Router &rout){
+// }
+
+void	parsing::assignLocation(string &line, std::ifstream &file, size_t *i, Router &rout){
+	if (line.find("location") != 1)
+		return ;
+	Location	loc;
+	(*i)++;
+	while (*i < verifLine.size()){
+		std::getline(file, line);
+		// cout << line << endl;
+		if (verifLine[*i] == 0){
+			assignAllowedMethods(line, loc);
+			assignIndex(line, loc);
+			assignRoot(line, loc);
+			// assignMaxBody(line, loc);
+			// assignReturn(line, loc);
+			// assignErrorPage(line, loc);
+		}
+		if (line.find("}") == 1){
+			cout << "LOCATION TERMINER" << endl;
+			break ;
+		}
+		(*i)++;
+	}
+	// if (anyAreNull)
+		// setDefault
+	rout.addLocation("key", &loc);
 }
 
-// void parsing::assignReturn(const string &line, Router &rout){
+void parsing::assignIndex(const string &line, Location &loc){
+	if (line.find("index") != 1)
+		return ;
+	string tempLine = line;
+	tempLine.erase(std::remove_if(tempLine.begin(), tempLine.end(), ::isspace), tempLine.end());
+	tempLine.erase(0, 5); tempLine.erase(tempLine.size() - 1, tempLine.size());
+	loc.setIndex(tempLine);
+}
 
+void parsing::assignRoot(const string &line, Location &loc){
+	if (line.find("root") != 1)
+		return ;
+	string tempLine = line;
+	tempLine.erase(std::remove_if(tempLine.begin(), tempLine.end(), ::isspace), tempLine.end());
+	tempLine.erase(0, 4); tempLine.erase(tempLine.size() - 1, tempLine.size());
+	loc.setRoot(tempLine);
+}
+
+void	parsing::assignAllowedMethods(const string &line, Location &loc){
+	if (line.find("allowedMethods") != 2)
+		return ;
+	std::vector<std::string> res = splitString(line, ',');
+	for (size_t i = 0 ; i < res.size(); i++){
+		if (i == 0)
+			res[i].erase(0, 17);
+		else if (i < res.size() - 1)
+			res[i].erase(0, 1);
+		else if (i < res.size()){
+			res[i].erase(0, 1);
+			res[i].erase(res[i].size() - 1, res[i].size());
+		}
+	}
+	for (size_t i = 0 ; i < res.size(); i++){
+		if (res[i] == "GET")
+			loc.addAllowedMethod(res[i]);
+		else if (res[i] == "PUT")
+			loc.addAllowedMethod(res[i]);
+		else if (res[i] == "POST")
+			loc.addAllowedMethod(res[i]);
+		else if (res[i] == "PATCH")
+			loc.addAllowedMethod(res[i]);
+		else if (res[i] == "DELETE")
+			loc.addAllowedMethod(res[i]);
+		else if (res[i] == "CONNECT")
+			loc.addAllowedMethod(res[i]);
+		else if (res[i] == "OPTIONS")
+			loc.addAllowedMethod(res[i]);
+		else if (res[i] == "TRACE")
+			loc.addAllowedMethod(res[i]);
+	}
+}
+
+// void parsing::assignErrorPage(const string &line, Location &loc){
+// }
+
+// void parsing::assignReturn(const string &line, Location &loc){
 // }

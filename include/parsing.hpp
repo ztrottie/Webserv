@@ -102,9 +102,14 @@ class parsing{
 		void				assignRoot(const string &line, Router &rout);
 		void				assignIndex(const string &line, Router &rout);
 		void				assignErrorPage(const string &line, Router &rout);
-		void				assignAllowedMethods(const string &line, Router &rout);
 		void				assignReturn(const string &line, Router &rout);
 			//Location
-		void				assignLocation(const string &line, std::ifstream &file, size_t *i, Router &rout);
+		void				assignLocation(string &line, std::ifstream &file, size_t *i, Router &rout);
+		void				assignAllowedMethods(const string &line, Location &loc);
+		void				assignIndex(const string &line, Location &loc);
+		void				assignRoot(const string &line, Location &loc);
+		void				assignReturn(const string &line, Location &loc);
+		void				assignErrorPage(const string &line, Location &loc);
+		void				assignMaxBody(const string &line, Location &loc);
 
 };

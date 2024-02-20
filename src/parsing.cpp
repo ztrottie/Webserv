@@ -1,5 +1,8 @@
 #include "../include/parsing.hpp"
+#include <sstream>
+#include <string>
 #include <variant>
+#include <vector>
 
 parsing::parsing(string path): pathConfigFile(path){
 	defaultIfError = false;
@@ -206,9 +209,53 @@ int	parsing::checkReturns(string const &line, unsigned int nbLine){
 		verifLine.push_back(DONT);
 		return -2;
 	}
-	if (isThereSomethingInMyString(line, "return", defaultIfError, false, true, verifLine, nbLine) == true){
-		verifLine.push_back(DONT);
-		return -2;
+	if (line.rfind('	') != 0){
+		if (defaultIfError == true){
+			writeTimestamp(YELLOW, "The Return line must only be separated by space, not tabs, switching to default");
+			if (nbLine == verifLine.size())
+				verifLine.push_back(SWITCH);
+			return -1;
+		}
+		else{
+			writeTimestamp(RED, "The Return line must only be separated by space, not tabs");
+			verifLine.push_back(DONT);
+			return -2;
+		}
+	}
+	std::vector<string> split = splitString(line, ' ');
+	if (split[split.size() - 1].substr(0, 5) == "https"){
+		;
+	}else if (split[split.size() - 1][0] == '/' || split[split.size() - 1][0] == '"' || split[split.size() - 1][0] == '$'){
+		;
+	}else if(containsNonDigit(split[split.size() - 1]) == false){
+		;
+	}
+	else{
+		if (defaultIfError == true){
+			writeTimestamp(YELLOW, "The last argument is not valid, switching to default");
+			if (nbLine == verifLine.size())
+				verifLine.push_back(SWITCH);
+			return -1;
+		}
+		else{
+			writeTimestamp(RED, "The last argument is not valid");
+			verifLine.push_back(DONT);
+			return -2;
+		}
+	}
+	for (size_t i = 1; i <= split.size() - 2; i++){
+		if (containsNonDigit(split[i]) == true){
+			if (defaultIfError == true){
+				writeTimestamp(YELLOW, "Error code in the line \"" + line + "\" must only contain digit, switching to default");
+			if (nbLine == verifLine.size())
+				verifLine.push_back(SWITCH);
+			return -1;
+			}else{
+				writeTimestamp(RED, "Error code in the line \"" + line + "\" must only contain digit");
+				verifLine.push_back(DONT);
+				return -2;
+			}
+		}
 	}
 	string str = line;
 	str.erase(std::remove_if(str.begin(), str.end(), ::isspace), str.end());
@@ -235,9 +282,32 @@ int	parsing::checkErrorPage(string const &line, unsigned int nbLine){
 		verifLine.push_back(DONT);
 		return -2;
 	}
-	if (isThereSomethingInMyString(line, "error_page", defaultIfError, false, true, verifLine, nbLine) == true){
-		verifLine.push_back(DONT);
-		return -2;
+	if (line.rfind('	') != 0){
+		if (defaultIfError == true){
+			writeTimestamp(YELLOW, "The ErrorPage line must only be separated by space, not tabs, switching to default");
+			if (nbLine == verifLine.size())
+				verifLine.push_back(SWITCH);
+			return -1;
+		}
+		else{
+			writeTimestamp(RED, "The ErrorPage line must only be separated by space, not tabs");
+			verifLine.push_back(DONT);
+			return -2;
+		}
+	}
+	std::vector<string> split = splitString(line, ' ');
+	for (size_t i = 1; i < split.size() - 1; i++){
+		if (containsNonDigit(split[i]) == true && defaultIfError == true){
+			cout << split[i] << endl;
+			writeTimestamp(YELLOW, "The error code in the ErrorPage line muste only contains digit, switching to default");
+			if (nbLine == verifLine.size())
+				verifLine.push_back(SWITCH);
+			return -1;
+		}
+		else if (containsNonDigit(split[i]) == true && defaultIfError == true){
+			writeTimestamp(RED, "The error code in the ErrorPage line muste only contains digit");
+			return -2;
+		}
 	}
 	string str = line;
 	str.erase(std::remove_if(str.begin(), str.end(), ::isspace), str.end());

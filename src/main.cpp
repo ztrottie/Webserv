@@ -10,7 +10,7 @@ int main(void) {
 		writeTimestamp(RED, "ERROR IN PARSING QUITTING....");
 		return 1;
 	}
-	parsing.assignConfigFile();
+	// parsing.assignConfigFile();
 	// Router *bob = new Router();
 	// Location *loc = new Location();
 	// bob->addAllowedMethod("GET");

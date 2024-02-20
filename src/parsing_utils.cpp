@@ -116,13 +116,54 @@ int	parsing::checkReturnsLocation(string const &line, unsigned int nbLine){
 		writeTimestamp(YELLOW, "Inside the location scope, the \"" + line + "\" must have 2 tabs before the line, we will not use this line...");
 		return -2;
 	}
-	if (isThereSomethingInMyString(line, "return", defaultIfError, true, true, verifLine, nbLine) == true)
-		return -2;
+	if (line.rfind('	') != 1){
+		if (defaultIfError == true){
+			writeTimestamp(YELLOW, "The Return line must only be separated by space, not tabs, switching to default");
+			if (nbLine == verifLine.size())
+				verifLine.push_back(DONT);
+			return -1;
+		}
+		else{
+			writeTimestamp(YELLOW, "The Return line must only be separated by space, not tabs, we will note use this line");
+			verifLine.push_back(DONT);
+			return -2;
+		}
+	}
+	std::vector<string> split = splitString(line, ' ');
+	if (split[split.size() - 1].substr(0, 5) == "https"){
+		;
+	}else if (split[split.size() - 1][0] == '/' || split[split.size() - 1][0] == '"' || split[split.size() - 1][0] == '$'){
+		;
+	}else if(containsNonDigit(split[split.size() - 1]) == false){
+		;
+	}
+	else{
+		if (defaultIfError == true){
+			writeTimestamp(YELLOW, "The last argument is not valid, we will not use this line");
+			if (nbLine == verifLine.size())
+				verifLine.push_back(DONT);
+			return -2;
+	}
+	for (size_t i = 1; i <= split.size() - 2; i++){
+		if (containsNonDigit(split[i]) == true){
+			writeTimestamp(YELLOW, "Error code in the line \"" + line + "\" must only contain digit, we will not use this line");
+			if (nbLine == verifLine.size())
+				verifLine.push_back(DONT);
+			return -2;
+		}
+	}
 	string str = line;
 	str.erase(std::remove_if(str.begin(), str.end(), ::isspace), str.end());
 	if (str.length() < 8){
 		writeTimestamp(YELLOW, "The return line must have another arguments, like an error code and an html or url!");
+		verifLine.push_back(DONT);
 		return -2;
+	}
+	writeTimestamp(GREEN, "Return is OK!");
+	if (nbLine == verifLine.size())
+		verifLine.push_back(OKPARS);
+	// cout << "Line : #" << verifLine.size() << " content \"" + line + "\"" << verifLine[verifLine.size() - 1] << endl;
+	return CORRECT;return -2;
 	}
 	writeTimestamp(GREEN, "Return is OKPARS!");
 	verifLine.push_back(OKPARS);

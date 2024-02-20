@@ -242,6 +242,16 @@ bool	checkVargule(std::string const &line, bool _defaultIfError, bool insideLoca
 			writeTimestamp(YELLOW, "You need to have a \";\" at the end of the line \"" + line + "\" , this line will not be used");
 			return false;
 		}
+	}else if (line[line.length() - 2] == ' ' || line[line.length() - 2] == '	'){
+		if (_defaultIfError == false){
+				writeTimestamp(RED, "A line must end with the last arguments and the \';\' nothing else, error in the line \"" + line + "\"");
+				return false;
+		}else{
+			writeTimestamp(YELLOW, "A line must end with the last arguments and the \';\' nothing else, error in the line \"" + line + "\", switching to default");
+			if (nbLine == verifLine.size())
+				verifLine.push_back(1);
+			return true;
+		}
 	}
 	return true;
 }
