@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cstddef>
 #include <cstdint>
 #include <fstream>
 #include <string>
@@ -104,6 +105,6 @@ class parsing{
 		void				assignAllowedMethods(const string &line, Router &rout);
 		void				assignReturn(const string &line, Router &rout);
 			//Location
-		void				assignLocation(const string &line, std::ifstream &file, Router &rout);
+		void				assignLocation(const string &line, std::ifstream &file, size_t *i, Router &rout);
 
 };
