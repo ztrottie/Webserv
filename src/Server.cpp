@@ -281,7 +281,7 @@ int Server::handleRequest(socketInfo *client) {
 	std::string header;
 	std::string httpResponse;
 	headerGenerator(code, header, response);
-	httpResponse = header + response.getBody();
+	httpResponse = header + response->getBody();
 	unsigned long totalSent = 0;
 	while (totalSent < httpResponse.size()) {
 		int sent = send(client->socket, httpResponse.c_str() + totalSent, httpResponse.size() - totalSent, 0);

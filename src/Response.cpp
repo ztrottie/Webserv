@@ -1,10 +1,20 @@
 #include "../include/Response.hpp"
 #include "../include/struct.hpp"
+#include <filesystem>
 #include <iostream>
 #include <fstream>
 #include <sstream>
+#include <sys/unistd.h>
+#include <unistd.h>
+#include <cstdio>
+#include <dirent.h>
 
-Response::Response(Request *request, Router *router, Location *location, int &errorCode) {}
+Response::Response(Request *request, Router *router, Location *location, int &errorCode) {
+	if (request->getMethod() == "GET")
+		handleGet(request, router, location, errorCode);
+	else if (request->getMethod() == "DELETE")
+		handleDelete(request, router, location, errorCode);
+}
 
 Response::Response(const Response &inst) {
 	std::cout << "Copy Response constructor" << std::endl;
@@ -23,21 +33,17 @@ Response& Response::operator=(const Response &rhs) {
 	return *this;
 }
 
-void	Response::setPath(std::string const & path) {
-	_path = path;
-}
-
 const std::string & Response::getBody() const {
 	return _body;
 }
 
-const std::string & Response::getPath() const {
-	return _path;
-}
-
 int Response::openPath(std::string const &path) {
-	std::ifstream file(path, std::ios::binary);
+	if (access(path.c_str(), F_OK) != 0)
+		return (NOTFOUND);
+	if (access(path.c_str(), R_OK) != 0)
+		return (INTERNALSERVERROR);
 
+	std::ifstream file(path, std::ios::binary);
 	if (!file.is_open()) {
 		return INTERNALSERVERROR;
 	}
@@ -50,4 +56,127 @@ int Response::openPath(std::string const &path) {
 
 void Response::setBody(std::string const & body) {
 	_body = body;
+}
+
+void Response::internalServerError(int & errorCode) {
+	_body = "Internal Server Error";
+	_contentType = "text/plain";
+	errorCode = INTERNALSERVERROR;
+}
+
+void Response::contentTypeGenerator(std::string const &path) {
+	std::map<std::string, std::string> contentTypeMap;
+
+	contentTypeMap[".html"] = "text/html";
+	contentTypeMap[".css"] = "text/css";
+	contentTypeMap[".ico"] = "image/ico";
+	contentTypeMap[".png"] = "image/png";
+	contentTypeMap[".php"] = "application/php";
+	int pos = path.rfind('.');
+	std::string fileExtension = path.substr(pos, path.size());
+	std::cout << fileExtension << std::endl;
+	std::map<std::string, std::string>::const_iterator it = contentTypeMap.find(fileExtension);
+	_contentType = ((it == contentTypeMap.end()) ? "text/plain" : contentTypeMap[fileExtension]);
+}
+
+void Response::handleGet(Request *request, Router *router, Location *location, int &errorCode) {
+	errorCode = openPath(request->getFilePath());
+	if (errorCode == INTERNALSERVERROR) {
+		internalServerError(errorCode);
+	} else if (errorCode >= 300 && location->getAutoIndex() == false) {
+		std::string errorPath;
+		int errorPageCode = router->getErrorPage(errorPath, errorCode, location);
+		if (errorPageCode >= 300)
+			internalServerError(errorCode);
+		errorCode = openPath(errorPath);
+		if (errorCode >= 300)
+			internalServerError(errorCode);
+		contentTypeGenerator(errorPath);
+	} else if (location->getAutoIndex()) {
+		directoryListing(request, router, location, errorCode);
+	}
+	contentTypeGenerator(request->getFilePath());
+}
+
+void Response::handleDelete(Request *request, Router *router, Location *location, int &errorCode) {
+	std::string path = request->getFilePath();
+	if (access(path.c_str(), F_OK) != 0) {
+		errorCode = NOTFOUND;
+		std::string errorPath;
+		errorCode = router->getErrorPage(errorPath, errorCode);
+		if (errorCode >= 300)
+			internalServerError(errorCode);
+		errorCode = openPath(errorPath);
+		if (errorCode >= 300)
+			internalServerError(errorCode);
+		contentTypeGenerator(path);
+	} else {
+		if (std::remove(path.c_str()) != 0)
+			internalServerError(errorCode);
+		if (location->getAutoIndex())
+			directoryListing(request, router, location, errorCode);
+		else {
+			_body = "yessir";
+			_contentType = "text/plain";
+			errorCode = OK;
+		}
+	}
+}
+
+std::string Response::_headGenerator() const {
+	std::string head =
+	"<!DOCTYPE html>\r\n"
+	"<html>\r\n"
+	"<head>\r\n"
+	"\t<title>Directory Listing</title>\r\n"
+	"</head>\r\n"
+	"<body>\r\n"
+	"\t<h1>Directory Listing</h1>\r\n"
+	"\t<ul>\r\n";
+	return head;
+}
+
+std::string Response::_footerGenerator() const {
+	std::string foot =
+	"\t</ul>\r\n"
+	"</body>\r\n"
+	"</html>";
+	return foot;
+}
+
+std::string Response::_linkGenerator(std::string const &path, std::string const &name) const {
+	std::string link;
+	link += "<li><a href=\"" + path;
+	if (path.back() != '/' && name.front() != '/')
+		link += "/";
+	link += name + "\">" + name + "</a></li>";
+	return link;
+}
+
+void Response::directoryListing(Request *request, Router *router, Location *location, int &errorCode) {
+	size_t end = request->getFilePath().rfind("/");
+	if (end == std::string::npos) {
+		internalServerError(errorCode);
+		return;
+	}
+	std::string path;
+	if (end != 0)
+		path = request->getFilePath().substr(0 , end);
+	else
+		path = "/";
+	DIR *dir;
+	struct dirent* entry;
+	dir = opendir(path.c_str());
+	if (dir == NULL) {
+		internalServerError(errorCode);
+		return;
+	}
+	_body = _headGenerator();
+	while ((entry = readdir(dir)) != NULL) {
+		_body += _linkGenerator(path, entry->d_name);
+	}
+	closedir(dir);
+	_body += _footerGenerator();
+	errorCode = OK;
+	_contentType = "text/html";
 }

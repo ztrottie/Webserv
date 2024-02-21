@@ -186,3 +186,10 @@ bool Request::isBodyValid() const {
 		return true;
 	return false;
 }
+
+void Request::setAddedIndex(bool index) {
+	_addedIndex = index;
+}
+bool Request::getAddedIndex() const {
+	return _addedIndex;
+}

@@ -21,6 +21,7 @@ private:
 	std::string					_rewrite;
 	std::vector<std::string> 	_allowedMethod;
 	size_t						_clientMaxBodySize;
+	bool						_autoIndex;
 	bool						_uploadEnable;
 
 public:
@@ -37,6 +38,7 @@ public:
 	void setUploadEnable(bool enable);
 	void setRoot(std::string const &root);
 	void setIndex(std::string const &index);
+	void setAutoIndex(bool const &autoIndex);
 	void addErrorPage(const int errorNumber, std::string pathToError);
 	void addAllowedMethod(std::string const &method);
 	void setClientMaxBodySize(size_t value);
@@ -45,7 +47,6 @@ public:
 	int isMethodAllowed(std::string const &method);
 	int isErrorCodeValid(int const &errorCode, std::string &path);
 	int getRoot(std::string &root);
-	bool getUploadEnable();
 };
 
 // Location_HPP
