@@ -4,7 +4,7 @@
 #include <fstream>
 #include <sstream>
 
-Response::Response() {}
+Response::Response(Request *request, Router *router, Location *location, int &errorCode) {}
 
 Response::Response(const Response &inst) {
 	std::cout << "Copy Response constructor" << std::endl;

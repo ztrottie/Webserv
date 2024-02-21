@@ -162,6 +162,18 @@ ssize_t const &Request::getBodyLen() const {
 	return _bodyLen;
 }
 
+void Request::setFilePath(std::string &path){
+	_filePath = path;
+}
+
+void Request::setAddedIndex(bool index){
+	_addedIndex = index;
+}
+
+bool Request::getAddedIndex() const{
+	return _addedIndex;
+}
+
 bool Request::isBodyValid() const {
 	std::string tempBoundary("--");
 	tempBoundary.append(_boundary);

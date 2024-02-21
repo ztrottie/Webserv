@@ -1,13 +1,5 @@
 #include "../include/Server.hpp"
 #include "../include/Response.hpp"
-#include <cstddef>
-#include <cstdio>
-#include <ctime>
-#include <string>
-#include <sys/_types/_ssize_t.h>
-#include <sys/socket.h>
-#include <sys/wait.h>
-#include <unistd.h>
 
 Server::Server(uint16_t port, const char *host, std::string name, Router *router, unsigned int const &clientBodySize, socketInfo *server) : _port(port), _host(host), _name(name), _clientBodySize(clientBodySize) {
 	std::cout << YELLOW << timestamp() << " Initializing a Server named " << _name << " on " << _host << ":" << _port << RESET << std::endl;

@@ -1,5 +1,8 @@
 #pragma once
 #include <string>
+#include "Request.hpp"
+#include "Location.hpp"
+
 
 class Response
 {

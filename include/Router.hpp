@@ -2,14 +2,8 @@
 #include "struct.hpp"
 #include "Location.hpp"
 #include "Request.hpp"
+#include "Response.hpp"
 
-#include <array>
-#include <string>
-#include <map>
-#include <vector>
-#include "../include/color.h"
-#include "../include/utils.hpp"
-#include <iostream>
 #include <sys/stat.h>
 #include <unistd.h>
 
@@ -40,14 +34,15 @@ public:
 	void addLocation(std::string const &key, Location *loc);
 	void addAllowedMethod(std::string const &method);
 
-	int getFile(Request *request, std::string &path);
+	int getFile(Request *request, Response *response);
 	void trimURI(std::string &URI);
 	void parseUri(std::string &cpy);
+	int getErrorPage(std::string &path, int errorCode, Location *loc);
 	int checkFilePerm(std::string const &path);
 	int checkIfFileIsValid(std::string const &path);
-	int getErrorPage(std::string &path, int errorCode);
 	int checkAllowedMethod(std::string const &method, Location *loc);
 	int checkIfCanExec(std::string const &path);
 	int openFile(Request *request);
 	int getFileMethod(std::string &path, Request *request);
+	int routerMain(Request *request, Response *response, Location *loc);
 };

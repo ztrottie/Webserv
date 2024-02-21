@@ -76,14 +76,6 @@ bool Location::getUploadEnable(){
 	return _uploadEnable;
 }
 
-void Location::setUploadEnable(bool enable){
-	_uploadEnable = enable;
-}
-
-bool Location::getUploadEnable(){
-	return _uploadEnable;
-}
-
 void Location::setClientMaxBodySize(size_t value) {
 	_clientMaxBodySize = value;
 }
