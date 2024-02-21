@@ -10,10 +10,20 @@
 #include <dirent.h>
 
 Response::Response(Request *request, Router *router, Location *location, int &errorCode) {
-	if (request->getMethod() == "GET")
+	if (errorCode >= 300) {
+		std::string path;
+		int errorPageCode = router->getErrorPage(path, errorCode, location);
+		if (errorPageCode >= 300 || openPath(path) >= 300) {
+			internalServerError(errorCode);
+			return;
+		}
+	}
+	else if (request->getMethod() == "GET")
 		handleGet(request, router, location, errorCode);
 	else if (request->getMethod() == "DELETE")
 		handleDelete(request, router, location, errorCode);
+	// else if (request->getMethod() == "POST")
+	// 	handlePost(request, router, location, errorCode);
 }
 
 Response::Response(const Response &inst) {
