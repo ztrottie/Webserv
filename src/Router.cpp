@@ -70,7 +70,7 @@ int Router::checkIfFileIsValid(std::string const &path){
 	return INTERNALSERVERROR;
 }
 
-int Router::getErrorPage(std::string &path, int errorCode){
+int Router::getErrorPage(std::string &path, int errorCode, Location *loc){
 	std::map<int, std::string>::const_iterator it = _errorPagesLocation.find(errorCode);
 	if (it == _errorPagesLocation.end())
 		return 500;
@@ -110,12 +110,12 @@ int Router::getFileMethod(std::string &path, Request *request){
 					if (index2 != std::string::npos)
 						getBody = body.substr(index, index2 - index);
 					tempPath + getBody;
+					tempPath.find("\r\n\r\n");
+					tempPath.rfind(request->getBoundary());
+					tempPath.rfind("--");
 					if (access(tempPath.c_str(), F_OK) != 0){
 						std::ofstream file(tempPath);
 						if (file.is_open()){
-							tempPath.find("\r\n\r\n");
-							tempPath.rfind(request->getBoundary());
-							tempPath.rfind("--");
 						}
 					}
 				}
@@ -128,7 +128,11 @@ int Router::getFileMethod(std::string &path, Request *request){
 	return code;
 }
 
-int Router::getFile(Request *request, Response &response) {
+int Router::routerMain(Request *request, Response *response){
+
+}
+
+int Router::getFile(Request *request, Response *response) {
 	std::string uriCopy = request->getFilePath();
 	parseUri(uriCopy);
 	Location *loc = _locations[uriCopy];
