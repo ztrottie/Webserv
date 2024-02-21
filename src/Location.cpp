@@ -67,3 +67,7 @@ void Location::addErrorPage(const int errorNumber, std::string pathToError) {
 void Location::addAllowedMethod(std::string const &method) {
 	_allowedMethod.push_back(method);
 }
+
+void Location::setClientMaxBodySize(size_t value) {
+	_clientMaxBodySize = value;
+}

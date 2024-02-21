@@ -1,4 +1,5 @@
 #pragma once
+#include <cstddef>
 #include <map>
 #include <iostream>
 #include <string>
@@ -19,6 +20,7 @@ private:
 	std::map<int, std::string>	_errorPagesLocation;
 	std::string					_rewrite;
 	std::vector<std::string> 	_allowedMethod;
+	size_t						_clientMaxBodySize;
 
 public:
 	// Constructors / Destructor
@@ -35,6 +37,7 @@ public:
 	void setIndex(std::string const &index);
 	void addErrorPage(const int errorNumber, std::string pathToError);
 	void addAllowedMethod(std::string const &method);
+	void setClientMaxBodySize(size_t value);
 
 	// Functions
 	int isMethodAllowed(std::string const &method);

@@ -136,7 +136,7 @@ void Server::contentTypeGenerator(std::string &contentType, std::string const &p
 	contentTypeMap[".css"] = "text/css";
 	contentTypeMap[".ico"] = "image/ico";
 	contentTypeMap[".png"] = "image/png";
-	contentTypeMap[".php"] = "application.php";
+	contentTypeMap[".php"] = "application/php";
 	int pos = path.rfind('.');
 	std::string fileExtension = path.substr(pos, path.size());
 	std::cout << fileExtension << std::endl;
@@ -275,7 +275,7 @@ int Server::recieveRequest(socketInfo *client) {
 // }
 
 int Server::handleRequest(socketInfo *client) {
-	Response response;
+	Response *response;
 	int code;
 	if (client->request->getMethod() == "GET") {
 		code = _serverRouter->getFile(client->request, response);

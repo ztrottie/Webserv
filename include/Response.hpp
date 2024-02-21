@@ -9,7 +9,7 @@ private:
 
 public:
 	// Constructors / Destructor
-	Response();
+	Response(Request *request, Router *router, Location *location, int &errorCode);
 	Response(const Response &inst);
 	~Response();
 
