@@ -50,7 +50,7 @@ void Router::trimURI(std::string &uri){
 int Router::checkIfFileIsValid(std::string const &path){
 	struct stat fileStat;
 	if (access(path.c_str(), F_OK) != 0)
-		return 404;
+		return NOTFOUND;
 	if (stat(path.c_str(), &fileStat) == 0){
 		if (S_ISDIR(fileStat.st_mode)) 
 			return IS_DIR;
@@ -61,8 +61,8 @@ int Router::checkIfFileIsValid(std::string const &path){
 }
 
 int Router::getErrorPage(std::string &path, int errorCode, Location *loc){
-	std::map<int, std::string>::const_iterator it = _errorPagesLocation.find(errorCode);
 	if (!loc->isErrorCodeValid(errorCode, path)){
+		std::map<int, std::string>::const_iterator it = _errorPagesLocation.find(errorCode);
 		if (it == _errorPagesLocation.end())
 			return INTERNALSERVERROR;
 		path = _errorPagesLocation[errorCode];	
