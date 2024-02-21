@@ -2,7 +2,6 @@
 #include "struct.hpp"
 #include "Location.hpp"
 #include "Request.hpp"
-#include "Response.hpp"
 
 #include <sys/stat.h>
 #include <unistd.h>
@@ -11,6 +10,7 @@
 #define IS_FILE 2
 
 class Server;
+class Response;
 
 class Router
 {
@@ -34,7 +34,7 @@ public:
 	void addLocation(std::string const &key, Location *loc);
 	void addAllowedMethod(std::string const &method);
 
-	int getFile(Request *request, Response *response);
+	int getFile(Request *request);
 	void trimURI(std::string &URI);
 	void parseUri(std::string &cpy);
 	int getErrorPage(std::string &path, int errorCode, Location *loc);
@@ -44,5 +44,5 @@ public:
 	int checkIfCanExec(std::string const &path);
 	int openFile(Request *request);
 	int getFileMethod(std::string &path, Request *request);
-	int routerMain(Request *request, Response *response, Location *loc);
+	int routerMain(Request *request, Response *response);
 };

@@ -121,29 +121,28 @@ void Server::codeMessage(int code, std::string &message) {
 	}
 }
 
-void Server::contentTypeGenerator(std::string &contentType, std::string const &path) {
-	std::map<std::string, std::string> contentTypeMap;
+// void Server::contentTypeGenerator(std::string &contentType, std::string const &path) {
+// 	std::map<std::string, std::string> contentTypeMap;
 
-	contentTypeMap[".html"] = "text/html";
-	contentTypeMap[".css"] = "text/css";
-	contentTypeMap[".ico"] = "image/ico";
-	contentTypeMap[".png"] = "image/png";
-	contentTypeMap[".php"] = "application/php";
-	int pos = path.rfind('.');
-	std::string fileExtension = path.substr(pos, path.size());
-	std::cout << fileExtension << std::endl;
-	std::map<std::string, std::string>::const_iterator it = contentTypeMap.find(fileExtension);
-	contentType += ((it == contentTypeMap.end()) ? "text/plain" : contentTypeMap[fileExtension]);
-}
+// 	contentTypeMap[".html"] = "text/html";
+// 	contentTypeMap[".css"] = "text/css";
+// 	contentTypeMap[".ico"] = "image/ico";
+// 	contentTypeMap[".png"] = "image/png";
+// 	contentTypeMap[".php"] = "application/php";
+// 	int pos = path.rfind('.');
+// 	std::string fileExtension = path.substr(pos, path.size());
+// 	std::cout << fileExtension << std::endl;
+// 	std::map<std::string, std::string>::const_iterator it = contentTypeMap.find(fileExtension);
+// 	contentType += ((it == contentTypeMap.end()) ? "text/plain" : contentTypeMap[fileExtension]);
+// }
 
-int Server::headerGenerator(int code, std::string &header, Response const &response) {
+int Server::headerGenerator(int code, std::string &header, Response *response) {
 	std::string codeMessageString = "HTTP/1.1 ";
 	std::string serverName = "Server: " + _name + "\r\n";
 	std::string contentType = "Content-Type: ";
 	std::string	contentLength = "Content-Length: ";
 	codeMessage(code, codeMessageString);
-	contentTypeGenerator(contentType, response.getPath());
-	contentLength.append(std::to_string(response.getBody().size()));
+	contentLength.append(std::to_string(response->getBody().size()));
 	codeMessageString += "\r\n";
 	contentType += "\r\n";
 	contentLength += "\r\n";
@@ -267,17 +266,8 @@ int Server::recieveRequest(socketInfo *client) {
 // }
 
 int Server::handleRequest(socketInfo *client) {
-	Response *response;
-	int code;
-	if (client->request->getMethod() == "GET") {
-		code = _serverRouter->getFile(client->request, response);
-	} else if (client->request->getMethod() == "POST" && client->request->getClientBody().empty()) {
-		code = OK;
-	} else if (client->request->getMethod() == "POST" && client->request->isBodyValid()) {
-		code = _serverRouter->getFile(client->request, response);
-		delete client->request;
-		client->hasRequest = false;
-	}
+	Response *response = NULL;
+	int code = _serverRouter->routerMain(client->request, response);
 	std::string header;
 	std::string httpResponse;
 	headerGenerator(code, header, response);

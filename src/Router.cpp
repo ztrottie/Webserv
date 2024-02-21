@@ -1,4 +1,6 @@
 #include "../include/Router.hpp"
+#include "../include/Response.hpp"
+#include "../include/utils.hpp"
 
 Router::Router(){
 	std::cout << timestamp() << " Initializing the server Router!" << std::endl;
@@ -120,13 +122,14 @@ int Router::checkAllowedMethod(std::string const &method, Location *loc){
 // 	return code;
 // }
 
-int Router::routerMain(Request *request, Response *response, Location *loc){
+int Router::routerMain(Request *request, Response *response){
 	int errorCode;
-	request = new Response(request, *this, loc, errorCode);
+	Location *location = NULL;
+	response = new Response(request, this, location, errorCode);
 	return errorCode;
 }
 
-int Router::getFile(Request *request, Response *response) {
+int Router::getFile(Request *request) {
 	std::string uriCopy = request->getFilePath();
 	parseUri(uriCopy);
 	Location *loc = _locations[uriCopy];

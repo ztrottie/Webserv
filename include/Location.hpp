@@ -47,6 +47,8 @@ public:
 	int isMethodAllowed(std::string const &method);
 	int isErrorCodeValid(int const &errorCode, std::string &path);
 	int getRoot(std::string &root);
+	bool getUploadEnable() const;
+	bool getAutoIndex() const;
 };
 
 // Location_HPP

@@ -52,7 +52,7 @@ int Location::getRoot(std::string &root){
 	return FOUND;
 }
 
-bool const Location::getAutoIndex() const{
+bool Location::getAutoIndex() const{
 	return _autoIndex;
 }
 
@@ -76,7 +76,7 @@ void Location::setUploadEnable(bool enable){
 	_uploadEnable = enable;
 }
 
-bool Location::getUploadEnable(){
+bool Location::getUploadEnable() const {
 	return _uploadEnable;
 }
 

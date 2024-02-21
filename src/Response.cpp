@@ -93,7 +93,7 @@ void Response::handleGet(Request *request, Router *router, Location *location, i
 			internalServerError(errorCode);
 		contentTypeGenerator(errorPath);
 	} else if (location->getAutoIndex()) {
-		directoryListing(request, router, location, errorCode);
+		directoryListing(request, errorCode);
 	}
 	contentTypeGenerator(request->getFilePath());
 }
@@ -103,7 +103,7 @@ void Response::handleDelete(Request *request, Router *router, Location *location
 	if (access(path.c_str(), F_OK) != 0) {
 		errorCode = NOTFOUND;
 		std::string errorPath;
-		errorCode = router->getErrorPage(errorPath, errorCode);
+		errorCode = router->getErrorPage(errorPath, errorCode, location);
 		if (errorCode >= 300)
 			internalServerError(errorCode);
 		errorCode = openPath(errorPath);
@@ -114,7 +114,7 @@ void Response::handleDelete(Request *request, Router *router, Location *location
 		if (std::remove(path.c_str()) != 0)
 			internalServerError(errorCode);
 		if (location->getAutoIndex())
-			directoryListing(request, router, location, errorCode);
+			directoryListing(request, errorCode);
 		else {
 			_body = "yessir";
 			_contentType = "text/plain";
@@ -153,7 +153,7 @@ std::string Response::_linkGenerator(std::string const &path, std::string const 
 	return link;
 }
 
-void Response::directoryListing(Request *request, Router *router, Location *location, int &errorCode) {
+void Response::directoryListing(Request *request, int &errorCode) {
 	size_t end = request->getFilePath().rfind("/");
 	if (end == std::string::npos) {
 		internalServerError(errorCode);

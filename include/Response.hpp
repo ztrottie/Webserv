@@ -34,5 +34,5 @@ public:
 	void contentTypeGenerator(std::string const &path);
 	void handleGet(Request *request, Router *router, Location *location, int &errorCode);
 	void handleDelete(Request *request, Router *router, Location *location, int &errorCode);
-	void directoryListing(Request *request, Router *router, Location *location, int &errorCode);
+	void directoryListing(Request *request, int &errorCode);
 };

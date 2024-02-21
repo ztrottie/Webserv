@@ -22,7 +22,6 @@ private:
 	std::string _clientBody;
 	ssize_t		_bodyLen;
 	bool		_addedIndex;
-	bool		_addedIndex;
 
 	//Functions
 	std::string _search(std::string const &searching, char endChar);
@@ -55,4 +54,7 @@ public:
 	ssize_t const &getBodyLen() const;
 	void setBody(std::string &body);
 	bool isBodyValid() const;
+	void setAddedIndex(bool index);
+	bool getAddedIndex() const;
+	void setFilePath(std::string &path);
 };

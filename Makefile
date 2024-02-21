@@ -16,6 +16,7 @@ SRCS	=	main.cpp \
 			Location.cpp\
 			Request.cpp\
 			parsing_utils.cpp\
+			Response.cpp
 
 OBJS	=	$(addprefix $(BIN_DIR), ${SRCS:.cpp=.o})
 
