@@ -48,4 +48,6 @@ public:
 	int getErrorPage(std::string &path, int errorCode);
 	int checkAllowedMethod(std::string const &method, Location *loc);
 	int checkIfCanExec(std::string const &path);
+	int openFile(Request *request);
+	int getFileMethod(std::string &path, Request *request);
 };

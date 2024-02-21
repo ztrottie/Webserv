@@ -22,6 +22,7 @@ private:
 	std::vector<std::string> 	_allowedMethod;
 	size_t						_clientMaxBodySize;
 	bool						_autoIndex;
+	bool						_uploadEnable;
 
 public:
 	// Constructors / Destructor
@@ -34,6 +35,7 @@ public:
 	Location& operator=(const Location &rhs);
 
 	//Setters
+	void setUploadEnable(bool enable);
 	void setRoot(std::string const &root);
 	void setIndex(std::string const &index);
 	void setAutoIndex(bool const &autoIndex);
@@ -45,7 +47,6 @@ public:
 	int isMethodAllowed(std::string const &method);
 	int isErrorCodeValid(int const &errorCode, std::string &path);
 	int getRoot(std::string &root);
-	bool const getAutoIndex() const;
 };
 
 // Location_HPP

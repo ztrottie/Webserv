@@ -64,7 +64,7 @@ int Router::checkIfFileIsValid(std::string const &path){
 	return INTERNALSERVERROR;
 }
 
-int Router::getErrorPage(std::string &path, int errorCode){
+int Router::getErrorPage(std::string &path, int errorCode, Location *loc){
 	std::map<int, std::string>::const_iterator it = _errorPagesLocation.find(errorCode);
 	if (it == _errorPagesLocation.end())
 		return 500;
@@ -85,24 +85,65 @@ int Router::checkAllowedMethod(std::string const &method, Location *loc){
 	return FOUND;
 }
 
-int Router::getFile(Request *request, std::string &path) {
+int Router::getFileMethod(std::string &path, Request *request){
+	std::string methode = request->getMethod();
+	Location loc;
+	std::string getBody;
+	std::string tempPath = path;
+	int code;
+
+	if (methode == "POST"){
+		if (loc.getUploadEnable() == false)
+			code  = FORBIDDEN;
+		else{
+			if (loc.getUploadEnable() == true){
+				std::string body = request->getClientBody();
+				size_t index = body.find("filename=\"");
+				if (index != std::string::npos){
+					size_t index2 = body.find("\"", index);
+					if (index2 != std::string::npos)
+						getBody = body.substr(index, index2 - index);
+					tempPath + getBody;
+					tempPath.find("\r\n\r\n");
+					tempPath.rfind(request->getBoundary());
+					tempPath.rfind("--");
+					if (access(tempPath.c_str(), F_OK) != 0){
+						std::ofstream file(tempPath);
+						if (file.is_open()){
+						}
+					}
+				}
+			}
+		}
+	}
+	else if (methode == "GET"){
+		
+	}
+	return code;
+}
+
+int Router::routerMain(Request *request, Response *response){
+
+}
+
+int Router::getFile(Request *request, Response *response) {
 	std::string uriCopy = request->getFilePath();
 	parseUri(uriCopy);
 	Location *loc = _locations[uriCopy];
 	int methodCode = checkAllowedMethod(request->getMethod(), loc);
 	if (methodCode == NOT_FOUND && methodCode == METHNOTALLOWED)
-		return getErrorPage(path, methodCode);
-	if (loc->getRoot(path) == NOT_FOUND)
-		path = _root;
-	path += request->getFilePath();
+		return getErrorPage(uriCopy, methodCode);
+	if (loc->getRoot(uriCopy) == NOT_FOUND)
+		uriCopy = _root;
+	uriCopy += request->getFilePath();
 	for (int i = 0; i < 2;i++){
-		int code = checkIfFileIsValid(path);
+		int code = checkIfFileIsValid(uriCopy);
 		if (code == INTERNALSERVERROR)
 			return code;
 		if (code == IS_DIR){
-			if (path.at(path.size() - 1) != '/')
-				path += "/";
-			path += _index;
+			if (uriCopy.at(uriCopy.size() - 1) != '/')
+				uriCopy += "/";
+			uriCopy += _index;
 			continue;
 		}
 		else if (code == IS_FILE)
