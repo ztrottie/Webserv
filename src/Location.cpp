@@ -52,6 +52,10 @@ int Location::getRoot(std::string &root){
 	return FOUND;
 }
 
+bool const Location::getAutoIndex() const{
+	return _autoIndex;
+}
+
 void Location::setRoot(std::string const &root) {
 	_root = root;
 }
