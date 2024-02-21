@@ -34,7 +34,7 @@ public:
 	void addLocation(std::string const &key, Location *loc);
 	void addAllowedMethod(std::string const &method);
 
-	int getFile(Request *request);
+	int getFile(Request *request, Location *loc);
 	void trimURI(std::string &URI);
 	void parseUri(std::string &cpy);
 	int getErrorPage(std::string &path, int errorCode, Location *loc);

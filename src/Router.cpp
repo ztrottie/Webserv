@@ -1,6 +1,6 @@
 #include "../include/Router.hpp"
-#include "../include/Response.hpp"
 #include "../include/utils.hpp"
+#include "../include/Response.hpp"
 
 Router::Router(){
 	std::cout << timestamp() << " Initializing the server Router!" << std::endl;
@@ -52,7 +52,7 @@ void Router::trimURI(std::string &uri){
 int Router::checkIfFileIsValid(std::string const &path){
 	struct stat fileStat;
 	if (access(path.c_str(), F_OK) != 0)
-		return NOTFOUND;
+		return 404;
 	if (stat(path.c_str(), &fileStat) == 0){
 		if (S_ISDIR(fileStat.st_mode)) 
 			return IS_DIR;
@@ -63,8 +63,8 @@ int Router::checkIfFileIsValid(std::string const &path){
 }
 
 int Router::getErrorPage(std::string &path, int errorCode, Location *loc){
+	std::map<int, std::string>::const_iterator it = _errorPagesLocation.find(errorCode);
 	if (!loc->isErrorCodeValid(errorCode, path)){
-		std::map<int, std::string>::const_iterator it = _errorPagesLocation.find(errorCode);
 		if (it == _errorPagesLocation.end())
 			return INTERNALSERVERROR;
 		path = _errorPagesLocation[errorCode];	
@@ -85,54 +85,17 @@ int Router::checkAllowedMethod(std::string const &method, Location *loc){
 	return FOUND;
 }
 
-// int Router::getFileMethod(std::string &path, Request *request){
-// 	std::string methode = request->getMethod();
-// 	Location loc;
-// 	std::string getBody;
-// 	std::string tempPath = path;
-// 	int code;
-
-// 	if (methode == "POST"){
-// 		if (loc.getUploadEnable() == false)
-// 			code  = FORBIDDEN;
-// 		else{
-// 			if (loc.getUploadEnable() == true){
-// 				std::string body = request->getClientBody();
-// 				size_t index = body.find("filename=\"");
-// 				if (index != std::string::npos){
-// 					size_t index2 = body.find("\"", index);
-// 					if (index2 != std::string::npos)
-// 						getBody = body.substr(index, index2 - index);
-// 					tempPath + getBody;
-// 					tempPath.find("\r\n\r\n");
-// 					tempPath.rfind(request->getBoundary());
-// 					tempPath.rfind("--");
-// 					if (access(tempPath.c_str(), F_OK) != 0){
-// 						std::ofstream file(tempPath);
-// 						if (file.is_open()){
-// 						}
-// 					}
-// 				}
-// 			}
-// 		}
-// 	}
-// 	else if (methode == "GET"){
-		
-// 	}
-// 	return code;
-// }
-
 int Router::routerMain(Request *request, Response *response){
-	int errorCode;
-	Location *location = NULL;
+	Location *location = NULL;	
+	int errorCode = getFile(request, location);
 	response = new Response(request, this, location, errorCode);
 	return errorCode;
 }
 
-int Router::getFile(Request *request) {
+int Router::getFile(Request *request, Location *loc) {
 	std::string uriCopy = request->getFilePath();
 	parseUri(uriCopy);
-	Location *loc = _locations[uriCopy];
+	loc = _locations[uriCopy];
 	int methodCode = checkAllowedMethod(request->getMethod(), loc);
 	if (methodCode == NOT_FOUND && methodCode == METHNOTALLOWED)
 		return getErrorPage(uriCopy, methodCode, loc);
