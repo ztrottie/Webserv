@@ -46,6 +46,7 @@ public:
 	int recieveRequest(socketInfo *client);
 	int handleRequest(socketInfo *client);
 	void getEnv(socketInfo *client, char **envp);
+	std::string const &getName() const;
 };
 
 // Server_HPP

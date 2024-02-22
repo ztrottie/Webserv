@@ -59,82 +59,6 @@ int Server::acceptConnection(socketInfo *client) {
 	return (KEEP);
 }
 
-void Server::codeMessage(int code, std::string &message) {
-	switch (code) {
-		case (OK):
-			message += "200 OK";
-			break;
-		case (CREATED):
-			message += "201 CREATED";
-			break;
-		case (ACCEPTED):
-			message += "202 ACCEPTED";
-			break;
-		case (NOCONTENT):
-			message += "204 No Content";
-			break;
-		case (RESETCONTENT):
-			message += "205 Reset Content";
-			break;
-		case (PARTIALCONTENT):
-			message += "206 Partial Content";
-			break;
-		case (MULTIPLECHOICE):
-			message += "300 Multiple Choices";
-			break;
-		case (MOVEDPERM):
-			message += "301 Moved Permanently";
-			break;
-		case (FOUND):
-			message += "302 Found";
-			break;
-		case (SEEOTHER):
-			message += "303 See Other";
-			break;
-		case (NOTMODIFIED):
-			message += "304 Not Modified";
-			break;
-		case (USEPROXY):
-			message += "305 Use Proxy";
-			break;
-		case (TEMPRED):
-			message += "307 Temporary Redirect";
-			break;
-		case (BADREDQUEST):
-			message += "400 Bad Request";
-			break;
-		case (UNAUTHORIZED):
-			message += "401 Unauthorized";
-			break;
-		case (FORBIDDEN):
-			message += "403 Forbidden";
-			break;
-		case (NOTFOUND):
-			message += "404 Not Found";
-			break;
-		case (METHNOTALLOWED):
-			message += "405 Method Not Allowed";
-			break;
-		case (NOTACCEPTABLE):
-			message += "406 Not Acceptable";
-			break;
-	}
-}
-
-int Server::headerGenerator(int code, std::string &header, std::string const &body, std::string const &contentTypeRaw) {
-	std::string codeMessageString = "HTTP/1.1 ";
-	std::string serverName = "Server: " + _name + "\r\n";
-	std::string contentType = "Content-Type: " + contentTypeRaw;
-	std::string	contentLength = "Content-Length: ";
-	codeMessage(code, codeMessageString);
-	contentLength.append(std::to_string(body.size()));
-	codeMessageString += "\r\n";
-	contentType += "\r\n";
-	contentLength += "\r\n";
-	header += codeMessageString + serverName + contentType + contentLength + "\r\n";
-	return (0);
-}
-
 int Server::recieveRequest(socketInfo *client) {
 	char buffer[1025];
 	ssize_t totalNbytes = 0;
@@ -157,7 +81,7 @@ int Server::recieveRequest(socketInfo *client) {
 		return (CLOSE);
 	}
 	if (!client->hasRequest) {
-		client->request = new Request(data, client);
+		client->request = new Request(data, client, this);
 		client->hasRequest = true;
 	} else {
 		client->request->setBody(data);
@@ -165,101 +89,18 @@ int Server::recieveRequest(socketInfo *client) {
 	return (KEEP);
 }
 
-// void Server::handlePostMethod(socketInfo *client) {
-// 	std::string response;
-// 	std::string result;
-// 	std::string path;
-// 	int errorCode = _serverRouter->getFile(client->request, path);
-// 	std::cout << GREEN << path << RESET << std::endl;
-// 	if (errorCode == INTERNALSERVERROR) {
-// 		internalServerError(response);
-// 	}
-// 	if (errorCode == OK) {
-// 		const char *argv[] = {"/usr/bin/php", path.c_str(), NULL};
-// 		std::string gatewayInterface = "GATEWAY_INTERFACE=CGI/1.1";
-// 		std::string requestMethod = "REQUEST_METHOD=";
-// 		requestMethod += client->request->getMethod();
-// 		std::string queryString = "QUERY_STRING=";
-// 		queryString += client->request->getStringQuerry();
-// 		std::string contentType = "CONTENT_TYPE=";
-// 		contentType += client->request->getType();
-// 		std::string contentLength = "CONTENT_LENGTH=";
-// 		contentLength += client->request->getBodyLen();
-// 		std::string clientAddr = "REMOTE_ADDR=";
-// 		clientAddr += inet_ntoa(client->client_address.sin_addr);
-// 		std::string requestURI = "REQUEST_URI=";
-// 		requestURI += client->request->getUri();
-// 		std::string serverProtocol = "SERVER_PROTOCOL=HTTP/1.1";
-// 		std::string serverSoftware = "SERVER_SOFTWARE=webserv/1.0";
-// 		std::string serverName = "SERVER_NAME=";
-// 		serverName += _name;
-// 		std::string serverPort = "SERVER_PORT=";
-// 		serverPort += _port;
-// 		const char *envp[] = {gatewayInterface.c_str(), requestMethod.c_str(), queryString.c_str(), contentType.c_str(), contentLength.c_str(), clientAddr.c_str(), requestURI.c_str(), serverProtocol.c_str(), serverSoftware.c_str(), serverName.c_str(), serverPort.c_str(), NULL};
-// 		int cgiInput[2];
-// 		int cgiOutput[2];
-// 		pipe(cgiInput);
-// 		pipe(cgiOutput);
-// 		int pid = fork();
-// 		int status;
-// 		write(cgiInput[1], client->request->getClientBody().c_str(), client->request->getClientBody().size());
-// 		if (pid == -1) {
-// 		} else if (pid == 0) {
-// 			dup2(cgiInput[0], STDIN_FILENO);
-// 			// dup2(cgiOutput[1], STDOUT_FILENO);
-// 			close(cgiInput[0]);
-// 			close(cgiInput[1]);
-// 			close(cgiOutput[0]);
-// 			close(cgiOutput[1]);
-// 			if (execve(argv[0], const_cast<char * const *>(argv), const_cast<char * const *>(envp)) == -1) {
-// 				perror("execve failed");
-// 				exit(EXIT_FAILURE);
-// 			}
-// 			exit(0);
-// 		} else {
-// 			char buffer[1024];
-// 			size_t	nbytes;
-// 			close(cgiInput[0]);
-// 			close(cgiInput[1]);
-// 			close((cgiOutput[1]));
-// 			while ((nbytes = read(cgiOutput[0], buffer, sizeof(buffer))) > 0) {
-// 				buffer[nbytes] = 0;
-// 				result.append(buffer);
-// 			}
-// 			close(cgiOutput[0]);
-// 			waitpid(pid, &status, 0);
-// 		}
-// 		if (headerGenerator(errorCode, path, response)) {
-// 			response.append("\r\n\r\n");
-// 			response.append(result);
-// 		}
-// 	} else {
-// 		if (errorCode != INTERNALSERVERROR && headerGenerator(errorCode, path, response))
-// 			contentGenerator(path, response);
-// 	}
-// 	size_t totalSent = 0;
-// 	std::cout << response << std::endl;
-// 	while (totalSent < response.size()) {
-// 		int sent = send(client->socket, response.c_str(), response.size(), 0);
-// 		totalSent += sent;
-// 	}
-// }
-
 int Server::handleRequest(socketInfo *client) {
-	if (client->request->getMethod() == "POST" && (client->request->getClientBody().empty() || !client->request->isBodyValid()))
+	if (client->request->getMethod() == "POST" && !client->request->getClientBody().empty() && !client->request->isBodyValid())
 		return (KEEP);
-	std::string body;
-	std::string contentType;
-	int code = _serverRouter->routerMain(client->request, body, contentType);
-	std::string header;
-	std::string httpResponse;
-	headerGenerator(code, header, body, contentType);
-	httpResponse = header + body;
+	std::string fullResponse;
+	_serverRouter->routerMain(client->request, fullResponse);
 	unsigned long totalSent = 0;
-	while (totalSent < httpResponse.size()) {
-		int sent = send(client->socket, httpResponse.c_str() + totalSent, httpResponse.size() - totalSent, 0);
+	while (totalSent < fullResponse.size()) {
+		int sent = send(client->socket, fullResponse.c_str() + totalSent, fullResponse.size() - totalSent, 0);
 		totalSent += sent;
 	}
+	if (client->request->getMethod() == "POST" && client->request->getClientBody().empty())
+		return (KEEP);
 	return (CLOSE);
 }
 
@@ -277,4 +118,8 @@ int Server::handleClient(socketInfo *client, int type) {
 
 Router *Server::getRouter() const {
 	return _serverRouter;
+}
+
+std::string const &Server::getName() const {
+	return _name;
 }

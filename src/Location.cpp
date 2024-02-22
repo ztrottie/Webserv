@@ -88,6 +88,18 @@ void Location::setAutoIndex(bool const &autoIndex) {
 	_autoIndex = autoIndex;
 }
 
+const std::string	&Location::getUploadStore() const {
+	return _uploadStore;
+}
+
+void Location::setUploadStore(std::string const &value) {
+	_uploadStore = value;
+}
+
+const std::string	&Location::getName() const {
+	return _name;
+}
+
 void Location::setRedirection(bool value){
 	_redirection = value;
 }

@@ -114,15 +114,13 @@ int Router::checkAllowedMethod(std::string const &method, Location *loc){
 	return FOUND;
 }
 
-int Router::routerMain(Request *request, std::string &body, std::string &contentType){
+void Router::routerMain(Request *request, std::string &fullResponse){
 	Location *location;
 	int errorCode;
 	checkBodySize(request, errorCode);
 	errorCode = getFile(request, location);
 	Response response(request, this, location, errorCode);
-	body = response.getBody();
-	contentType = response.getContentType();
-	return errorCode;
+	fullResponse = response.getFullResponse();
 }
 
 int Router::getFile(Request *request, Location *&loc) {

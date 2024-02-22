@@ -23,6 +23,7 @@ private:
 	long long int						_clientMaxBodySize;
 	bool								_autoIndex;
 	bool								_uploadEnable;
+	std::string					_uploadStore;
 	bool								_redirection;
 	int 								_redirectionCode;
 	std::string							_redirectionLocation;
@@ -45,6 +46,7 @@ public:
 	void addErrorPage(const int errorNumber, std::string pathToError);
 	void addAllowedMethod(std::string const &method);
 	void setClientMaxBodySize(size_t value);
+	void setUploadStore(std::string const &value);
 	void setRedirection(bool value);
 	void setRedirectionCode(int code);
 	void setRedirectionLocation(std::string str);
@@ -55,6 +57,9 @@ public:
 	int getRoot(std::string &root);
 	bool getUploadEnable() const;
 	bool getAutoIndex() const;
+	const std::string	&getUploadStore() const;
+	const std::string	&getName() const;
+
 	bool getRedirection() const;
 	int getRedirectionCode() const;
 	std::string getRedirectionLocation() const;

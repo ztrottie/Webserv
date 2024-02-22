@@ -1,8 +1,9 @@
 #include "../include/Request.hpp"
 #include "../include/color.h"
+#include "../include/Server.hpp"
 #include <cstddef>
 
-Request::Request(std::string const &received, socketInfo *client) : _raw(received) {
+Request::Request(std::string const &received, socketInfo *client, Server *server) : _raw(received) {
 	std::stringstream ss(received);
 	std::getline(ss, _method, ' ');
 	std::getline(ss, _uri, ' ');
@@ -10,6 +11,7 @@ Request::Request(std::string const &received, socketInfo *client) : _raw(receive
 		_clientAddr = inet_ntoa(client->client_address.sin_addr);
 	_setHostPort();
 	_uriParser();
+	_serverName = server->getName();
 	if (_method == "POST") {
 		_type = _search("Content-Type: ", ';');
 		_bodyLen = std::stoul(_search("Content-Length: ", '\r'));
@@ -162,6 +164,10 @@ ssize_t const &Request::getBodyLen() const {
 	return _bodyLen;
 }
 
+std::string const &Request::getServerName() const{
+	return _serverName;
+}
+
 void Request::setFilePath(std::string &path){
 	_filePath = path;
 }
@@ -187,10 +193,32 @@ bool Request::isBodyValid() const {
 	tempBoundary.append(_boundary);
 	tempBoundary.append("--\r\n");
 	std::string end = _clientBody.substr(_clientBody.size() - tempBoundary.size(), tempBoundary.size());
-	std::cout << _clientBody << std::endl;
-	std::cout << tempBoundary.size() << ":" << end.size() << std::endl;
-	std::cout << tempBoundary << ":" << end << std::endl;
 	if (tempBoundary == end)
 		return true;
 	return false;
+}
+
+void Request::parseBody() {
+	size_t start = _clientBody.find("filename=\"");
+	if (start != std::string::npos) {
+		start += 10;
+		size_t end = _clientBody.find("\"", start);
+		if (end != std::string::npos) {
+			_fileName = _clientBody.substr(start, end - start);
+		}
+	}
+	start = _clientBody.find("\r\n\r\n");
+	if (start != std::string::npos) {
+		start += 4;
+		size_t end = _clientBody.find("\r\n", start);
+		_fileContent = _clientBody.substr(start, end - start);
+	}
+}
+
+std::string const &Request::getFileContent() const {
+	return _fileContent;
+}
+
+std::string const &Request::getFileName() const {
+	return _fileName;
 }
