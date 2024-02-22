@@ -7,15 +7,17 @@ int parsing::isThisTheEnd(string const &line, bool insideLocation){
 		return false;
 	}
 	if (insideLocation == true){
-		if (pos != 1)
-			return false;
+		if (pos == 1)
+			return true;
 	}else{
-		if (pos != 0)
-			return false;
+		if (pos == 0){
+			cout << "TERMINER?" << endl;
+			return true;
+		}
 	}
 	// if (pos != line.length() - 1)
 		// writeTimestamp(YELLOW, "The line must end with \"}\", this location will not be used");
-	return true;
+	return false;
 }
 
 bool	parsing::checkLocation(string &line, unsigned int *nbLine){
@@ -23,31 +25,102 @@ bool	parsing::checkLocation(string &line, unsigned int *nbLine){
 		return -1;
 	cout << BLUE << "[" << RESET << std::to_string(*nbLine + 1) << BLUE << "]";simpleWriteTimestamp(BLUE, "Checking new location");
 	if (isThereSomethingInMyString(line, "location", line.rfind(" ")) == true){
+		// cout << "allo?" << endl;
 		wagadooMachine(line, defaultIfError, IMPOSTORERROR, *nbLine, "", defaultIfError, verifLine, true);
 		while (isThisTheEnd(line, true) != true){
 			(*nbLine)++;
-			cout << RED << "[" << RESET << std::to_string(*nbLine + 1) << RED << "]";simpleWriteTimestamp(RED, "This line \"" + line + "\" will not be used because the location line was wrong, all the location element will not be used");
+			cout << YELLOW << "[" << RESET << std::to_string(*nbLine + 1) << YELLOW << "]";simpleWriteTimestamp(YELLOW, "This line \"" + line + "\" will not be used because the location line was wrong, all the location element will not be used");
 			std::getline(configFile, line);
 			verifLine.push_back(DONT);
 		}
 		return true;
 	}
 	verifLine.push_back(OKPARS);
-	while (isThisTheEnd(line, true) != true){
-		if (checkValid(line) == false){
+	// cout << "line " << *nbLine << "	" << line << " : " << verifLine[*nbLine] << endl;
+	(*nbLine)++;
+	while (std::getline(configFile, line)){
+		if (line.find("	}\0\n") == 0){
 			verifLine.push_back(DONT);
+			break ;
 		}
-		checkIndexLocation(line, *nbLine);
-		checkRootLocation(line, *nbLine);
-		checkAllowedMethods(line, *nbLine);
-		checkErrorPageLocation(line, *nbLine);
-		checkReturnsLocation(line, *nbLine);
+		else if (checkValid(line) == false){
+			// cout << "invalid in location	" + line << endl;
+			verifLine.push_back(DONT);
+			// cout << "line " << *nbLine << "	" << line << " : " << verifLine[*nbLine] << endl;
+		}else{
+			checkIndexLocation(line, *nbLine);
+			checkRootLocation(line, *nbLine);
+			checkAllowedMethods(line, *nbLine);
+			checkErrorPageLocation(line, *nbLine);
+			checkReturnsLocation(line, *nbLine);
+			checkUploadEnable(line, *nbLine);
+			checkUploadStore(line, *nbLine);
+		}
 		(*nbLine)++;
-		std::getline(configFile, line);
 	}
-	verifLine.push_back(DONT);
-	// cout << "IN LOC Line : #" << verifLine.size() << " content \"" + line + "\"" << verifLine[verifLine.size() - 1] << endl;
+	// cout << "location line " << *nbLine << "	" << line << " : " << verifLine[*nbLine] << endl;
 	return true;
+}
+
+void	parsing::checkUploadEnable(string const &line, unsigned int nbLine){
+	if (line.find("upload_enable") != 2)
+		return ;
+	if (checkIdentationParsing(line, "upload_enable", true) == false){
+		wagadooMachine(line, defaultIfError, IDENTATIONERROR, nbLine, "", defaultIfError, verifLine, true);
+		return ;
+	}
+	if (checkVargule(line) == false){
+		wagadooMachine(line, defaultIfError, VARGULEERR, nbLine, "", defaultIfError, verifLine, true);
+		return ;
+	}
+	if (checkForArgs(line, 15) == false){
+		wagadooMachine(line, defaultIfError, NUMBERARGSERROR, nbLine, "", defaultIfError, verifLine, true);
+		return ;
+	}
+	if (checkForTabs(line, 1) == false){
+		wagadooMachine(line, defaultIfError, SPACEERROR, nbLine, "", defaultIfError, verifLine, true);
+		return ;
+	}
+	if (isThereSomethingInMyString(line, "upload_enable", line.rfind(" ")) == true){
+		wagadooMachine(line, defaultIfError, IMPOSTORERROR, nbLine, "", defaultIfError, verifLine, true);
+		return ;
+	}
+	string temp = line.substr(line.rfind(" ") + 1, line.length());
+	if (temp != "true;" && temp != "false;"){
+		wagadooMachine(line, defaultIfError, MISSINGEND, nbLine, ", the last arguments must be true or false", defaultIfError, verifLine, true);
+		return ;
+	}
+	selectMessage(VALID, NOERR, nbLine, "	\"" + line + "\"");
+	verifLine.push_back(OKPARS);
+	// cout << "line " << nbLine << "	" << line << " : " << verifLine[nbLine] << endl;
+}
+
+void	parsing::checkUploadStore(string const &line, unsigned int nbLine){
+	if (line.find("upload_store") != 2)
+		return ;
+	if (checkIdentationParsing(line, "upload_store", true) == false){
+		wagadooMachine(line, defaultIfError, IDENTATIONERROR, nbLine, "", defaultIfError, verifLine, true);
+		return ;
+	}
+	if (checkVargule(line) == false){
+		wagadooMachine(line, defaultIfError, VARGULEERR, nbLine, "", defaultIfError, verifLine, true);
+		return ;
+	}
+	if (checkForArgs(line, 14) == false){
+		wagadooMachine(line, defaultIfError, NUMBERARGSERROR, nbLine, "", defaultIfError, verifLine, true);
+		return ;
+	}
+	if (checkForTabs(line, 1) == false){
+		wagadooMachine(line, defaultIfError, SPACEERROR, nbLine, "", defaultIfError, verifLine, true);
+		return ;
+	}
+	if (isThereSomethingInMyString(line, "upload_store", line.rfind(" ")) == true){
+		wagadooMachine(line, defaultIfError, IMPOSTORERROR, nbLine, "", defaultIfError, verifLine, true);
+		return ;
+	}
+	selectMessage(VALID, NOERR, nbLine, "	\"" + line + "\"");
+	verifLine.push_back(OKPARS);
+	// cout << "line " << nbLine << "	" << line << " : " << verifLine[nbLine] << endl;
 }
 
 void	parsing::checkIndexLocation(string const &line, unsigned int nbLine){
@@ -73,11 +146,9 @@ void	parsing::checkIndexLocation(string const &line, unsigned int nbLine){
 		wagadooMachine(line, defaultIfError, IMPOSTORERROR, nbLine, "", defaultIfError, verifLine, true);
 		return ;
 	}
-	if (nbLine == verifLine.size())
-		verifLine.push_back(OKPARS);
 	selectMessage(VALID, NOERR, nbLine, "	\"" + line + "\"");
-	if (nbLine == verifLine.size())
-		verifLine.push_back(OKPARS);
+	verifLine.push_back(OKPARS);
+	// cout << "line " << nbLine << "	" << line << " : " << verifLine[nbLine] << endl;
 }
 
 void	parsing::checkRootLocation(string const &line, unsigned int nbLine){
@@ -103,11 +174,9 @@ void	parsing::checkRootLocation(string const &line, unsigned int nbLine){
 		wagadooMachine(line, defaultIfError, IMPOSTORERROR, nbLine, "", defaultIfError, verifLine, true);
 		return ;
 	}
-	if (nbLine == verifLine.size())
-		verifLine.push_back(OKPARS);
 	selectMessage(VALID, NOERR, nbLine, "	\"" + line + "\"");
-	if (nbLine == verifLine.size())
-		verifLine.push_back(OKPARS);
+	verifLine.push_back(OKPARS);
+	// cout << "line " << nbLine << "	" << line << " : " << verifLine[nbLine] << endl;
 }
 
 void	parsing::checkAllowedMethods(string const &line, unsigned int nbLine){
@@ -134,8 +203,8 @@ void	parsing::checkAllowedMethods(string const &line, unsigned int nbLine){
 		return ;
 	}
 	selectMessage(VALID, NOERR, nbLine, "	\"" + line + "\"");
-	if (nbLine == verifLine.size())
-		verifLine.push_back(OKPARS);
+	verifLine.push_back(OKPARS);
+	// cout << "line " << nbLine << "	" << line << " : " << verifLine[nbLine] << endl;
 }
 
 void	parsing::checkErrorPageLocation(string const &line, unsigned int nbLine){
@@ -161,20 +230,16 @@ void	parsing::checkErrorPageLocation(string const &line, unsigned int nbLine){
 	for (size_t i = 1; i < split.size() - 1; i++){
 		if (containsNonDigit(split[split.size() - 1]) == false){
 			wagadooMachine(line, defaultIfError, MISSINGEND, nbLine, ", this line need a HTML to link up with the error code", defaultIfError, verifLine, true);
-
 			return ;
 		}
 		if (containsNonDigit(split[i]) == true){
 			wagadooMachine(line, defaultIfError, DIGITERROR, nbLine, "", defaultIfError, verifLine, true);
-
 			return ;
 		}
 	}
-	if (nbLine == verifLine.size())
-		verifLine.push_back(OKPARS);
 	selectMessage(VALID, NOERR, nbLine, "	\"" + line + "\"");
-	if (nbLine == verifLine.size())
-		verifLine.push_back(OKPARS);
+	verifLine.push_back(OKPARS);
+	// cout << "line " << nbLine << "	" << line << " : " << verifLine[nbLine] << endl;
 }
 
 void	parsing::checkReturnsLocation(string const &line, unsigned int nbLine){
@@ -214,9 +279,7 @@ void	parsing::checkReturnsLocation(string const &line, unsigned int nbLine){
 			return ;
 		}
 	}
-	if (nbLine == verifLine.size())
-		verifLine.push_back(OKPARS);
 	selectMessage(VALID, NOERR, nbLine, "	\"" + line + "\"");
-	if (nbLine == verifLine.size())
-		verifLine.push_back(OKPARS);
+	verifLine.push_back(OKPARS);
+	// cout << "line " << nbLine << "	" << line << " : " << verifLine[nbLine] << endl;
 }

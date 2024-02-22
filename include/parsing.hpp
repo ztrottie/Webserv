@@ -71,6 +71,8 @@ class parsing{
 		void					checkAllowedMethods(string const &line, unsigned int nbLine);
 		void					checkErrorPageLocation(string const &line, unsigned int nbLine);
 		void					checkReturnsLocation(string const &line, unsigned int nbLine);
+		void					checkUploadEnable(string const &line, unsigned int nbLine);
+		void					checkUploadStore(string const &line, unsigned int nbLine);
 		// Assignation
 			//Server
 		void				createServer(string &line, std::ifstream &file, size_t *i);

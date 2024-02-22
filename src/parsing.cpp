@@ -50,8 +50,10 @@ bool	parsing::checkValid(string const &line){
 		return true;
 	else if (res == "client_max_body_size")
 		return true;
-	// else if (res == "acceptUpload") upload un jour
-		// return CORRECT;
+	else if (res == "upload_enable")
+		return true;
+	else if (res == "upload_store")
+		return true;
 	else if (res == "}")
 		return true;
 	else if (res.empty())
@@ -68,19 +70,18 @@ bool	parsing::parseConfigFile(){
 		return false;
 	}
 	while (std::getline(configFile, line)){
-		cout << line << "	" << std::to_string(nbLine) << endl;
+		// cout << "EN DEHORS DU SERVER	" << line << "	" << std::to_string(nbLine) << endl;
 		if (checkValid(line) == false)
 			return false;
-		if (nbLine == 0)
+		if (nbLine == 0){
 			checkDefault(line, nbLine);
-		if (checkServer(line, &nbLine) == false)
-			return false;
-		else if (line.length() > 0){
-			cout << "cringe" << endl;
 		}
+		else if (checkServer(line, &nbLine) == false)
+			return false;
+		if (nbLine == verifLine.size())
+			verifLine.push_back(DONT);
 		nbLine++;
 	}
-	cout << "chu tu sorti?" << endl;
 	return true;
 }
 
@@ -138,6 +139,7 @@ void	parsing::checkDefault(string const &line, unsigned int nbLine){
 		selectMessage(DEFAULT, NOERR, nbLine, "	You choose that the program will close if they're is an error in the ConfigFile. If you don't want that, you must include at the beginning of the ConfigFile : \"acceptDefault true\"");
 	}
 	verifLine.push_back(DONT);
+	// cout << "line " << nbLine << "	" << line << " : " << verifLine[nbLine] << endl;
 }
 
 bool	parsing::checkServer(std::string &line, unsigned int *nbLine){
@@ -145,11 +147,11 @@ bool	parsing::checkServer(std::string &line, unsigned int *nbLine){
 		return -1;
 	if (line.find("server") > 0){
 		selectMessage(WRONG, IDENTATIONERROR, *nbLine, ", it must not have any");
-		verifLine.push_back(DONT);
 		return false;
 	}
 	if (checkForTabs(line, -1) == false){
 		selectMessage(WRONG, SPACEERROR, *nbLine, "");
+		return false;
 	}
 	if (line.find("{") != line.length() - 1){
 		selectMessage(WRONG, MISSINGEND, *nbLine, ", the server line must finish with \"{\"");
@@ -157,37 +159,44 @@ bool	parsing::checkServer(std::string &line, unsigned int *nbLine){
 	}
 	if (isThereSomethingInMyString(line, "server", line.length() - 1) == true){
 		selectMessage(WRONG, IMPOSTORERROR, *nbLine, "");
-		verifLine.push_back(DONT);
 		return false;
 	}
+	verifLine.push_back(OKPARS);
+	selectMessage(VALID, NOERR, *nbLine, "	\"" + line + "\"");
+	// cout << "SERVER line " << *nbLine << "	" << line << " : " << verifLine[*nbLine] << endl;
 	(*nbLine)++;
-	std::getline(configFile, line);
-	while (isThisTheEnd(line, false) || std::getline(configFile, line)){
+	// std::getline(configFile, line);
+	while (std::getline(configFile, line)){
+		if (checkValid(line) == false)
+			return false;
 		if (checkLocation(line, nbLine) == false)
 			return false;
-		else if (checkHost(line, *nbLine) == false)
+		if (checkHost(line, *nbLine) == false)
 			return false;
-		else if (checkListen(line, *nbLine) == false)
+		if (checkListen(line, *nbLine) == false)
 			return false;
-		else if (checkServerName(line, *nbLine) == false)
+		if (checkServerName(line, *nbLine) == false)
 			return false;
-		else if (checkRoot(line, *nbLine) == false)
+		if (checkRoot(line, *nbLine) == false)
 			return false;
-		else if (checkIndex(line, *nbLine) == false)
+		if (checkIndex(line, *nbLine) == false)
 			return false;
-		else if (checkErrorPage(line, *nbLine) == false)
+		if (checkErrorPage(line, *nbLine) == false)
 			return false;
-		else if (checkClientMaxBodySize(line, *nbLine) == false)
+		if (checkClientMaxBodySize(line, *nbLine) == false)
 			return false;
-		else if (checkReturns(line, *nbLine) == false)
+		if (checkReturns(line, *nbLine) == false)
 			return false;
-		else if (*nbLine != verifLine.size() - 1)
+		if (line.find("}\0\n") == 0){
 			verifLine.push_back(DONT);
+			// cout << "line " << *nbLine << "	" << line << " : " << verifLine[*nbLine] << endl;
+			break ;
+		}
 		(*nbLine)++;
 	}
-	if (*nbLine == verifLine.size())
-		verifLine.push_back(OKPARS);
-	selectMessage(VALID, NOERR, *nbLine, "	\"" + line + "\"");
+	// cout << "CECI EST LA FIN" << line << "	" << std::to_string(*nbLine) << endl;
+	// cout << "VERIF SIZE: " << std::to_string(verifLine.size()) << "	NBLINE: " << std::to_string(*nbLine) << endl;
+	// cout << "SERVER line " << *nbLine << "	" << line << " : " << verifLine[*nbLine] << endl;
 	return true;
 }
 
@@ -224,9 +233,9 @@ bool	parsing::checkHost(string const &line, unsigned int nbLine){
 			return false;
 		return true;
 	}
-	if (nbLine == verifLine.size())
-		verifLine.push_back(OKPARS);
+	verifLine.push_back(OKPARS);
 	selectMessage(VALID, NOERR, nbLine, "	\"" + line + "\"");
+	// cout << "line " << nbLine << "	" << line << " : " << verifLine[nbLine] << endl;
 	return true;
 }
 
@@ -270,13 +279,14 @@ bool	parsing::checkListen(string const &line, unsigned int nbLine){
 			return false;
 		return true;
 	}
-	if (nbLine == verifLine.size())
-		verifLine.push_back(OKPARS);
+	verifLine.push_back(OKPARS);
 	selectMessage(VALID, NOERR, nbLine, "	\"" + line + "\"");
+	// cout << "line " << nbLine << "	" << line << " : " << verifLine[nbLine] << endl;
 	return true;
 }
 
 bool	parsing::checkServerName(string const &line, unsigned int nbLine){
+	// cout << line.find("server_name") << endl;
 	if (line.find("server_name") != 1)
 		return -1;
 	if (checkIdentationParsing(line, "server_name", false) == false){
@@ -309,9 +319,9 @@ bool	parsing::checkServerName(string const &line, unsigned int nbLine){
 			return false;
 		return true;
 	}
-	if (nbLine == verifLine.size())
-		verifLine.push_back(OKPARS);
+	verifLine.push_back(OKPARS);
 	selectMessage(VALID, NOERR, nbLine, "	\"" + line + "\"");
+	// cout << "line " << nbLine << "	" << line << " : " << verifLine[nbLine] << endl;
 	return true;
 }
 
@@ -348,11 +358,9 @@ bool	parsing::checkRoot(string const &line, unsigned int nbLine){
 			return false;
 		return true;
 	}
-	if (nbLine == verifLine.size())
-		verifLine.push_back(OKPARS);
+	verifLine.push_back(OKPARS);
 	selectMessage(VALID, NOERR, nbLine, "	\"" + line + "\"");
-	if (nbLine == verifLine.size())
-		verifLine.push_back(OKPARS);
+	// cout << "line " << nbLine << "	" << line << " : " << verifLine[nbLine] << endl;
 	return true;
 }
 
@@ -389,11 +397,9 @@ bool	parsing::checkIndex(string const &line, unsigned int nbLine){
 			return false;
 		return true;
 	}
-	if (nbLine == verifLine.size())
-		verifLine.push_back(OKPARS);
+	verifLine.push_back(OKPARS);
 	selectMessage(VALID, NOERR, nbLine, "	\"" + line + "\"");
-	if (nbLine == verifLine.size())
-		verifLine.push_back(OKPARS);
+	// cout << "line " << nbLine << "	" << line << " : " << verifLine[nbLine] << endl;
 	return true;
 }
 
@@ -439,11 +445,9 @@ bool	parsing::checkErrorPage(string const &line, unsigned int nbLine){
 			return true;
 		}
 	}
-	if (nbLine == verifLine.size())
-		verifLine.push_back(OKPARS);
+	verifLine.push_back(OKPARS);
 	selectMessage(VALID, NOERR, nbLine, "	\"" + line + "\"");
-	if (nbLine == verifLine.size())
-		verifLine.push_back(OKPARS);
+	// cout << "line " << nbLine << "	" << line << " : " << verifLine[nbLine] << endl;
 	return true;
 }
 
@@ -495,11 +499,9 @@ bool	parsing::checkClientMaxBodySize(string const &line, unsigned int nbLine){
 			return false;
 		return true;
 	}
-	if (nbLine == verifLine.size())
-		verifLine.push_back(OKPARS);
+	verifLine.push_back(OKPARS);
 	selectMessage(VALID, NOERR, nbLine, "	\"" + line + "\"");
-	if (nbLine == verifLine.size())
-		verifLine.push_back(OKPARS);
+	// cout << "line " << nbLine << "	" << line << " : " << verifLine[nbLine] << endl;
 	return true;
 }
 
@@ -552,11 +554,9 @@ bool	parsing::checkReturns(string const &line, unsigned int nbLine){
 			return true;
 		}
 	}
-	if (nbLine == verifLine.size())
-		verifLine.push_back(OKPARS);
+	verifLine.push_back(OKPARS);
 	selectMessage(VALID, NOERR, nbLine, "	\"" + line + "\"");
-	if (nbLine == verifLine.size())
-		verifLine.push_back(OKPARS);
+	// cout << "line " << nbLine << "	" << line << " : " << verifLine[nbLine] << endl;
 	return true;
 }
 
