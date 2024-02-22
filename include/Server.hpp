@@ -41,7 +41,7 @@ public:
 	int acceptConnection(socketInfo *client);
 	int handleClient(socketInfo *client, int type);
 	void codeMessage(int code, std::string &message);
-	int headerGenerator(int code, std::string &header, Response *response);
+	int headerGenerator(int code, std::string &header, std::string const &body, std::string const &contentTypeRaw);
 	void contentTypeGenerator(std::string &contentType, std::string const &path);
 	int recieveRequest(socketInfo *client);
 	int handleRequest(socketInfo *client);

@@ -34,7 +34,7 @@ int Location::isMethodAllowed(std::string const &method){
 	for (; it != _allowedMethod.end() && *it != method;++it){}
 	if (it == _allowedMethod.end())
 		return FORBIDDEN;
-	return FOUND;
+	return OK;
 }
 
 int Location::isErrorCodeValid(int const &errorCode, std::string &path){
@@ -82,4 +82,8 @@ bool Location::getUploadEnable() const {
 
 void Location::setClientMaxBodySize(size_t value) {
 	_clientMaxBodySize = value;
+}
+
+void Location::setAutoIndex(bool const &autoIndex) {
+	_autoIndex = autoIndex;
 }

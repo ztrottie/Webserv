@@ -10,16 +10,19 @@
 #include <dirent.h>
 
 Response::Response(Request *request, Router *router, Location *location, int &errorCode) {
-	if (errorCode >= 300) {
+	if ((errorCode >= 300 && errorCode != NOTFOUND) || (errorCode == NOTFOUND && request->getFilePath().find(".") == std::string::npos)) {
 		std::string path;
+		std::cout << errorCode << " error encountered sending error" << std::endl;
 		int errorPageCode = router->getErrorPage(path, errorCode, location);
-		if (errorPageCode >= 300 || openPath(path) >= 300) {
+		if (errorPageCode == INTERNALSERVERROR || openPath(path) >= 300) {
 			internalServerError(errorCode);
 			return;
 		}
+		contentTypeGenerator(path);
 	}
-	else if (request->getMethod() == "GET")
+	else if (request->getMethod() == "GET") {
 		handleGet(request, router, location, errorCode);
+	}
 	else if (request->getMethod() == "DELETE")
 		handleDelete(request, router, location, errorCode);
 	// else if (request->getMethod() == "POST")
@@ -29,6 +32,9 @@ Response::Response(Request *request, Router *router, Location *location, int &er
 Response::Response(const Response &inst) {
 	std::cout << "Copy Response constructor" << std::endl;
 	*this = inst;
+}
+
+Response::Response() {
 }
 
 Response::~Response() {
@@ -45,6 +51,10 @@ Response& Response::operator=(const Response &rhs) {
 
 const std::string & Response::getBody() const {
 	return _body;
+}
+
+const std::string & Response::getContentType() const {
+	return _contentType;
 }
 
 int Response::openPath(std::string const &path) {
@@ -84,26 +94,36 @@ void Response::contentTypeGenerator(std::string const &path) {
 	contentTypeMap[".php"] = "application/php";
 	int pos = path.rfind('.');
 	std::string fileExtension = path.substr(pos, path.size());
-	std::cout << fileExtension << std::endl;
 	std::map<std::string, std::string>::const_iterator it = contentTypeMap.find(fileExtension);
 	_contentType = ((it == contentTypeMap.end()) ? "text/plain" : contentTypeMap[fileExtension]);
 }
 
 void Response::handleGet(Request *request, Router *router, Location *location, int &errorCode) {
 	errorCode = openPath(request->getFilePath());
+
+	std::cout << location->getAutoIndex() << std::endl;
 	if (errorCode == INTERNALSERVERROR) {
 		internalServerError(errorCode);
+		return;
 	} else if (errorCode >= 300 && location->getAutoIndex() == false) {
 		std::string errorPath;
 		int errorPageCode = router->getErrorPage(errorPath, errorCode, location);
-		if (errorPageCode >= 300)
-			internalServerError(errorCode);
-		errorCode = openPath(errorPath);
-		if (errorCode >= 300)
+		if (errorPageCode == INTERNALSERVERROR || openPath(errorPath) >= 300)
 			internalServerError(errorCode);
 		contentTypeGenerator(errorPath);
-	} else if (location->getAutoIndex()) {
+		return;
+	} else if (errorCode != 200 && location->getAutoIndex()) {
 		directoryListing(request, errorCode);
+		std::cout << errorCode << std::endl;
+		if (errorCode >= 300){
+			std::string errorPath;
+			int errorPageCode = router->getErrorPage(errorPath, errorCode, location);
+			if (errorPageCode == INTERNALSERVERROR || openPath(errorPath) >= 300)
+				internalServerError(errorCode);
+			contentTypeGenerator(errorPath);
+			return;
+		}
+		return;
 	}
 	contentTypeGenerator(request->getFilePath());
 }
@@ -113,13 +133,11 @@ void Response::handleDelete(Request *request, Router *router, Location *location
 	if (access(path.c_str(), F_OK) != 0) {
 		errorCode = NOTFOUND;
 		std::string errorPath;
-		errorCode = router->getErrorPage(errorPath, errorCode, location);
-		if (errorCode >= 300)
+		int errorPageCode = router->getErrorPage(errorPath, errorCode, location);
+		if (errorPageCode == INTERNALSERVERROR || openPath(errorPath) >= 300)
 			internalServerError(errorCode);
-		errorCode = openPath(errorPath);
-		if (errorCode >= 300)
-			internalServerError(errorCode);
-		contentTypeGenerator(path);
+		contentTypeGenerator(errorPath);
+		return;
 	} else {
 		if (std::remove(path.c_str()) != 0)
 			internalServerError(errorCode);
@@ -154,12 +172,9 @@ std::string Response::_footerGenerator() const {
 	return foot;
 }
 
-std::string Response::_linkGenerator(std::string const &path, std::string const &name) const {
+std::string Response::_linkGenerator(std::string const &name) const {
 	std::string link;
-	link += "<li><a href=\"" + path;
-	if (path.back() != '/' && name.front() != '/')
-		link += "/";
-	link += name + "\">" + name + "</a></li>";
+	link += "<li><p>" + name + "</p></li>";
 	return link;
 }
 
@@ -182,8 +197,11 @@ void Response::directoryListing(Request *request, int &errorCode) {
 		return;
 	}
 	_body = _headGenerator();
+	int i = 0;
 	while ((entry = readdir(dir)) != NULL) {
-		_body += _linkGenerator(path, entry->d_name);
+		if (i >= 2)
+			_body += _linkGenerator(entry->d_name);
+		i++;
 	}
 	closedir(dir);
 	_body += _footerGenerator();

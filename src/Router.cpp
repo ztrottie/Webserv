@@ -1,6 +1,7 @@
 #include "../include/Router.hpp"
 #include "../include/utils.hpp"
 #include "../include/Response.hpp"
+#include <map>
 
 Router::Router(){
 	std::cout << timestamp() << " Initializing the server Router!" << std::endl;
@@ -64,41 +65,49 @@ int Router::checkIfFileIsValid(std::string const &path){
 
 int Router::getErrorPage(std::string &path, int errorCode, Location *loc){
 	std::map<int, std::string>::const_iterator it = _errorPagesLocation.find(errorCode);
-	if (!loc->isErrorCodeValid(errorCode, path)){
+	if (!loc || !loc->isErrorCodeValid(errorCode, path)){
 		if (it == _errorPagesLocation.end())
 			return INTERNALSERVERROR;
 		path = _errorPagesLocation[errorCode];	
 	}
-	return errorCode;
+	return OK;
 }
 
 int Router::checkAllowedMethod(std::string const &method, Location *loc){
-	int perm = loc->isMethodAllowed(method);
-	if (perm == 405)
+	int perm;
+	if (loc)
+		perm = loc->isMethodAllowed(method);
+	else
+		perm = NOT_FOUND;
+	if (perm == NOTFOUND)
 		return METHNOTALLOWED;
 	if (perm == NOT_FOUND){
 		std::vector<const std::string>::const_iterator it = _allowedMethod.begin();
 		for (; it != _allowedMethod.end() && *it != method;++it){}
 		if (it == _allowedMethod.end())
-			return NOT_FOUND;
+			return METHNOTALLOWED;
 	}
 	return FOUND;
 }
 
-int Router::routerMain(Request *request, Response *response){
-	Location *location = NULL;	
+int Router::routerMain(Request *request, std::string &body, std::string &contentType){
+	Location *location;
 	int errorCode = getFile(request, location);
-	response = new Response(request, this, location, errorCode);
+	Response response(request, this, location, errorCode);
+	body = response.getBody();
+	contentType = response.getContentType();
 	return errorCode;
 }
 
-int Router::getFile(Request *request, Location *loc) {
+int Router::getFile(Request *request, Location *&loc) {
 	std::string uriCopy = request->getFilePath();
 	parseUri(uriCopy);
-	loc = _locations[uriCopy];
+	std::map<std::string, Location*>::const_iterator it = _locations.find(uriCopy);
+	if (it != _locations.end())
+		loc = _locations[uriCopy];
 	int methodCode = checkAllowedMethod(request->getMethod(), loc);
-	if (methodCode == NOT_FOUND && methodCode == METHNOTALLOWED)
-		return getErrorPage(uriCopy, methodCode, loc);
+	if (methodCode == METHNOTALLOWED)
+		return METHNOTALLOWED;
 	if (loc->getRoot(uriCopy) == NOT_FOUND)
 		uriCopy = _root;
 	uriCopy += request->getFilePath();
@@ -107,7 +116,7 @@ int Router::getFile(Request *request, Location *loc) {
 		if (code == INTERNALSERVERROR)
 			return code;
 		if (code == IS_DIR){
-			if (uriCopy.at(uriCopy.size() - 1) != '/')
+			if (uriCopy.back() != '/')
 				uriCopy += "/";
 			uriCopy += _index;
 			request->setAddedIndex(true);
@@ -119,5 +128,6 @@ int Router::getFile(Request *request, Location *loc) {
 		else if (code == NOTFOUND)
 			return code;
 	}
+	request->setFilePath(uriCopy);
 	return (OK);
 }

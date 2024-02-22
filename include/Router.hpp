@@ -34,7 +34,7 @@ public:
 	void addLocation(std::string const &key, Location *loc);
 	void addAllowedMethod(std::string const &method);
 
-	int getFile(Request *request, Location *loc);
+	int getFile(Request *request, Location *&loc);
 	void trimURI(std::string &URI);
 	void parseUri(std::string &cpy);
 	int getErrorPage(std::string &path, int errorCode, Location *loc);
@@ -44,5 +44,5 @@ public:
 	int checkIfCanExec(std::string const &path);
 	int openFile(Request *request);
 	int getFileMethod(std::string &path, Request *request);
-	int routerMain(Request *request, Response *response);
+	int routerMain(Request *request, std::string &body, std::string &contentType);
 };

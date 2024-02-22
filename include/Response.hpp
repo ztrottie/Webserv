@@ -13,10 +13,11 @@ private:
 	std::string _body;
 	std::string _headGenerator() const;
 	std::string _footerGenerator() const;
-	std::string _linkGenerator(std::string const &path, std::string const &name) const;
+	std::string _linkGenerator(std::string const &name) const;
 
 public:
 	// Constructors / Destructor
+	Response();
 	Response(Request *request, Router *router, Location *location, int &errorCode);
 	Response(const Response &inst);
 	~Response();
@@ -26,6 +27,7 @@ public:
 
 	// Functions
 	const std::string & getBody() const;
+	const std::string & getContentType() const;
 
 	void setBody(std::string const & body);
 	int openPath(std::string const &path);

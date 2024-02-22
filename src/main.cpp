@@ -16,11 +16,13 @@ int main(void) {
 	}
 	Router *bob = new Router();
 	Location *loc = new Location();
+	loc->setAutoIndex(true);
+	std::cout << loc->getAutoIndex() << std::endl;
 	bob->addAllowedMethod("GET");
 	bob->addAllowedMethod("POST");
 	bob->setIndex("index.html");
 	bob->setRoot("./www");
-	bob->addErrorPage(404, "./www/erros/404.html");
+	bob->addErrorPage(404, "./www/errors/404.html");
 	bob->addLocation("/", loc);
 	webserv.addNewServer(8080, "10.12.5.9", "default", bob, 3000);
 	webserv.loop();

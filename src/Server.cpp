@@ -121,39 +121,19 @@ void Server::codeMessage(int code, std::string &message) {
 	}
 }
 
-// void Server::contentTypeGenerator(std::string &contentType, std::string const &path) {
-// 	std::map<std::string, std::string> contentTypeMap;
-
-// 	contentTypeMap[".html"] = "text/html";
-// 	contentTypeMap[".css"] = "text/css";
-// 	contentTypeMap[".ico"] = "image/ico";
-// 	contentTypeMap[".png"] = "image/png";
-// 	contentTypeMap[".php"] = "application/php";
-// 	int pos = path.rfind('.');
-// 	std::string fileExtension = path.substr(pos, path.size());
-// 	std::cout << fileExtension << std::endl;
-// 	std::map<std::string, std::string>::const_iterator it = contentTypeMap.find(fileExtension);
-// 	contentType += ((it == contentTypeMap.end()) ? "text/plain" : contentTypeMap[fileExtension]);
-// }
-
-int Server::headerGenerator(int code, std::string &header, Response *response) {
+int Server::headerGenerator(int code, std::string &header, std::string const &body, std::string const &contentTypeRaw) {
 	std::string codeMessageString = "HTTP/1.1 ";
 	std::string serverName = "Server: " + _name + "\r\n";
-	std::string contentType = "Content-Type: ";
+	std::string contentType = "Content-Type: " + contentTypeRaw;
 	std::string	contentLength = "Content-Length: ";
 	codeMessage(code, codeMessageString);
-	contentLength.append(std::to_string(response->getBody().size()));
+	contentLength.append(std::to_string(body.size()));
 	codeMessageString += "\r\n";
 	contentType += "\r\n";
 	contentLength += "\r\n";
 	header += codeMessageString + serverName + contentType + contentLength + "\r\n";
 	return (0);
 }
-
-// void Server::internalServerError(std::string &response) {
-// 	response = "HTTP/1.1 500 Internal Server Error\r\nContent-Type: text/plain\r\nContent-length:21\r\n\r\nInternal Server Error";
-// }
-
 
 int Server::recieveRequest(socketInfo *client) {
 	char buffer[1025];
@@ -266,12 +246,13 @@ int Server::recieveRequest(socketInfo *client) {
 // }
 
 int Server::handleRequest(socketInfo *client) {
-	Response *response = NULL;
-	int code = _serverRouter->routerMain(client->request, response);
+	std::string body;
+	std::string contentType;
+	int code = _serverRouter->routerMain(client->request, body, contentType);
 	std::string header;
 	std::string httpResponse;
-	headerGenerator(code, header, response);
-	httpResponse = header + response->getBody();
+	headerGenerator(code, header, body, contentType);
+	httpResponse = header + body;
 	unsigned long totalSent = 0;
 	while (totalSent < httpResponse.size()) {
 		int sent = send(client->socket, httpResponse.c_str() + totalSent, httpResponse.size() - totalSent, 0);
