@@ -1,11 +1,17 @@
 #pragma once
 
+#include <cstddef>
+#include <cstdint>
 #include <fstream>
 #include <string>
 #include <iostream>
 #include <sys/stat.h>
 #include <vector>
+#include "Webserv.hpp"
 #include "color.h"
+#include "../include/Server.hpp"
+#include "../include/Router.hpp"
+#include "../include/Location.hpp"
 #include "utils.hpp"
 
 #define DEFAULTHOST "127.0.0.1"
@@ -20,24 +26,6 @@ enum verifFlags{
 	OKPARS,
 	SWITCH,
 	DONT
-};
-
-enum flags{
-	CORRECT,
-	WRONGPATH,
-	DIR,
-	WRONGEXT,
-	SERVERPARS,
-	HOST_ERR,
-	LISTEN_ERR,
-	SERVERNAME_ERR,
-	ROOT_ERR,
-	ERROR_PAGE_ERR,
-	LOCATION_ERR,
-	ALLOWEDMETHODS_ERR,
-	RETURN_ERR,
-	CLIENT_MAX_BODY_SIZE_ERR,
-	INDEX_ERR
 };
 
 using std::string;
@@ -56,27 +44,56 @@ class parsing{
 		std::vector<int>	verifLine;
 		std::ifstream		configFile;
 		bool				defaultIfError;
-		void				error(int errorCode);
+		//Assignation Server
+		string				_host;
+		uint16_t			_port;
+		string				_serverName;
+		unsigned int		_clientBodySize;
+		// Analyser ConfigFile
 		bool				checkFile();
-		int					checkValid(string const &line);
-		int					isThisTheEnd(string const &line);
-		int					checkDefault(string const &line);
-		int					checkServer(string const &line, unsigned int nbLine);
-		int					checkHost(string const &line, unsigned int nbLine);
-		int					checkListen(string const &line, unsigned int nbLine);
-		int					checkServerName(string const &line, unsigned int nbLine);
-		int					checkRoot(string const &line, unsigned int nbLine);
-		int					checkIndex(string const &line, unsigned int nbLine);
-		int					checkErrorPage(string const &line, unsigned int nbLine);
-		int					checkClientMaxBodySize(string const &line, unsigned int nbLine);
-		int					checkReturns(string const &line, unsigned int nbLine);
-		// Dans location
-		int					checkLocation(string &line, unsigned int *nbLine);
-		int					checkIndexLocation(string const &line, unsigned int nbLine);
-		int					checkRootLocation(string const &line, unsigned int nbLine);
-		int					checkAllowedMethods(string const &line, unsigned int nbLine);
-		int					checkErrorPageLocation(string const &line, unsigned int nbLine);
-		int					checkReturnsLocation(string const &line, unsigned int nbLine);
-		// Assignation
+		bool				checkValid(string const &line);
+		int					isThisTheEnd(string const &line, bool insideLocation);
+			//check les lignes
+		void				checkDefault(string const &line, unsigned int nbLine);
+		bool				checkServer(string &line, unsigned int *nbLine);
+		bool				checkHost(string const &line, unsigned int nbLine);
+		bool				checkListen(string const &line, unsigned int nbLine);
+		bool				checkServerName(string const &line, unsigned int nbLine);
+		bool				checkRoot(string const &line, unsigned int nbLine);
+		bool				checkIndex(string const &line, unsigned int nbLine);
+		bool				checkErrorPage(string const &line, unsigned int nbLine);
+		bool				checkClientMaxBodySize(string const &line, unsigned int nbLine);
+		bool				checkReturns(string const &line, unsigned int nbLine);
+				// Dans location
+		bool					checkLocation(string &line, unsigned int *nbLine);
+		void					checkIndexLocation(string const &line, unsigned int nbLine);
+		void					checkRootLocation(string const &line, unsigned int nbLine);
+		void					checkAllowedMethods(string const &line, unsigned int nbLine);
+		void					checkErrorPageLocation(string const &line, unsigned int nbLine);
+		void					checkReturnsLocation(string const &line, unsigned int nbLine);
+		void					checkUploadEnable(string const &line, unsigned int nbLine);
+		void					checkUploadStore(string const &line, unsigned int nbLine);
+		void					checkClientMaxBodySizeLocation(string const &line, unsigned int nbLine);
 		
+		// Assignation
+			//Server
+		void				createServer(string &line, std::ifstream &file, size_t *i);
+		uint16_t			assignPort(const string &line);
+		string				assignHost(const string &line);
+		string				assignServerName(const string &line);
+			//Router
+		void				assignMaxBody(const string &line, Router &rout);
+		void				assignRoot(const string &line, Router &rout);
+		void				assignIndex(const string &line, Router &rout);
+		void				assignErrorPage(const string &line, Router &rout);
+		void				assignReturn(const string &line, Router &rout);
+			//Location
+		void				assignLocation(string &line, std::ifstream &file, size_t *i, Router &rout);
+		void				assignAllowedMethods(const string &line, Location &loc);
+		void				assignIndex(const string &line, Location &loc);
+		void				assignRoot(const string &line, Location &loc);
+		void				assignReturn(const string &line, Location &loc);
+		void				assignErrorPage(const string &line, Location &loc);
+		void				assignMaxBody(const string &line, Location &loc);
+
 };

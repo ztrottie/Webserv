@@ -1,4 +1,5 @@
 #include "../include/utils.hpp"
+#include <string>
 #include <vector>
 
 std::string	timestamp() {
@@ -10,36 +11,47 @@ std::string	timestamp() {
 	return (tmp);
 }
 
-void writeTimestamp(std::string color, std::string const &message){
-	std::cout << color << timestamp() << " " << message << RESET << std::endl;
+void	selectMessage(int flags, int errorCode, unsigned int nbLine, std::string messSupp){
+	std::string	color;
+	switch (flags){
+		case WRONG:
+			color = RED;
+			break;
+		case DEFAULT:
+			color = YELLOW;
+			break;
+		case VALID:
+			color = GREEN;
+			break;
+	}
+	std::string message = enumToString(errorCode);
+	writeTimestamp(color, message, nbLine, messSupp);
 }
 
-bool	checkIdentationParsing(std::string const &firstWord, int nbIndentation, std::string const &line, bool defaultIfError, std::string const &lineName, std::vector<int> &verifLine, unsigned int nbLine){
-	if (line.find(firstWord) != static_cast<size_t>(nbIndentation)){
-		if(defaultIfError == true){
-			writeTimestamp(YELLOW, "Error of identation in " + lineName + ", switching to default setting");
-			if (nbLine == verifLine.size())
-				verifLine.push_back(1);
-			return true;
-		}
-		else if(defaultIfError == false){
-			writeTimestamp(RED, "Error of identation in " + lineName + ", must have one, default setting is off, exiting program...");
-			return false;
-		}
+std::string	enumToString(int code){
+	switch (code) {
+		case IDENTATIONERROR: return "This line has an error with it's identation";
+		case IMPOSTORERROR: return "This line has some arguments that are not wanted";
+		case VARGULEERR: return "This line must finish with an \";\"";
+		case NUMBERARGSERROR: return "This line must have some arguments";
+		case DIGITERROR: return "This line as an error with an argument that must only contain digit";
+		case SPACEERROR: return "This line must only contain space between the arguments";
+		case NOVARGULE: return "This line must not finish with \";\"";
+		case MISSINGEND: return "This line doesn't have the right character at the end";
+		case BADARGS: return "This line have an arguments that is not valid";
+		case WRONGRETURN: return "This return line must need as it's last argument an path, https, error_code or a string";
+		case WRONGMETHODS: return "This allowedMethods line can only have GET, PUT, POST, PATCH, DELETE, CONNECT, OPTION, TRACE as arguments";
+		case NOERR: return "This line is ok";
 	}
-	if (line.find("	") != 0){
-		if(defaultIfError == true){
-			writeTimestamp(YELLOW, "Error of identation in " + lineName + ", must have one, switching to default setting");
-			if (nbLine == verifLine.size())
-				verifLine.push_back(1);
-			return true;
-		}
-		else if(defaultIfError == false){
-			writeTimestamp(RED, "Error of identation in " + lineName + ", must have one, default setting is off, exiting program...");
-			return false;
-		}
-	}
-	return true;
+	return "Unknowed error.... HELP";
+}
+
+void writeTimestamp(std::string color, std::string const &message, unsigned int nbLine, std::string const &messSupp){
+	std::cout << color << "[" << RESET << std::to_string(nbLine + 1) << color << "]" << timestamp() << " " << message << messSupp << RESET << std::endl;
+}
+
+void simpleWriteTimestamp(std::string color, std::string const &message){
+	std::cout << color << timestamp() << " " << message << RESET << std::endl;
 }
 
 bool containsNonDigit(const std::string& str){
@@ -51,127 +63,21 @@ bool containsNonDigit(const std::string& str){
 	return false;
 }
 
-bool isThereSomethingInMyString(std::string const &line, std::string const &begin, bool _defaultIfError, bool inLocation, bool checkNumber, std::vector<int> &verifLine, unsigned int nbLine){
-	std::string impasta;
-	
-	size_t space = line.rfind(" ");
-	if (space == std::string::npos)
-		space = 0;
-	size_t tabs = line.rfind("	");
-	if (tabs == std::string::npos)
-		tabs = 0;
-	if (space > tabs){
-		impasta = retIsThereSomethingInMyString(line, begin, &line[line.rfind(" ")], !checkNumber);
-		if (inLocation == false){
-			if (checkNumber == true){
-				if (containsNonDigit(impasta) == true){
-					if (_defaultIfError == false){
-						writeTimestamp(RED, "The \"" + impasta + "\" in the line \"" + line + "\" must not contain any letter, quitting the program");
-						return true;
-					}
-					else {
-						writeTimestamp(YELLOW, "The \"" + impasta + "\" in the line \"" + line + "\" must not contain any letter, switching to default setting");
-						if (nbLine == verifLine.size())
-							verifLine.push_back(1);
-						return false;
-					}
-				}
-			}
-			else {
-				if (impasta.length() > 0){
-					if (_defaultIfError == false){
-						writeTimestamp(RED, "The \"" + impasta + "\" in the line \"" + line + "\" isn\'t accepted, quitting the program...");
-						return true;
-					}
-					else {
-						writeTimestamp(YELLOW, "The \"" + impasta + "\" in the line \"" + line + "\" isn\'t accepted, switching to default setting");
-						if (nbLine == verifLine.size())
-							verifLine.push_back(1);
-						return false;
-					}
-				}
-			}
-		}
-		else {
-			if (checkNumber == true){
-				if (containsNonDigit(impasta) == true){
-					writeTimestamp(YELLOW, "The \"" + impasta + "\" in the line \"" + line + "\" must not contain any letter, this line will not be used");
-					return true;
-				}
-			}
-			else {
-				if (impasta.length() > 0){
-					writeTimestamp(YELLOW, "The \"" + impasta + "\" in the line \"" + line + "\" isn\'t accepted, this line will not be used");
-					return true;
-				}
-			}
-		}
-	}
-	else if (space < tabs){
-		impasta = retIsThereSomethingInMyString(line, begin, &line[line.rfind("	")], !checkNumber);
-		if (inLocation == false){
-			if (checkNumber == true){
-				if (containsNonDigit(impasta) == true){
-					if (_defaultIfError == false){
-						writeTimestamp(RED, "The \"" + impasta + "\" in the line \"" + line + "\" must not contain any letter, quitting the program");
-						return true;
-					}
-					else {
-						writeTimestamp(YELLOW, "The \"" + impasta + "\" in the line \"" + line + "\" must not contain any letter, switching to default setting");
-						if (nbLine == verifLine.size())
-							verifLine.push_back(1);
-						return false;
-					}
-				}
-			}
-			else {
-				if (impasta.length() > 0){
-					if (_defaultIfError == false){
-						writeTimestamp(RED, "The \"" + impasta + "\" in the line \"" + line + "\" isn\'t accepted, quitting the program...");
-						return true;
-					}
-					else {
-						writeTimestamp(YELLOW, "The \"" + impasta + "\" in the line \"" + line + "\" isn\'t accepted, switching to default setting");
-						if (nbLine == verifLine.size())
-							verifLine.push_back(1);
-						return false;
-					}
-				}
-			}
-		}
-		else {
-			if (checkNumber == true){
-				if (containsNonDigit(impasta) == true){
-					writeTimestamp(YELLOW, "The \"" + impasta + "\" in the line \"" + line + "\" must not contain any letter, this line will not be used");
-					return true;
-				}
-			}
-			else {
-				if (impasta.length() > 0){
-					writeTimestamp(YELLOW, "The \"" + impasta + "\" in the line \"" + line + "\" isn\'t accepted, this line will not be used");
-					return true;
-				}
-			}
-		}
-	}
-	return false;
-}
+// std::string retIsThereSomethingInMyString(std::string const &input, std::string const &beginning, std::string const& end, bool erase){
+// 	size_t start;
+// 	size_t finish;
+// 	std::string impostor;
 
-std::string retIsThereSomethingInMyString(std::string const &input, std::string const &beginning, std::string const& end, bool erase){
-	size_t start;
-	size_t finish;
-	std::string impostor;
-
-	start = input.find(beginning);
-	finish = input.find(end);
-	impostor = input.substr(start + beginning.length(), (finish - (start + beginning.length())));
-	if (erase == true)
-		impostor.erase(std::remove_if(impostor.begin(), impostor.end(), ::isspace), impostor.end());
-	if (impostor.length() > 0){
-		return impostor;
-	}
-	return impostor;
-}
+// 	start = input.find(beginning);
+// 	finish = input.find(end);
+// 	impostor = input.substr(start + beginning.length(), (finish - (start + beginning.length())));
+// 	if (erase == true)
+// 		impostor.erase(std::remove_if(impostor.begin(), impostor.end(), ::isspace), impostor.end());
+// 	if (impostor.length() > 0){
+// 		return impostor;
+// 	}
+// 	return impostor;
+// }
 
 std::vector<std::string> splitString(std::string const &input, char delimiter){
 	std::vector<std::string> result;
@@ -216,32 +122,12 @@ bool	verifyAllowedMethods(std::string const &line){
 			continue;
 		else if (res[i] == "TRACE")
 			continue;
-		else{
-			writeTimestamp(YELLOW, "\"" + res[i] + "\" is not a valid method, this line \"" + line + "\" will not be used");
+		else
 			return false;
-		}
 	}
 	return true;
 }
 
-bool	checkVargule(std::string const &line, bool _defaultIfError, bool insideLocation, std::vector<int> &verifLine, unsigned int nbLine){
-	if (line.find(";") != line.length() - 1){
-		if (insideLocation == false){
-			if (_defaultIfError == false){
-				writeTimestamp(RED, "You need to have a \";\" at the end of the line \"" + line + "\"");
-				return false;
-			}
-			else{
-				writeTimestamp(YELLOW, "You need to have a \";\" at the end of the line \"" + line + "\" , switching to default!");
-				if (nbLine == verifLine.size())
-					verifLine.push_back(1);
-				return true;
-			}
-		}
-		else {
-			writeTimestamp(YELLOW, "You need to have a \";\" at the end of the line \"" + line + "\" , this line will not be used");
-			return false;
-		}
-	}
-	return true;
+bool checkIdentationLocation(std::string const &line){
+	return ((line[0] != '	' || line[1] != '	') ? false : true);
 }
