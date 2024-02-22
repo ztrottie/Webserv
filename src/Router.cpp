@@ -1,9 +1,8 @@
 #include "../include/Router.hpp"
 #include "../include/utils.hpp"
 #include "../include/Response.hpp"
-#include <map>
 
-Router::Router(){
+Router::Router():_clientMaxBodySize(-1){
 	std::cout << timestamp() << " Initializing the server Router!" << std::endl;
 }
 
@@ -31,6 +30,14 @@ void Router::addLocation(std::string const &key, Location *loc){
 	_locations.insert(std::make_pair(key, loc));
 }
 
+long long int Router::getClientMaxBodySize() const{
+	return _clientMaxBodySize;
+}
+
+void Router::setClientMaxBodySize(unsigned int value){
+	_clientMaxBodySize = value;
+}
+
 void Router::parseUri(std::string &cpy){
 	for (std::map<std::string, Location*>::const_iterator it = _locations.end(); it == _locations.end();){
 		it = _locations.find(cpy);
@@ -48,6 +55,23 @@ void Router::trimURI(std::string &uri){
 		return ;
 	}
 	uri = uri.substr(0, index);
+}
+
+void Router::checkBodySize(Request *request, int &errorCode){
+	Location *loc;
+	std::string uri = request->getFilePath();
+	std::map<std::string, Location*>::const_iterator it = _locations.find(uri);
+	if (it != _locations.end() && loc->getClientMaxBodySize() > 0){
+		if (request->getContentLenght() > loc->getClientMaxBodySize()){
+			errorCode = 413;
+			return ;
+		}
+	}
+	else if (request->getContentLenght() > _clientMaxBodySize){
+		errorCode = 413;
+		return ;
+	}
+	errorCode = OK;
 }
 
 int Router::checkIfFileIsValid(std::string const &path){
@@ -92,7 +116,9 @@ int Router::checkAllowedMethod(std::string const &method, Location *loc){
 
 int Router::routerMain(Request *request, std::string &body, std::string &contentType){
 	Location *location;
-	int errorCode = getFile(request, location);
+	int errorCode;
+	checkBodySize(request, errorCode);
+	errorCode = getFile(request, location);
 	Response response(request, this, location, errorCode);
 	body = response.getBody();
 	contentType = response.getContentType();

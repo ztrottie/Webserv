@@ -87,3 +87,35 @@ void Location::setClientMaxBodySize(size_t value) {
 void Location::setAutoIndex(bool const &autoIndex) {
 	_autoIndex = autoIndex;
 }
+
+void Location::setRedirection(bool value){
+	_redirection = value;
+}
+
+bool Location::getRedirection() const{
+	return _redirection;
+}
+
+int Location::getRedirectionCode() const{
+	return _redirectionCode;
+}
+
+void Location::setRedirectionCode(int code){
+	_redirectionCode = code;
+}
+
+void Location::setRedirectionLocation(std::string str){
+	_redirectionLocation = str;
+}
+
+std::string Location::getRedirectionLocation() const{
+	return _redirectionLocation;
+}
+
+long long int Location::getClientMaxBodySize() const{
+	return _clientMaxBodySize;
+}
+
+void Location::setClientMaxBodySize(long long int value){
+	_clientMaxBodySize = value;
+}

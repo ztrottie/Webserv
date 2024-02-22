@@ -1,6 +1,6 @@
 #include "../include/Request.hpp"
 #include "../include/color.h"
-#include <sys/_types/_ssize_t.h>
+#include <cstddef>
 
 Request::Request(std::string const &received, socketInfo *client) : _raw(received) {
 	std::stringstream ss(received);
@@ -172,6 +172,14 @@ void Request::setAddedIndex(bool index){
 
 bool Request::getAddedIndex() const{
 	return _addedIndex;
+}
+
+size_t Request::getContentLenght(){
+	return _contentLenght;
+}
+
+void Request::setContentLenght(size_t value){
+	_contentLenght = value;
 }
 
 bool Request::isBodyValid() const {

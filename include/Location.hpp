@@ -14,15 +14,18 @@ class Router;
 class Location
 {
 private:
-	const std::string 			_name;
-	std::string					_root;
-	std::string					_index;
-	std::map<int, std::string>	_errorPagesLocation;
-	std::string					_rewrite;
-	std::vector<std::string> 	_allowedMethod;
-	size_t						_clientMaxBodySize;
-	bool						_autoIndex;
-	bool						_uploadEnable;
+	const std::string 					_name;
+	std::string							_root;
+	std::string							_index;
+	std::map<int, std::string>			_errorPagesLocation;
+	std::string							_rewrite;
+	std::vector<std::string> 			_allowedMethod;
+	long long int						_clientMaxBodySize;
+	bool								_autoIndex;
+	bool								_uploadEnable;
+	bool								_redirection;
+	int 								_redirectionCode;
+	std::string							_redirectionLocation;
 
 public:
 	// Constructors / Destructor
@@ -42,6 +45,9 @@ public:
 	void addErrorPage(const int errorNumber, std::string pathToError);
 	void addAllowedMethod(std::string const &method);
 	void setClientMaxBodySize(size_t value);
+	void setRedirection(bool value);
+	void setRedirectionCode(int code);
+	void setRedirectionLocation(std::string str);
 
 	// Functions
 	int isMethodAllowed(std::string const &method);
@@ -49,6 +55,13 @@ public:
 	int getRoot(std::string &root);
 	bool getUploadEnable() const;
 	bool getAutoIndex() const;
+	bool getRedirection() const;
+	int getRedirectionCode() const;
+	std::string getRedirectionLocation() const;
+	void setClientMaxBodySize(long long int value);
+	long long int getClientMaxBodySize() const;
+
+
 };
 
 // Location_HPP
