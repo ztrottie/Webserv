@@ -14,6 +14,7 @@
 
 Response::Response(Request *request, Router *router, Location *location, int &errorCode) {
 	if (request->getMethod() == "POST" && errorCode == OK && (request->getClientBody().empty())) {
+		std::cout << GREEN "here!!!" RESET << std::endl;
 	} else if ((errorCode >= 300 && errorCode != NOTFOUND) || (errorCode == NOTFOUND && request->getFilePath().find(".") == std::string::npos && request->getMethod() != "POST")) {
 		std::string path;
 		std::cout << request->getMethod() << errorCode << " error encountered sending error" << std::endl;
@@ -21,6 +22,7 @@ Response::Response(Request *request, Router *router, Location *location, int &er
 		if (errorPageCode == INTERNALSERVERROR || openPath(path) >= 300) {
 			internalServerError(errorCode);
 			headerGenerator(errorCode, request);
+			_fullResponse = _header + _body;
 			return;
 		}
 		contentTypeGenerator(path);

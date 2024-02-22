@@ -46,7 +46,7 @@ public:
 	int checkIfCanExec(std::string const &path);
 	int openFile(Request *request);
 	int getFileMethod(std::string &path, Request *request);
-	void routerMain(Request *request, std::string &fullResponse);
+	void routerMain(Request *request, std::string &fullResponse, int &errorCode);
 	bool checkRedirectionCode(int code);
 	long long getClientMaxBodySize() const;
 	void checkBodySize(Request *request, int &errorCode);

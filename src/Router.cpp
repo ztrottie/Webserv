@@ -69,7 +69,7 @@ void Router::checkBodySize(Request *request, int &errorCode){
 			}
 		}
 	}
-	else if (request->getContentLength() > _clientMaxBodySize){
+	if (request->getContentLength() > _clientMaxBodySize){
 		errorCode = 413;
 		return ;
 	}
@@ -116,11 +116,14 @@ int Router::checkAllowedMethod(std::string const &method, Location *loc){
 	return FOUND;
 }
 
-void Router::routerMain(Request *request, std::string &fullResponse){
+void Router::routerMain(Request *request, std::string &fullResponse, int &errorCode){
 	Location *location;
-	int errorCode;
 	checkBodySize(request, errorCode);
-	errorCode = getFile(request, location);
+	std::cout << errorCode << std::endl;
+	if (!(request->getMethod() == "POST" && request->getClientBody().empty()))
+		errorCode = getFile(request, location);
+	else
+		location = NULL;
 	Response response(request, this, location, errorCode);
 	fullResponse = response.getFullResponse();
 }
