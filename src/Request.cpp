@@ -180,7 +180,7 @@ bool Request::getAddedIndex() const{
 	return _addedIndex;
 }
 
-size_t Request::getContentLenght(){
+long long Request::getContentLength() const {
 	return _contentLenght;
 }
 

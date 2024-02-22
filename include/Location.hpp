@@ -20,7 +20,7 @@ private:
 	std::map<int, std::string>			_errorPagesLocation;
 	std::string							_rewrite;
 	std::vector<std::string> 			_allowedMethod;
-	long long int						_clientMaxBodySize;
+	long long						_clientMaxBodySize;
 	bool								_autoIndex;
 	bool								_uploadEnable;
 	std::string					_uploadStore;
@@ -45,7 +45,6 @@ public:
 	void setAutoIndex(bool const &autoIndex);
 	void addErrorPage(const int errorNumber, std::string pathToError);
 	void addAllowedMethod(std::string const &method);
-	void setClientMaxBodySize(size_t value);
 	void setUploadStore(std::string const &value);
 	void setRedirection(bool value);
 	void setRedirectionCode(int code);
@@ -64,7 +63,7 @@ public:
 	int getRedirectionCode() const;
 	std::string getRedirectionLocation() const;
 	void setClientMaxBodySize(long long int value);
-	long long int getClientMaxBodySize() const;
+	long long getClientMaxBodySize() const;
 
 
 };

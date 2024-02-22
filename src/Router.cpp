@@ -58,16 +58,18 @@ void Router::trimURI(std::string &uri){
 }
 
 void Router::checkBodySize(Request *request, int &errorCode){
-	Location *loc;
 	std::string uri = request->getFilePath();
 	std::map<std::string, Location*>::const_iterator it = _locations.find(uri);
-	if (it != _locations.end() && loc->getClientMaxBodySize() > 0){
-		if (request->getContentLenght() > loc->getClientMaxBodySize()){
-			errorCode = 413;
-			return ;
+	if (it != _locations.end()){
+		Location *loc = _locations[uri];
+		if (loc->getClientMaxBodySize() > 0) {
+			if (request->getContentLength() > loc->getClientMaxBodySize()){
+				errorCode = 413;
+				return ;
+			}
 		}
 	}
-	else if (request->getContentLenght() > _clientMaxBodySize){
+	else if (request->getContentLength() > _clientMaxBodySize){
 		errorCode = 413;
 		return ;
 	}

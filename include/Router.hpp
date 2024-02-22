@@ -17,7 +17,7 @@ class Router
 private:
 	std::string							_root;
 	std::string							_index;
-	long long int						_clientMaxBodySize;
+	long long							_clientMaxBodySize;
 	std::map<int, std::string>			_errorPagesLocation;
 	std::map<std::string, Location*>	_locations;
 	std::vector<std::string> 			_allowedMethod;
@@ -48,7 +48,7 @@ public:
 	int getFileMethod(std::string &path, Request *request);
 	void routerMain(Request *request, std::string &fullResponse);
 	bool checkRedirectionCode(int code);
-	long long int getClientMaxBodySize() const;
+	long long getClientMaxBodySize() const;
 	void checkBodySize(Request *request, int &errorCode);
 
 };

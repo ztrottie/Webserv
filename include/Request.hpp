@@ -25,7 +25,7 @@ private:
 	std::string _fileContent;
 	ssize_t		_bodyLen;
 	bool		_addedIndex;
-	size_t		_contentLenght;
+	long long	_contentLenght;
 
 	//Functions
 	std::string _search(std::string const &searching, char endChar);
@@ -67,5 +67,5 @@ public:
 	void setFilePath(std::string &path);
 	void parseBody();
 	void setContentLenght(size_t value);
-	size_t getContentLenght();
+	long long getContentLength() const;
 };

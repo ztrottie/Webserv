@@ -80,10 +80,6 @@ bool Location::getUploadEnable() const {
 	return _uploadEnable;
 }
 
-void Location::setClientMaxBodySize(size_t value) {
-	_clientMaxBodySize = value;
-}
-
 void Location::setAutoIndex(bool const &autoIndex) {
 	_autoIndex = autoIndex;
 }
@@ -128,6 +124,6 @@ long long int Location::getClientMaxBodySize() const{
 	return _clientMaxBodySize;
 }
 
-void Location::setClientMaxBodySize(long long int value){
+void Location::setClientMaxBodySize(long long value){
 	_clientMaxBodySize = value;
 }
