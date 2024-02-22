@@ -3,6 +3,8 @@
 #include <cstdint>
 #include <cstdlib>
 #include <fstream>
+#include <string>
+#include <vector>
 
 // client_max_body_size 1B; = 1
 // client_max_body_size 1K; = 1000
@@ -19,10 +21,10 @@ void parsing::assignConfigFile(){
 	file.open(pathConfigFile);
 	for (size_t i = 0; i < verifLine.size(); i++){
 		std::getline(file, line);
-		// if (verifLine[i] == 0){
-		// 	createServer(line, file, &i);
-		// }
-		cout << "line " << i + 1 << "	" << line << " : " << verifLine[i] << endl;
+		if (verifLine[i] == 0){
+			createServer(line, file, &i);
+		}
+		// cout << "line " << i + 1 << "	" << line << " : " << verifLine[i] << endl;
 	}
 	// rout->setRoot(const std::string &root);
 	// rout->setIndex(const std::string &index);
@@ -44,7 +46,6 @@ void	parsing::createServer(string &line, std::ifstream &file, size_t *i){
 	uint16_t port = 0;
 	const char *host = NULL;
 	string name;
-	unsigned long clientBodySize = 0;
 	Router *router = new Router();
 	(*i)++;
 	while (*i < verifLine.size()){
@@ -59,11 +60,10 @@ void	parsing::createServer(string &line, std::ifstream &file, size_t *i){
 			}
 			if (name.empty() && line.find("server_name") == 1)
 				name = assignServerName(line);
-			if (clientBodySize == 0 && line.find("client_max_body_size") == 1)
-				clientBodySize = assignMaxBody(line);
+			// assignMaxBody(line, *router);
 			assignRoot(line, *router);
 			assignIndex(line, *router);
-			// assignErrorPage(line, *router);
+			assignErrorPage(line, *router);
 			// assignReturn(line, *router);
 			assignLocation(line, file, i, *router);
 		}
@@ -76,8 +76,6 @@ void	parsing::createServer(string &line, std::ifstream &file, size_t *i){
 	cout << "Port is " << port << endl;
 	cout << "Host is " << host << endl;
 	cout << "ServerName is " << name << endl;
-	cout << "ClientMaxBodySize is " << clientBodySize << endl;
-
 	// if (anyAreNull)
 		// setDefault
 	// webserv.addNewServer(port, host, name, router);
@@ -106,23 +104,23 @@ string	parsing::assignServerName(const string &line){
 	return serverName;
 }
 
-unsigned long	parsing::assignMaxBody(const string &line){
-	unsigned long	CMBS = 0;
-	string tempLine = line;
-	tempLine.erase(std::remove_if(tempLine.begin(), tempLine.end(), ::isspace), tempLine.end());
-	tempLine.erase(0, 20); tempLine.erase(tempLine.size() - 1, tempLine.size());
-	CMBS = static_cast<unsigned long>(stoi(tempLine));
-	if (tempLine[tempLine.size() - 1] == 'B'){
-		CMBS *= 1;
-	}if (tempLine[tempLine.size() - 1] == 'K'){
-		CMBS *= 1000;
-	}if (tempLine[tempLine.size() - 1] == 'M'){
-		CMBS *= 1000000;
-	}if (tempLine[tempLine.size() - 1] == 'G'){
-		CMBS *= 1000000000;
-	}
-	return CMBS;
-}
+// void	parsing::assignMaxBody(const string &line, Router &rout){
+// 	unsigned long	CMBS = 0;
+// 	string tempLine = line;
+// 	tempLine.erase(std::remove_if(tempLine.begin(), tempLine.end(), ::isspace), tempLine.end());
+// 	tempLine.erase(0, 20); tempLine.erase(tempLine.size() - 1, tempLine.size());
+// 	CMBS = static_cast<unsigned long>(stoi(tempLine));
+// 	if (tempLine[tempLine.size() - 1] == 'B'){
+// 		CMBS *= 1;
+// 	}if (tempLine[tempLine.size() - 1] == 'K'){
+// 		CMBS *= 1000;
+// 	}if (tempLine[tempLine.size() - 1] == 'M'){
+// 		CMBS *= 1000000;
+// 	}if (tempLine[tempLine.size() - 1] == 'G'){
+// 		CMBS *= 1000000000;
+// 	}
+	// rout.setMaxBody
+// }
 
 void parsing::assignRoot(const string &line, Router &rout){
 	if (line.find("root") != 1)
@@ -142,12 +140,27 @@ void parsing::assignIndex(const string &line, Router &rout){
 	rout.setIndex(tempLine);
 }
 
-// void parsing::assignErrorPage(const string &line, Router &rout){
+void parsing::assignErrorPage(const string &line, Router &rout){
+	if (line.find("error_page") != 1)
+		return ;
+	std::vector<string> split = splitString(line, ' ');
+	for (size_t i = 1; i < split.size(); i++) {
+		if (containsNonDigit(split[i]) == false && split[i].length() > 0){
+			rout.addErrorPage(std::stoi(split[i]), split[split.size() - 1]);
+			cout << split[i] << " a été assigner a " << split[split.size() - 1] << endl;
+		}
+	}
 	// rout.addErrorPage(const int errorNumber, std::string pathToError);
-// }
+}
 
 // void parsing::assignReturn(const string &line, Router &rout){
 // }
+
+
+
+
+
+//----------------------------LOCATION---------------------------------
 
 void	parsing::assignLocation(string &line, std::ifstream &file, size_t *i, Router &rout){
 	if (line.find("location") != 1)

@@ -53,6 +53,7 @@ bool	parsing::checkLocation(string &line, unsigned int *nbLine){
 			checkAllowedMethods(line, *nbLine);
 			checkErrorPageLocation(line, *nbLine);
 			checkReturnsLocation(line, *nbLine);
+			checkClientMaxBodySizeLocation(line, *nbLine);
 			checkUploadEnable(line, *nbLine);
 			checkUploadStore(line, *nbLine);
 		}
@@ -63,7 +64,7 @@ bool	parsing::checkLocation(string &line, unsigned int *nbLine){
 }
 
 void	parsing::checkUploadEnable(string const &line, unsigned int nbLine){
-	if (line.find("upload_enable") != 2)
+	if (line.find("upload_enable") == string::npos)
 		return ;
 	if (checkIdentationParsing(line, "upload_enable", true) == false){
 		wagadooMachine(line, defaultIfError, IDENTATIONERROR, nbLine, "", defaultIfError, verifLine, true);
@@ -96,7 +97,7 @@ void	parsing::checkUploadEnable(string const &line, unsigned int nbLine){
 }
 
 void	parsing::checkUploadStore(string const &line, unsigned int nbLine){
-	if (line.find("upload_store") != 2)
+	if (line.find("upload_store") == string::npos)
 		return ;
 	if (checkIdentationParsing(line, "upload_store", true) == false){
 		wagadooMachine(line, defaultIfError, IDENTATIONERROR, nbLine, "", defaultIfError, verifLine, true);
@@ -124,7 +125,7 @@ void	parsing::checkUploadStore(string const &line, unsigned int nbLine){
 }
 
 void	parsing::checkIndexLocation(string const &line, unsigned int nbLine){
-	if (line.find("index") != 2)
+	if (line.find("index") == string::npos)
 		return ;
 	if (checkIdentationParsing(line, "index", true) == false){
 		wagadooMachine(line, defaultIfError, IDENTATIONERROR, nbLine, "", defaultIfError, verifLine, true);
@@ -152,7 +153,7 @@ void	parsing::checkIndexLocation(string const &line, unsigned int nbLine){
 }
 
 void	parsing::checkRootLocation(string const &line, unsigned int nbLine){
-	if (line.find("root") != 2)
+	if (line.find("root") == string::npos)
 		return ;
 	if (checkIdentationParsing(line, "root", true) == false){
 		wagadooMachine(line, defaultIfError, IDENTATIONERROR, nbLine, "", defaultIfError, verifLine, true);
@@ -180,7 +181,7 @@ void	parsing::checkRootLocation(string const &line, unsigned int nbLine){
 }
 
 void	parsing::checkAllowedMethods(string const &line, unsigned int nbLine){
-	if (line.find("allowedMethods") != 2)
+	if (line.find("allowedMethods") == string::npos)
 		return ;
 	if (checkIdentationParsing(line, "allowedMethods", true) == false){
 		wagadooMachine(line, defaultIfError, IDENTATIONERROR, nbLine, "", defaultIfError, verifLine, true);
@@ -208,7 +209,7 @@ void	parsing::checkAllowedMethods(string const &line, unsigned int nbLine){
 }
 
 void	parsing::checkErrorPageLocation(string const &line, unsigned int nbLine){
-	if (line.find("error_page") != 2)
+	if (line.find("error_page") == string::npos)
 		return ;
 	if (checkIdentationParsing(line, "error_page", true) == false){
 		wagadooMachine(line, defaultIfError, IDENTATIONERROR, nbLine, "", defaultIfError, verifLine, true);
@@ -243,7 +244,7 @@ void	parsing::checkErrorPageLocation(string const &line, unsigned int nbLine){
 }
 
 void	parsing::checkReturnsLocation(string const &line, unsigned int nbLine){
-	if (line.find("return") != 2)
+	if (line.find("return") == string::npos)
 		return ;
 	if (checkIdentationParsing(line, "return", true) == false){
 		wagadooMachine(line, defaultIfError, IDENTATIONERROR, nbLine, "", defaultIfError, verifLine, true);
@@ -281,5 +282,44 @@ void	parsing::checkReturnsLocation(string const &line, unsigned int nbLine){
 	}
 	selectMessage(VALID, NOERR, nbLine, "	\"" + line + "\"");
 	verifLine.push_back(OKPARS);
+	// cout << "line " << nbLine << "	" << line << " : " << verifLine[nbLine] << endl;
+}
+
+void	parsing::checkClientMaxBodySizeLocation(string const &line, unsigned int nbLine){
+	if (line.find("client_max_body_size") == string::npos)
+		return ;
+	if (checkIdentationParsing(line, "client_max_body_size", true) == false){
+		wagadooMachine(line, defaultIfError, IDENTATIONERROR, nbLine, "", defaultIfError, verifLine, true);
+		return ;
+	}
+	if (checkVargule(line) == false){
+		wagadooMachine(line, defaultIfError, VARGULEERR, nbLine, "", defaultIfError, verifLine, true);
+		return ;
+	}
+	if (checkForArgs(line, 21) == false){
+		wagadooMachine(line, defaultIfError, NUMBERARGSERROR, nbLine, "", defaultIfError, verifLine, true);
+		return ;
+	}
+	if (checkForTabs(line, 1) == false){
+		wagadooMachine(line, defaultIfError, SPACEERROR, nbLine, "", defaultIfError, verifLine, true);
+		return ;
+	}
+	if (isThereSomethingInMyString(line, "client_max_body_size", line.rfind(" ")) == true){
+		wagadooMachine(line, defaultIfError, IMPOSTORERROR, nbLine, "", defaultIfError, verifLine, true);
+		return ;
+	}
+	string str = line;
+	str.erase(0, 22); str.erase(str.size() - 1, str.size());
+	if (str.find("B") == string::npos && str.find("K") == string::npos && str.find("M") == string::npos && str.find("G") == string::npos){
+		wagadooMachine(line, defaultIfError, BADARGS, nbLine, "The arguments must be an number and a \'B\' or a \'K\' or a \'M\' or a \'G\', switching to default", defaultIfError, verifLine, true);
+		return ;
+	}
+	str.erase(str.size() - 1, str.size());
+	if (containsNonDigit(str) == true){
+		wagadooMachine(line, defaultIfError, DIGITERROR, nbLine, "", defaultIfError, verifLine, true);
+		return ;
+	}
+	verifLine.push_back(OKPARS);
+	selectMessage(VALID, NOERR, nbLine, "	\"" + line + "\"");
 	// cout << "line " << nbLine << "	" << line << " : " << verifLine[nbLine] << endl;
 }

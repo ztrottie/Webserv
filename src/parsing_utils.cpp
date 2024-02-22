@@ -74,3 +74,9 @@ bool	checkForArgs(string const &line, size_t minSizeExpected){
 	}
 	return true;
 }
+
+// bool	checkErrorCode(int errorCode){
+// 	switch (errorCode) {
+// 		case
+// 	}
+// }

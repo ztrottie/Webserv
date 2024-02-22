@@ -73,14 +73,16 @@ class parsing{
 		void					checkReturnsLocation(string const &line, unsigned int nbLine);
 		void					checkUploadEnable(string const &line, unsigned int nbLine);
 		void					checkUploadStore(string const &line, unsigned int nbLine);
+		void					checkClientMaxBodySizeLocation(string const &line, unsigned int nbLine);
+		
 		// Assignation
 			//Server
 		void				createServer(string &line, std::ifstream &file, size_t *i);
 		uint16_t			assignPort(const string &line);
 		string				assignHost(const string &line);
 		string				assignServerName(const string &line);
-		unsigned long		assignMaxBody(const string &line);
 			//Router
+		void				assignMaxBody(const string &line, Router &rout);
 		void				assignRoot(const string &line, Router &rout);
 		void				assignIndex(const string &line, Router &rout);
 		void				assignErrorPage(const string &line, Router &rout);
