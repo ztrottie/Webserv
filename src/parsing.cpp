@@ -17,17 +17,7 @@ bool	parsing::checkValid(string const &line){
 		res.erase(res.length() - 1, res.length());
 	}else{
 		std::vector<std::string> ret = splitString(line, ' ');
-		for (int i = 0; i < ret.size(); i++){
-			ret[i].erase(std::remove_if(ret[i].begin(), ret[i].end(), ::isspace), ret[i].end());
-			if (ret[i].length() > 0){
-				res = ret[i];
-				break ;
-			}
-		}
-	}
-	else if (tabs > space){
-		std::vector<std::string> ret = splitString(line, '	');
-		for (int i = 0; i < ret.size(); i++){
+		for (size_t i = 0; i < ret.size(); i++){
 			ret[i].erase(std::remove_if(ret[i].begin(), ret[i].end(), ::isspace), ret[i].end());
 			if (ret[i].length() > 0){
 				res = ret[i];

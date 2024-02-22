@@ -10,6 +10,7 @@ int main(void) {
 		simpleWriteTimestamp(RED, "ERROR IN PARSING QUITTING....");
 		return 1;
 	}
+	Webserv webserv;
 	Router *bob = new Router();
 	Location *loc = new Location("/");
 	Location *upload = new Location("/uploads");
