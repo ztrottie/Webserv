@@ -246,6 +246,8 @@ int Server::recieveRequest(socketInfo *client) {
 // }
 
 int Server::handleRequest(socketInfo *client) {
+	if (client->request->getMethod() == "POST" && (client->request->getClientBody().empty() || !client->request->isBodyValid()))
+		return (KEEP);
 	std::string body;
 	std::string contentType;
 	int code = _serverRouter->routerMain(client->request, body, contentType);
@@ -258,8 +260,6 @@ int Server::handleRequest(socketInfo *client) {
 		int sent = send(client->socket, httpResponse.c_str() + totalSent, httpResponse.size() - totalSent, 0);
 		totalSent += sent;
 	}
-	if (client->request->getMethod() == "POST" && client->request->getClientBody().empty())
-		return (KEEP);
 	return (CLOSE);
 }
 

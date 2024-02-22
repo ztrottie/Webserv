@@ -16,6 +16,12 @@ int main(void) {
 	}
 	Router *bob = new Router();
 	Location *loc = new Location();
+	Location *upload = new Location();
+	upload->setUploadEnable(true);
+	upload->setAutoIndex(false);
+	upload->setIndex("");
+	upload->setRoot("./uploads");
+	upload->setClientMaxBodySize(10000);
 	loc->setAutoIndex(true);
 	std::cout << loc->getAutoIndex() << std::endl;
 	bob->addAllowedMethod("GET");
@@ -24,7 +30,7 @@ int main(void) {
 	bob->setRoot("./www");
 	bob->addErrorPage(404, "./www/errors/404.html");
 	bob->addLocation("/", loc);
-	webserv.addNewServer(8080, "10.12.5.9", "default", bob, 3000);
+	webserv.addNewServer(8080, "10.11.1.3", "default", bob, 3000);
 	webserv.loop();
 	return 0;
 }

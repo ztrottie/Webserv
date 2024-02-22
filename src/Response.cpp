@@ -10,9 +10,9 @@
 #include <dirent.h>
 
 Response::Response(Request *request, Router *router, Location *location, int &errorCode) {
-	if ((errorCode >= 300 && errorCode != NOTFOUND) || (errorCode == NOTFOUND && request->getFilePath().find(".") == std::string::npos)) {
+	if ((errorCode >= 300 && errorCode != NOTFOUND) || (errorCode == NOTFOUND && request->getFilePath().find(".") == std::string::npos && request->getMethod() != "POST")) {
 		std::string path;
-		std::cout << errorCode << " error encountered sending error" << std::endl;
+		std::cout << request->getMethod() << errorCode << " error encountered sending error" << std::endl;
 		int errorPageCode = router->getErrorPage(path, errorCode, location);
 		if (errorPageCode == INTERNALSERVERROR || openPath(path) >= 300) {
 			internalServerError(errorCode);
@@ -25,8 +25,8 @@ Response::Response(Request *request, Router *router, Location *location, int &er
 	}
 	else if (request->getMethod() == "DELETE")
 		handleDelete(request, router, location, errorCode);
-	// else if (request->getMethod() == "POST")
-	// 	handlePost(request, router, location, errorCode);
+	else if (request->getMethod() == "POST")
+		handlePost(request, router, location, errorCode);
 }
 
 Response::Response(const Response &inst) {
@@ -114,7 +114,8 @@ void Response::handleGet(Request *request, Router *router, Location *location, i
 		return;
 	} else if (errorCode != 200 && location->getAutoIndex()) {
 		directoryListing(request, errorCode);
-		std::cout << errorCode << std::endl;
+		if (errorCode == INTERNALSERVERROR)
+			return;
 		if (errorCode >= 300){
 			std::string errorPath;
 			int errorPageCode = router->getErrorPage(errorPath, errorCode, location);
@@ -191,6 +192,10 @@ void Response::directoryListing(Request *request, int &errorCode) {
 		path = "/";
 	DIR *dir;
 	struct dirent* entry;
+	if (access(path.c_str(), F_OK) != 0) {
+		errorCode = NOTFOUND;
+		return;
+	}
 	dir = opendir(path.c_str());
 	if (dir == NULL) {
 		internalServerError(errorCode);
@@ -207,4 +212,11 @@ void Response::directoryListing(Request *request, int &errorCode) {
 	_body += _footerGenerator();
 	errorCode = OK;
 	_contentType = "text/html";
+}
+
+void	Response::handlePost(Request *request, Router *router, Location *location, int &errorCode) {
+	(void)router;
+	(void)location;
+	std::cout << request->getFilePath() << std::endl;
+	internalServerError(errorCode);
 }
