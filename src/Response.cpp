@@ -1,32 +1,38 @@
 #include "../include/Response.hpp"
 #include "../include/struct.hpp"
+#include "../include/color.h"
 #include <filesystem>
 #include <iostream>
 #include <fstream>
+#include <ostream>
 #include <sstream>
+#include <strstream>
 #include <sys/unistd.h>
 #include <unistd.h>
 #include <cstdio>
 #include <dirent.h>
 
 Response::Response(Request *request, Router *router, Location *location, int &errorCode) {
-	if ((errorCode >= 300 && errorCode != NOTFOUND) || (errorCode == NOTFOUND && request->getFilePath().find(".") == std::string::npos && request->getMethod() != "POST")) {
+	if (request->getMethod() == "POST" && errorCode == OK && (request->getClientBody().empty())) {
+	} else if ((errorCode >= 300 && errorCode != NOTFOUND) || (errorCode == NOTFOUND && request->getFilePath().find(".") == std::string::npos && request->getMethod() != "POST")) {
 		std::string path;
 		std::cout << request->getMethod() << errorCode << " error encountered sending error" << std::endl;
 		int errorPageCode = router->getErrorPage(path, errorCode, location);
 		if (errorPageCode == INTERNALSERVERROR || openPath(path) >= 300) {
 			internalServerError(errorCode);
+			headerGenerator(errorCode, request);
 			return;
 		}
 		contentTypeGenerator(path);
-	}
-	else if (request->getMethod() == "GET") {
+	} else if (request->getMethod() == "GET") {
 		handleGet(request, router, location, errorCode);
-	}
-	else if (request->getMethod() == "DELETE")
+	} else if (request->getMethod() == "DELETE") {
 		handleDelete(request, router, location, errorCode);
-	else if (request->getMethod() == "POST")
+	} else if (request->getMethod() == "POST") {
 		handlePost(request, router, location, errorCode);
+	}
+	headerGenerator(errorCode, request);
+	_fullResponse = _header + _body;
 }
 
 Response::Response(const Response &inst) {
@@ -49,13 +55,10 @@ Response& Response::operator=(const Response &rhs) {
 	return *this;
 }
 
-const std::string & Response::getBody() const {
-	return _body;
+const std::string & Response::getFullResponse() const {
+	return _fullResponse;
 }
 
-const std::string & Response::getContentType() const {
-	return _contentType;
-}
 
 int Response::openPath(std::string const &path) {
 	if (access(path.c_str(), F_OK) != 0)
@@ -216,7 +219,115 @@ void Response::directoryListing(Request *request, int &errorCode) {
 
 void	Response::handlePost(Request *request, Router *router, Location *location, int &errorCode) {
 	(void)router;
-	(void)location;
-	std::cout << request->getFilePath() << std::endl;
-	internalServerError(errorCode);
+	if (location->getUploadEnable() && request->getFilePath().find(".php") == std::string::npos) {
+		handleUploadedFile(request, location, errorCode);
+	}
+	// else {
+	// 	handleCgi(request, location, errorCode);
+	// }
 }
+
+void	Response::handleUploadedFile(Request *request, Location *location, int &errorCode) {
+	request->parseBody();
+	std::string path = location->getUploadStore() + "/" + request->getFileName();
+	std::cout << "opening file: " << path << std::endl;
+	std::ofstream file(path.c_str());
+
+	if (!file.is_open()) {
+		internalServerError(errorCode);
+		return;
+	}
+	std::cout << "writing content" << std::endl;
+	file << request->getFileContent();
+	file.close();
+	std::cout << "openning the uploaded file" << std::endl;
+	errorCode = openPath(path);
+	if (errorCode >= 300) {
+		std::cout << errorCode << std::endl;
+		internalServerError(errorCode);
+		return;
+	}
+	contentTypeGenerator(path);
+}
+
+void Response::headerGenerator(int &errorCode, Request *request) {
+	std::string codeMessageString = "HTTP/1.1 ";
+	std::string serverName = "Server: " + request->getServerName() + "\r\n";
+	std::string contentType = "Content-Type: " + _contentType;
+	std::string	contentLength = "Content-Length: ";
+	codeMessage(errorCode, codeMessageString);
+	contentLength.append(std::to_string(_body.size()));
+	codeMessageString += "\r\n";
+	contentType += "\r\n";
+	contentLength += "\r\n";
+	_header += codeMessageString + serverName + contentType + contentLength + "\r\n";
+}
+
+void Response::codeMessage(int code, std::string &message) {
+	switch (code) {
+		case (OK):
+			message += "200 OK";
+			break;
+		case (CREATED):
+			message += "201 CREATED";
+			break;
+		case (ACCEPTED):
+			message += "202 ACCEPTED";
+			break;
+		case (NOCONTENT):
+			message += "204 No Content";
+			break;
+		case (RESETCONTENT):
+			message += "205 Reset Content";
+			break;
+		case (PARTIALCONTENT):
+			message += "206 Partial Content";
+			break;
+		case (MULTIPLECHOICE):
+			message += "300 Multiple Choices";
+			break;
+		case (MOVEDPERM):
+			message += "301 Moved Permanently";
+			break;
+		case (FOUND):
+			message += "302 Found";
+			break;
+		case (SEEOTHER):
+			message += "303 See Other";
+			break;
+		case (NOTMODIFIED):
+			message += "304 Not Modified";
+			break;
+		case (USEPROXY):
+			message += "305 Use Proxy";
+			break;
+		case (TEMPRED):
+			message += "307 Temporary Redirect";
+			break;
+		case (BADREDQUEST):
+			message += "400 Bad Request";
+			break;
+		case (UNAUTHORIZED):
+			message += "401 Unauthorized";
+			break;
+		case (FORBIDDEN):
+			message += "403 Forbidden";
+			break;
+		case (NOTFOUND):
+			message += "404 Not Found";
+			break;
+		case (METHNOTALLOWED):
+			message += "405 Method Not Allowed";
+			break;
+		case (NOTACCEPTABLE):
+			message += "406 Not Acceptable";
+			break;
+		case (TOOLARGE):
+			message += "413 Request Entity Too Large";
+			break;
+	}
+}
+
+// void Response::handleCgi(Request *request, Location *location, int &errorCode) {
+	
+// }

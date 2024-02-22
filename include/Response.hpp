@@ -11,6 +11,8 @@ class Response
 private:
 	std::string _contentType;
 	std::string _body;
+	std::string _header;
+	std::string _fullResponse;
 	std::string _headGenerator() const;
 	std::string _footerGenerator() const;
 	std::string _linkGenerator(std::string const &name) const;
@@ -26,8 +28,7 @@ public:
 	Response& operator=(const Response &rhs);
 
 	// Functions
-	const std::string & getBody() const;
-	const std::string & getContentType() const;
+	const std::string & getFullResponse() const;
 
 	void setBody(std::string const & body);
 	int openPath(std::string const &path);
@@ -37,5 +38,9 @@ public:
 	void handleGet(Request *request, Router *router, Location *location, int &errorCode);
 	void handleDelete(Request *request, Router *router, Location *location, int &errorCode);
 	void handlePost(Request *request, Router *router, Location *location, int &errorCode);
+	void handleUploadedFile(Request *request, Location *location, int &errorCode);
+	void handleCgi(Request *request, Location *location, int &errorCode);
 	void directoryListing(Request *request, int &errorCode);
+	void headerGenerator(int &errorCode, Request *request);
+	void codeMessage(int code, std::string &message);
 };

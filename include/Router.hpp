@@ -44,5 +44,5 @@ public:
 	int checkIfCanExec(std::string const &path);
 	int openFile(Request *request);
 	int getFileMethod(std::string &path, Request *request);
-	int routerMain(Request *request, std::string &body, std::string &contentType);
+	void routerMain(Request *request, std::string &fullResponse);
 };

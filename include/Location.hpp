@@ -23,6 +23,7 @@ private:
 	size_t						_clientMaxBodySize;
 	bool						_autoIndex;
 	bool						_uploadEnable;
+	std::string					_uploadStore;
 
 public:
 	// Constructors / Destructor
@@ -42,6 +43,7 @@ public:
 	void addErrorPage(const int errorNumber, std::string pathToError);
 	void addAllowedMethod(std::string const &method);
 	void setClientMaxBodySize(size_t value);
+	void setUploadStore(std::string const &value);
 
 	// Functions
 	int isMethodAllowed(std::string const &method);
@@ -49,6 +51,9 @@ public:
 	int getRoot(std::string &root);
 	bool getUploadEnable() const;
 	bool getAutoIndex() const;
+	const std::string	&getUploadStore() const;
+	const std::string	&getName() const;
+
 };
 
 // Location_HPP

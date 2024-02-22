@@ -18,8 +18,11 @@ private:
 	std::string _port;
 	std::string _type;
 	std::string _boundary;
+	std::string _serverName;
 	std::string _clientAddr;
 	std::string _clientBody;
+	std::string _fileName;
+	std::string _fileContent;
 	ssize_t		_bodyLen;
 	bool		_addedIndex;
 
@@ -31,7 +34,7 @@ private:
 
 public:
 	// Constructors / Destructor
-	Request(std::string const &received, socketInfo *client);
+	Request(std::string const &received, socketInfo *client, Server *server);
 	Request(const Request &inst);
 	~Request();
 
@@ -51,10 +54,15 @@ public:
 	std::string const &getBoundary() const;
 	std::string const &getClientAddress() const;
 	std::string const &getClientBody() const;
+	std::string const &getFileContent() const;
+	std::string const &getFileName() const;
+	std::string const &getServerName() const;
+
 	ssize_t const &getBodyLen() const;
 	void setBody(std::string &body);
 	bool isBodyValid() const;
 	void setAddedIndex(bool index);
 	bool getAddedIndex() const;
 	void setFilePath(std::string &path);
+	void parseBody();
 };
