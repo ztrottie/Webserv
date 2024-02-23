@@ -91,18 +91,17 @@ int Server::recieveRequest(socketInfo *client) {
 
 int Server::handleRequest(socketInfo *client) {
 	int errorCode;
-	if (client->request->getMethod() == "POST" && !client->request->getClientBody().empty() && !client->request->isBodyValid())
-		return (KEEP);
 	std::string fullResponse;
+	if (client->request->getMethod() == "POST" && !client->request->isBodyValid())
+		return (KEEP);
 	_serverRouter->routerMain(client->request, fullResponse, errorCode);
-	std::cout << GREEN << fullResponse << RESET << std::endl;
 	unsigned long totalSent = 0;
 	while (totalSent < fullResponse.size()) {
 		int sent = send(client->socket, fullResponse.c_str() + totalSent, fullResponse.size() - totalSent, 0);
 		totalSent += sent;
 	}
-	if (client->request->getMethod() == "POST" && client->request->getClientBody().empty() && errorCode == OK)
-		return (KEEP);
+	delete client->request;
+	client->hasRequest = false;
 	return (CLOSE);
 }
 

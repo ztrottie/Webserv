@@ -13,7 +13,7 @@
 #include <dirent.h>
 
 Response::Response(Request *request, Router *router, Location *location, int &errorCode) {
-	if (request->getMethod() == "POST" && errorCode == OK && (request->getClientBody().empty())) {
+	if (request->getMethod() == "POST" && errorCode == OK && !request->isBodyValid()) {
 		std::cout << GREEN "here!!!" RESET << std::endl;
 	} else if ((errorCode >= 300 && errorCode != NOTFOUND) || (errorCode == NOTFOUND && request->getFilePath().find(".") == std::string::npos && request->getMethod() != "POST")) {
 		std::string path;

@@ -23,9 +23,8 @@ private:
 	std::string _clientBody;
 	std::string _fileName;
 	std::string _fileContent;
-	ssize_t		_bodyLen;
+	size_t		_bodyLen;
 	bool		_addedIndex;
-	long long	_contentLenght;
 
 	//Functions
 	std::string _search(std::string const &searching, char endChar);
@@ -59,13 +58,11 @@ public:
 	std::string const &getFileName() const;
 	std::string const &getServerName() const;
 
-	ssize_t const &getBodyLen() const;
+	size_t const &getBodyLen() const;
 	void setBody(std::string &body);
 	bool isBodyValid() const;
 	void setAddedIndex(bool index);
 	bool getAddedIndex() const;
 	void setFilePath(std::string &path);
 	void parseBody();
-	void setContentLenght(size_t value);
-	long long getContentLength() const;
 };

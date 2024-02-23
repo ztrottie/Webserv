@@ -57,25 +57,6 @@ void Router::trimURI(std::string &uri){
 	uri = uri.substr(0, index);
 }
 
-void Router::checkBodySize(Request *request, int &errorCode){
-	std::string uri = request->getFilePath();
-	std::map<std::string, Location*>::const_iterator it = _locations.find(uri);
-	if (it != _locations.end()){
-		Location *loc = _locations[uri];
-		if (loc->getClientMaxBodySize() > 0) {
-			if (request->getContentLength() > loc->getClientMaxBodySize()){
-				errorCode = 413;
-				return ;
-			}
-		}
-	}
-	if (request->getContentLength() > _clientMaxBodySize){
-		errorCode = 413;
-		return ;
-	}
-	errorCode = OK;
-}
-
 int Router::checkIfFileIsValid(std::string const &path){
 	struct stat fileStat;
 	if (access(path.c_str(), F_OK) != 0)
@@ -117,13 +98,10 @@ int Router::checkAllowedMethod(std::string const &method, Location *loc){
 }
 
 void Router::routerMain(Request *request, std::string &fullResponse, int &errorCode){
-	Location *location;
-	checkBodySize(request, errorCode);
-	std::cout << errorCode << std::endl;
-	if (!(request->getMethod() == "POST" && request->getClientBody().empty()))
+	Location *location = NULL;
+	errorCode = OK;
+	if (!(request->getMethod() == "POST" && !request->isBodyValid()))
 		errorCode = getFile(request, location);
-	else
-		location = NULL;
 	Response response(request, this, location, errorCode);
 	fullResponse = response.getFullResponse();
 }

@@ -106,10 +106,8 @@ void Request::_requestBodyParser() {
 }
 
 void Request::setBody(std::string &body) {
-	if (_clientBody.empty())
-		_clientBody = body;
-	else
-		_clientBody.append(body);
+	_clientBody.append(body);
+	// std::cout << GREEN << _clientBody  << RESET << std::endl;
 }
 
 std::string const &Request::getMethod() const {
@@ -160,7 +158,7 @@ std::string const &Request::getClientBody() const {
 	return _clientBody;
 }
 
-ssize_t const &Request::getBodyLen() const {
+size_t const &Request::getBodyLen() const {
 	return _bodyLen;
 }
 
@@ -180,22 +178,12 @@ bool Request::getAddedIndex() const{
 	return _addedIndex;
 }
 
-long long Request::getContentLength() const {
-	return _contentLenght;
-}
-
-void Request::setContentLenght(size_t value){
-	_contentLenght = value;
-}
-
 bool Request::isBodyValid() const {
-	std::string tempBoundary("--");
-	tempBoundary.append(_boundary);
+	std::cout << _bodyLen << " : " << _clientBody.size() << std::endl;
+	std::string tempBoundary(_boundary);
 	tempBoundary.append("--\r\n");
-	std::string end = _clientBody.substr(_clientBody.size() - tempBoundary.size(), tempBoundary.size());
-	if (tempBoundary == end)
-		return true;
-	return false;
+	size_t end = _clientBody.rfind(tempBoundary);
+	return (end != std::string::npos);
 }
 
 void Request::parseBody() {
