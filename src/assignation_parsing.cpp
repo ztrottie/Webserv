@@ -21,10 +21,10 @@ void parsing::assignConfigFile(){
 	file.open(pathConfigFile);
 	for (size_t i = 0; i < verifLine.size(); i++){
 		std::getline(file, line);
-		// if (verifLine[i] == 0){
-			// createServer(line, file, &i);
-		// }
-		cout << "line " << i + 1 << "	" << line << " : " << verifLine[i] << endl;
+		if (verifLine[i] == 0){
+			createServer(line, file, &i);
+		}
+		// cout << "line " << i + 1 << "	" << line << " : " << verifLine[i] << endl;
 	}
 	// rout->setRoot(const std::string &root);
 	// rout->setIndex(const std::string &index);
@@ -52,20 +52,25 @@ void	parsing::createServer(string &line, std::ifstream &file, size_t *i){
 		std::getline(file, line);
 		// cout << line << endl;
 		if (verifLine[*i] == 0){
-			if (port == 0 && line.find("listen") == 1)
+			if (port == 0 && findFirstWord(line) == "listen"){
 				port = assignPort(line);
-			if (host == NULL && line.find("host") == 1){
+			}
+			if (host == NULL && findFirstWord(line) == "host"){
 				string temp = assignHost(line);
 				host = temp.c_str();
 			}
-			if (name.empty() && line.find("server_name") == 1)
+			if (name.empty() && findFirstWord(line) == "server_name")
 				name = assignServerName(line);
-			// assignMaxBody(line, *router);
-			assignRoot(line, *router);
-			assignIndex(line, *router);
-			assignErrorPage(line, *router);
-			// assignReturn(line, *router);
-			assignLocation(line, file, i, *router);
+			if (findFirstWord(line) == "client_max_body_size")
+				assignMaxBody(line, *router);
+			if (findFirstWord(line) == "root")
+				assignRoot(line, *router);
+			if (findFirstWord(line) == "index")
+				assignIndex(line, *router);
+			if (findFirstWord(line) == "error_page")
+				assignErrorPage(line, *router);
+			if (findFirstWord(line) == "location")
+				assignLocation(line, file, i, *router);
 		}
 		if (line.find("}") == 0){
 			cout << "SERVER TERMINER" << endl;
@@ -104,27 +109,25 @@ string	parsing::assignServerName(const string &line){
 	return serverName;
 }
 
-// void	parsing::assignMaxBody(const string &line, Router &rout){
-// 	unsigned long	CMBS = 0;
-// 	string tempLine = line;
-// 	tempLine.erase(std::remove_if(tempLine.begin(), tempLine.end(), ::isspace), tempLine.end());
-// 	tempLine.erase(0, 20); tempLine.erase(tempLine.size() - 1, tempLine.size());
-// 	CMBS = static_cast<unsigned long>(stoi(tempLine));
-// 	if (tempLine[tempLine.size() - 1] == 'B'){
-// 		CMBS *= 1;
-// 	}if (tempLine[tempLine.size() - 1] == 'K'){
-// 		CMBS *= 1000;
-// 	}if (tempLine[tempLine.size() - 1] == 'M'){
-// 		CMBS *= 1000000;
-// 	}if (tempLine[tempLine.size() - 1] == 'G'){
-// 		CMBS *= 1000000000;
-// 	}
-	// rout.setMaxBody
-// }
+void	parsing::assignMaxBody(const string &line, Router &rout){
+	unsigned long	CMBS = 0;
+	string tempLine = line;
+	tempLine.erase(std::remove_if(tempLine.begin(), tempLine.end(), ::isspace), tempLine.end());
+	tempLine.erase(0, 20); tempLine.erase(tempLine.size() - 1, tempLine.size());
+	CMBS = static_cast<unsigned long>(stoi(tempLine));
+	if (tempLine[tempLine.size() - 1] == 'B'){
+		CMBS *= 1;
+	}if (tempLine[tempLine.size() - 1] == 'K'){
+		CMBS *= 1000;
+	}if (tempLine[tempLine.size() - 1] == 'M'){
+		CMBS *= 1000000;
+	}if (tempLine[tempLine.size() - 1] == 'G'){
+		CMBS *= 1000000000;
+	}
+	rout.setClientMaxBodySize(CMBS);
+}
 
 void parsing::assignRoot(const string &line, Router &rout){
-	if (line.find("root") != 1)
-		return ;
 	string tempLine = line;
 	tempLine.erase(std::remove_if(tempLine.begin(), tempLine.end(), ::isspace), tempLine.end());
 	tempLine.erase(0, 4); tempLine.erase(tempLine.size() - 1, tempLine.size());
@@ -132,8 +135,6 @@ void parsing::assignRoot(const string &line, Router &rout){
 }
 
 void parsing::assignIndex(const string &line, Router &rout){
-	if (line.find("index") != 1)
-		return ;
 	string tempLine = line;
 	tempLine.erase(std::remove_if(tempLine.begin(), tempLine.end(), ::isspace), tempLine.end());
 	tempLine.erase(0, 5); tempLine.erase(tempLine.size() - 1, tempLine.size());
@@ -141,8 +142,6 @@ void parsing::assignIndex(const string &line, Router &rout){
 }
 
 void parsing::assignErrorPage(const string &line, Router &rout){
-	if (line.find("error_page") != 1)
-		return ;
 	std::vector<string> split = splitString(line, ' ');
 	for (size_t i = 1; i < split.size(); i++) {
 		if (containsNonDigit(split[i]) == false && split[i].length() > 0){
@@ -150,13 +149,20 @@ void parsing::assignErrorPage(const string &line, Router &rout){
 			cout << split[i] << " a été assigner a " << split[split.size() - 1] << endl;
 		}
 	}
-	// rout.addErrorPage(const int errorNumber, std::string pathToError);
 }
 
-// void parsing::assignReturn(const string &line, Router &rout){
+// void	parsing::assignReturn(const string &line, Router &rout){
+// 	std::vector<string> split = splitString(line, ' ');
+// 	for (size_t i = 1; i < split.size(); i++) {
+// 		if (containsNonDigit(split[i]) == false && split[i].length() > 0){
+// 			// rout.setbool = true;
+// 			// rout.setreturncode = split[i];
+// 			// rout.setreturnlocation = split[split.size() - 1];
+// 			//return ;
+// 			cout << split[i] << " a été assigner a " << split[split.size() - 1] << endl;
+// 		}
+// 	}
 // }
-
-
 
 
 
@@ -174,9 +180,9 @@ void	parsing::assignLocation(string &line, std::ifstream &file, size_t *i, Route
 			assignAllowedMethods(line, loc);
 			assignIndex(line, loc);
 			assignRoot(line, loc);
-			// assignMaxBody(line, loc);
+			assignMaxBody(line, loc);
 			// assignReturn(line, loc);
-			// assignErrorPage(line, loc);
+			assignErrorPage(line, loc);
 		}
 		if (line.find("}") == 1){
 			cout << "LOCATION TERMINER" << endl;
@@ -241,8 +247,33 @@ void	parsing::assignAllowedMethods(const string &line, Location &loc){
 	}
 }
 
-// void parsing::assignErrorPage(const string &line, Location &loc){
-// }
+void	parsing::assignErrorPage(const string &line, Location &loc){
+	std::vector<string> split = splitString(line, ' ');
+	for (size_t i = 1; i < split.size(); i++) {
+		if (containsNonDigit(split[i]) == false && split[i].length() > 0){
+			loc.addErrorPage(std::stoi(split[i]), split[split.size() - 1]);
+			cout << split[i] << " a été assigner a " << split[split.size() - 1] << endl;
+		}
+	}
+}
+
+void	parsing::assignMaxBody(const string &line, Location &loc){
+	unsigned long	CMBS = 0;
+	string tempLine = line;
+	tempLine.erase(std::remove_if(tempLine.begin(), tempLine.end(), ::isspace), tempLine.end());
+	tempLine.erase(0, 20); tempLine.erase(tempLine.size() - 1, tempLine.size());
+	CMBS = static_cast<unsigned long>(stoi(tempLine));
+	if (tempLine[tempLine.size() - 1] == 'B'){
+		CMBS *= 1;
+	}if (tempLine[tempLine.size() - 1] == 'K'){
+		CMBS *= 1000;
+	}if (tempLine[tempLine.size() - 1] == 'M'){
+		CMBS *= 1000000;
+	}if (tempLine[tempLine.size() - 1] == 'G'){
+		CMBS *= 1000000000;
+	}
+	loc.setClientMaxBodySize(CMBS);
+}
 
 // void parsing::assignReturn(const string &line, Location &loc){
 // }
