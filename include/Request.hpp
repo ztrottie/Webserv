@@ -8,23 +8,23 @@
 class Request
 {
 private:
-	std::string _raw;
-	std::string	_method;
-	std::string _uri;
-	std::string _filePath;
-	std::string _extraPath;
-	std::string _stringQuerry;
-	std::string _host;
-	std::string _port;
-	std::string _type;
-	std::string _boundary;
-	std::string _serverName;
-	std::string _clientAddr;
-	std::string _clientBody;
-	std::string _fileName;
-	std::string _fileContent;
-	size_t		_bodyLen;
-	bool		_addedIndex;
+	std::string 		_raw;
+	std::string			_method;
+	std::string 		_uri;
+	std::string 		_filePath;
+	std::string 		_extraPath;
+	std::string 		_stringQuerry;
+	std::string 		_host;
+	std::string 		_port;
+	std::string 		_type;
+	std::string 		_boundary;
+	std::string 		_serverName;
+	std::string 		_clientAddr;
+	std::string 		_fileName;
+	std::string 		_fileContent;
+	std::string			_tempFilePath;
+	size_t				_bodyLen;
+	bool				_addedIndex;
 
 	//Functions
 	std::string _search(std::string const &searching, char endChar);
@@ -59,10 +59,12 @@ public:
 	std::string const &getServerName() const;
 
 	size_t const &getBodyLen() const;
-	void setBody(std::string &body);
+	void addBody(std::string &body);
 	bool isBodyValid() const;
 	void setAddedIndex(bool index);
 	bool getAddedIndex() const;
 	void setFilePath(std::string &path);
 	void parseBody();
+	int generateTempFile();
+	void parseFileName(std::string &fullBody);
 };

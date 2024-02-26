@@ -1,12 +1,10 @@
 #include "../include/Response.hpp"
 #include "../include/struct.hpp"
 #include "../include/color.h"
-#include <filesystem>
 #include <iostream>
 #include <fstream>
 #include <ostream>
 #include <sstream>
-#include <strstream>
 #include <sys/unistd.h>
 #include <unistd.h>
 #include <cstdio>

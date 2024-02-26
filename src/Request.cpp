@@ -2,6 +2,11 @@
 #include "../include/color.h"
 #include "../include/Server.hpp"
 #include <cstddef>
+#include <fstream>
+#include <limits>
+#include <string>
+#include <sys/signal.h>
+#include <unistd.h>
 
 Request::Request(std::string const &received, socketInfo *client, Server *server) : _raw(received) {
 	std::stringstream ss(received);
@@ -96,18 +101,47 @@ void Request::_setHostPort() {
 	}
 }
 
+int Request::generateTempFile() {
+	std::string tmpFileName = ".tmp";
+	_tempFilePath = "/tmp/";
+	for (size_t fileIndex = 0; fileIndex < std::numeric_limits<size_t>::max(); fileIndex++) {
+		if (access((_tempFilePath + tmpFileName + std::to_string(fileIndex)).c_str(), F_OK) != 0) {
+			_tempFilePath += tmpFileName + std::to_string(fileIndex);
+			return OK;
+		}
+	}
+	_tempFilePath.clear();
+	return INTERNALSERVERROR;
+}
+
+void Request::parseFileName(std::string &string) {
+	size_t start = string.find("filename=\"");
+	if (start != std::string::npos) {
+		start += 10;
+		size_t end = string.find("\"", start);
+		if (end != std::string::npos) {
+			_fileName = string.substr(start, end - start);
+		}
+	}
+}
+
 void Request::_requestBodyParser() {
 	std::string tempBoundary("\r\n\r\n--");
 	tempBoundary.append(_boundary);
 	size_t bodyStart = _raw.rfind(tempBoundary);
 	if (bodyStart != std::string::npos) {
-		_clientBody = _raw.substr(bodyStart, _raw.size() - bodyStart);
+		bodyStart += tempBoundary.size() + 2;
+		size_t bodyEnd = _raw.find(tempBoundary.append("--"), bodyStart);
+		if (bodyEnd != std::string::npos) {
+			std::string fullBody = _raw.substr(bodyStart, bodyEnd - bodyStart);
+			parseFileName(fullBody);
+			
+		}
 	}
 }
 
-void Request::setBody(std::string &body) {
-	_clientBody.append(body);
-	// std::cout << GREEN << _clientBody  << RESET << std::endl;
+void Request::addBody(std::string &body) {
+	
 }
 
 std::string const &Request::getMethod() const {
@@ -154,10 +188,6 @@ std::string const &Request::getClientAddress() const {
 	return _clientAddr;
 }
 
-std::string const &Request::getClientBody() const {
-	return _clientBody;
-}
-
 size_t const &Request::getBodyLen() const {
 	return _bodyLen;
 }
@@ -179,27 +209,19 @@ bool Request::getAddedIndex() const{
 }
 
 bool Request::isBodyValid() const {
-	std::cout << _bodyLen << " : " << _clientBody.size() << std::endl;
-	std::string tempBoundary(_boundary);
-	tempBoundary.append("--\r\n");
-	size_t end = _clientBody.rfind(tempBoundary);
-	return (end != std::string::npos);
+	
 }
 
-void Request::parseBody() {
-	size_t start = _clientBody.find("filename=\"");
-	if (start != std::string::npos) {
-		start += 10;
-		size_t end = _clientBody.find("\"", start);
-		if (end != std::string::npos) {
-			_fileName = _clientBody.substr(start, end - start);
-		}
-	}
-	start = _clientBody.find("\r\n\r\n");
+std::string Request::parseBody(std::string &string) {
+	size_t start = string.find("\r\n\r\n");
 	if (start != std::string::npos) {
 		start += 4;
-		size_t end = _clientBody.find("\r\n", start);
-		_fileContent = _clientBody.substr(start, end - start);
+		std::string tempBoundary = "\r\n";
+		tempBoundary += "--" + _boundary + "--";
+		size_t end = string.find(tempBoundary);
+		if (end != std::string::npos) {
+			
+		}
 	}
 }
 
