@@ -21,10 +21,10 @@ void parsing::assignConfigFile(){
 	file.open(pathConfigFile);
 	for (size_t i = 0; i < verifLine.size(); i++){
 		std::getline(file, line);
-		if (verifLine[i] == 0){
-			createServer(line, file, &i);
-		}
-		// cout << "line " << i + 1 << "	" << line << " : " << verifLine[i] << endl;
+		// if (verifLine[i] == 0){
+			// createServer(line, file, &i);
+		// }
+		cout << "line " << i + 1 << "	" << line << " : " << verifLine[i] << endl;
 	}
 	// rout->setRoot(const std::string &root);
 	// rout->setIndex(const std::string &index);

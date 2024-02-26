@@ -1,4 +1,6 @@
 #include "../include/utils.hpp"
+#include <algorithm>
+#include <string>
 #include <vector>
 
 
@@ -31,6 +33,17 @@ bool	checkIdentationParsing(std::string const &line, std::string const &firstWor
 		}
 	}
 	return true;
+}
+
+string parsing::findFirstWord(string line){
+	int	start = line.find_first_of("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ");
+	if (start == -1)
+		return "";
+	int	end = line.find_first_not_of("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_", start);
+	if (end == -1)
+		return "";
+	string res = line.substr(start, end - start);
+	return res;
 }
 
 bool	checkVargule(std::string const &line){

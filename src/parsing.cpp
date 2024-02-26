@@ -1,4 +1,6 @@
 #include "../include/parsing.hpp"
+#include <algorithm>
+#include <cstddef>
 #include <stdexcept>
 #include <string>
 
@@ -17,17 +19,7 @@ bool	parsing::checkValid(string const &line){
 		res.erase(res.length() - 1, res.length());
 	}else{
 		std::vector<std::string> ret = splitString(line, ' ');
-		for (int i = 0; i < ret.size(); i++){
-			ret[i].erase(std::remove_if(ret[i].begin(), ret[i].end(), ::isspace), ret[i].end());
-			if (ret[i].length() > 0){
-				res = ret[i];
-				break ;
-			}
-		}
-	}
-	else if (tabs > space){
-		std::vector<std::string> ret = splitString(line, '	');
-		for (int i = 0; i < ret.size(); i++){
+		for (size_t i = 0; i < ret.size(); i++){
 			ret[i].erase(std::remove_if(ret[i].begin(), ret[i].end(), ::isspace), ret[i].end());
 			if (ret[i].length() > 0){
 				res = ret[i];
@@ -202,6 +194,8 @@ bool	parsing::checkServer(std::string &line, unsigned int *nbLine){
 			// cout << "line " << *nbLine << "	" << line << " : " << verifLine[*nbLine] << endl;
 			break ;
 		}
+		if (*nbLine == verifLine.size())
+			verifLine.push_back(DONT);
 		(*nbLine)++;
 	}
 	// cout << "CECI EST LA FIN" << line << "	" << std::to_string(*nbLine) << endl;
@@ -211,7 +205,7 @@ bool	parsing::checkServer(std::string &line, unsigned int *nbLine){
 }
 
 bool	parsing::checkHost(string const &line, unsigned int nbLine){
-	if (line.find("host") == string::npos)
+	if (findFirstWord(line) != "host")
 		return -1;
 	if (checkIdentationParsing(line, "host", false) == false){
 		wagadooMachine(line, defaultIfError, IDENTATIONERROR, nbLine, "", defaultIfError, verifLine, false);
@@ -250,7 +244,7 @@ bool	parsing::checkHost(string const &line, unsigned int nbLine){
 }
 
 bool	parsing::checkListen(string const &line, unsigned int nbLine){
-	if (line.find("listen") == string::npos)
+	if (findFirstWord(line) != "listen")
 		return -1;
 	if (checkIdentationParsing(line, "listen", false) == false){
 		wagadooMachine(line, defaultIfError, IDENTATIONERROR, nbLine, "", defaultIfError, verifLine, false);
@@ -296,8 +290,7 @@ bool	parsing::checkListen(string const &line, unsigned int nbLine){
 }
 
 bool	parsing::checkServerName(string const &line, unsigned int nbLine){
-	cout << line.find("server_name") << endl;
-	if (line.find("server_name") == string::npos)
+	if (findFirstWord(line) != "server_name")
 		return -1;
 	if (checkIdentationParsing(line, "server_name", false) == false){
 		wagadooMachine(line, defaultIfError, IDENTATIONERROR, nbLine, "", defaultIfError, verifLine, false);
@@ -336,7 +329,7 @@ bool	parsing::checkServerName(string const &line, unsigned int nbLine){
 }
 
 bool	parsing::checkRoot(string const &line, unsigned int nbLine){
-	if (line.find("root") == string::npos)
+	if (findFirstWord(line) != "root")
 		return -1;
 	if (checkIdentationParsing(line, "root", false) == false){
 		wagadooMachine(line, defaultIfError, IDENTATIONERROR, nbLine, "", defaultIfError, verifLine, false);
@@ -375,7 +368,7 @@ bool	parsing::checkRoot(string const &line, unsigned int nbLine){
 }
 
 bool	parsing::checkIndex(string const &line, unsigned int nbLine){
-	if (line.find("index") == string::npos)
+	if (findFirstWord(line) != "index")
 		return -1;
 	if (checkIdentationParsing(line, "index", false) == false){
 		wagadooMachine(line, defaultIfError, IDENTATIONERROR, nbLine, "", defaultIfError, verifLine, false);
@@ -414,7 +407,7 @@ bool	parsing::checkIndex(string const &line, unsigned int nbLine){
 }
 
 bool	parsing::checkErrorPage(string const &line, unsigned int nbLine){
-	if (line.find("error_page") == string::npos)
+	if (findFirstWord(line) != "error_page")
 		return -1;
 	if (checkIdentationParsing(line, "error_page", false) == false){
 		wagadooMachine(line, defaultIfError, IDENTATIONERROR, nbLine, "", defaultIfError, verifLine, false);
@@ -465,7 +458,7 @@ bool	parsing::checkErrorPage(string const &line, unsigned int nbLine){
 }
 
 bool	parsing::checkClientMaxBodySize(string const &line, unsigned int nbLine){
-	if (line.find("client_max_body_size") == string::npos)
+	if (findFirstWord(line) != "client_max_body_size")
 		return -1;
 	if (checkIdentationParsing(line, "client_max_body_size", false) == false){
 		wagadooMachine(line, defaultIfError, IDENTATIONERROR, nbLine, "", defaultIfError, verifLine, false);
@@ -519,7 +512,7 @@ bool	parsing::checkClientMaxBodySize(string const &line, unsigned int nbLine){
 }
 
 bool	parsing::checkReturns(string const &line, unsigned int nbLine){
-	if (line.find("return") == string::npos)
+	if (findFirstWord(line) != "return")
 		return -1;
 	if (checkIdentationParsing(line, "return", false) == false){
 		wagadooMachine(line, defaultIfError, IDENTATIONERROR, nbLine, "", defaultIfError, verifLine, false);

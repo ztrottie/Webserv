@@ -53,6 +53,7 @@ class parsing{
 		bool				checkFile();
 		bool				checkValid(string const &line);
 		int					isThisTheEnd(string const &line, bool insideLocation);
+		string				findFirstWord(string line);
 			//check les lignes
 		void				checkDefault(string const &line, unsigned int nbLine);
 		bool				checkServer(string &line, unsigned int *nbLine);
