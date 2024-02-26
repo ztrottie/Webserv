@@ -56,6 +56,8 @@ bool	parsing::checkValid(string const &line){
 		return true;
 	else if (res == "upload_store")
 		return true;
+	else if (res == "autoindex")
+		return true;
 	else if (res == "}")
 		return true;
 	else if (res.empty())

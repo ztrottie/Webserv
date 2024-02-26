@@ -40,7 +40,7 @@ std::string	enumToString(int code){
 		case MISSINGEND: return "This line doesn't have the right character at the end";
 		case BADARGS: return "This line have an arguments that is not valid";
 		case WRONGRETURN: return "This return line must need as it's last argument an path, https, error_code or a string";
-		case WRONGMETHODS: return "This allowedMethods line can only have GET, PUT, POST, PATCH, DELETE, CONNECT, OPTION, TRACE as arguments";
+		case WRONGMETHODS: return "This allowedMethods line can only have GET, POST, DELETE as arguments";
 		case NOERR: return "This line is ok";
 	}
 	return "Unknowed error.... HELP";
@@ -108,19 +108,9 @@ bool	verifyAllowedMethods(std::string const &line){
 	for (size_t i = 0 ; i < res.size(); i++){
 		if (res[i] == "GET")
 			continue;
-		else if (res[i] == "PUT")
-			continue;
 		else if (res[i] == "POST")
 			continue;
-		else if (res[i] == "PATCH")
-			continue;
 		else if (res[i] == "DELETE")
-			continue;
-		else if (res[i] == "CONNECT")
-			continue;
-		else if (res[i] == "OPTIONS")
-			continue;
-		else if (res[i] == "TRACE")
 			continue;
 		else
 			return false;

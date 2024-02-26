@@ -127,3 +127,15 @@ long long int Location::getClientMaxBodySize() const{
 void Location::setClientMaxBodySize(long long value){
 	_clientMaxBodySize = value;
 }
+
+std::string Location::getAllowedMethods() const{
+	std::string res = "";
+	for (size_t i = 0; i < _allowedMethod.size(); i++){
+		res = res + " " + _allowedMethod[i];
+	}
+	return res;
+}
+
+std::string	Location::getIndex() const{
+	return _index;
+}

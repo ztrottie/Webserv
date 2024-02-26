@@ -56,6 +56,7 @@ bool	parsing::checkLocation(string &line, unsigned int *nbLine){
 			checkClientMaxBodySizeLocation(line, *nbLine);
 			checkUploadEnable(line, *nbLine);
 			checkUploadStore(line, *nbLine);
+			checkAutoIndex(line, *nbLine);
 		}
 		(*nbLine)++;
 	}
@@ -321,5 +322,38 @@ void	parsing::checkClientMaxBodySizeLocation(string const &line, unsigned int nb
 	}
 	verifLine.push_back(OKPARS);
 	selectMessage(VALID, NOERR, nbLine, "	\"" + line + "\"");
+	// cout << "line " << nbLine << "	" << line << " : " << verifLine[nbLine] << endl;
+}
+
+void	parsing::checkAutoIndex(string const &line, unsigned int nbLine){
+	if (findFirstWord(line) != "autoindex")
+		return ;
+	if (checkIdentationParsing(line, "autoindex", true) == false){
+		wagadooMachine(line, defaultIfError, IDENTATIONERROR, nbLine, "", defaultIfError, verifLine, true);
+		return ;
+	}
+	if (checkVargule(line) == false){
+		wagadooMachine(line, defaultIfError, VARGULEERR, nbLine, "", defaultIfError, verifLine, true);
+		return ;
+	}
+	if (checkForArgs(line, 11) == false){
+		wagadooMachine(line, defaultIfError, NUMBERARGSERROR, nbLine, "", defaultIfError, verifLine, true);
+		return ;
+	}
+	if (checkForTabs(line, 1) == false){
+		wagadooMachine(line, defaultIfError, SPACEERROR, nbLine, "", defaultIfError, verifLine, true);
+		return ;
+	}
+	if (isThereSomethingInMyString(line, "autoindex", line.rfind(" ")) == true){
+		wagadooMachine(line, defaultIfError, IMPOSTORERROR, nbLine, "", defaultIfError, verifLine, true);
+		return ;
+	}
+	string temp = line.substr(line.rfind(" ") + 1, line.length());
+	if (temp != "true;" && temp != "false;"){
+		wagadooMachine(line, defaultIfError, MISSINGEND, nbLine, ", the last arguments must be true or false", defaultIfError, verifLine, true);
+		return ;
+	}
+	selectMessage(VALID, NOERR, nbLine, "	\"" + line + "\"");
+	verifLine.push_back(OKPARS);
 	// cout << "line " << nbLine << "	" << line << " : " << verifLine[nbLine] << endl;
 }

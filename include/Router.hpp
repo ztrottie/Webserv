@@ -3,6 +3,7 @@
 #include "Location.hpp"
 #include "Request.hpp"
 
+#include <string>
 #include <sys/stat.h>
 #include <unistd.h>
 
@@ -39,7 +40,6 @@ public:
 	int getFile(Request *request, Location *&loc);
 	void trimURI(std::string &URI);
 	void parseUri(std::string &cpy);
-	int getErrorPage(std::string &path, int errorCode, Location *loc);
 	int checkFilePerm(std::string const &path);
 	int checkIfFileIsValid(std::string const &path);
 	int checkAllowedMethod(std::string const &method, Location *loc);
@@ -48,7 +48,11 @@ public:
 	int getFileMethod(std::string &path, Request *request);
 	void routerMain(Request *request, std::string &fullResponse);
 	bool checkRedirectionCode(int code);
-	long long getClientMaxBodySize() const;
 	void checkBodySize(Request *request, int &errorCode);
+	int getErrorPage(std::string &path, int errorCode, Location *loc);
 
+	long long	getClientMaxBodySize() const;
+	std::string	getRoot() const;
+	std::string	getIndex() const;
+	std::string getErrorForParsing(int code) const;
 };

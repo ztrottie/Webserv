@@ -157,3 +157,17 @@ int Router::getFile(Request *request, Location *&loc) {
 	request->setFilePath(uriCopy);
 	return (OK);
 }
+
+std::string	Router::getRoot() const {
+	return _root;
+}
+
+std::string	Router::getIndex() const {
+	return _index;
+}
+
+std::string Router::getErrorForParsing(int code) const {
+	std::map<int, std::string>::const_iterator it = _errorPagesLocation.find(code);
+	return it->second;
+}
+

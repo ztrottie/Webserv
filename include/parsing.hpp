@@ -14,13 +14,21 @@
 #include "../include/Location.hpp"
 #include "utils.hpp"
 
-#define DEFAULTHOST "127.0.0.1"
-#define DEFAULTLISTEN "8080"
+// Router
+#define DEFAULTROOT "./www"
+#define DEFAULTINDEX "index.html"
+#define DEFAULTMAXBODY 1000000
+#define ERRORPAGEFOLDER "./www/errors/"
+#define LOCATIONIFNONE "/"
+
+// Server
 #define DEFAULTSERVERNAME "default"
-#define DEFAULTERRORPAGE "404 /Users/rapelcha/Desktop/Webserv/www/error.html"
-#define DEFAULTMETHODS "GET, PUT, POST, PATCH, DELETE, CONNECT, OPTIONS, TRACE"
-#define DEFAULTLOCATION DEFAULTMETHODS
-#define DEFAILTBODYSIZE "1M"
+#define DEFAULTHOST "127.0.0.1"
+#define DEFAULTLISTEN 8080
+
+// Location
+#define DEFAULTMETHODS "GET POST DELETE"
+#define DEFAULTSTORE "/uploads"
 
 enum verifFlags{
 	OKPARS,
@@ -44,11 +52,6 @@ class parsing{
 		std::vector<int>	verifLine;
 		std::ifstream		configFile;
 		bool				defaultIfError;
-		//Assignation Server
-		string				_host;
-		uint16_t			_port;
-		string				_serverName;
-		unsigned int		_clientBodySize;
 		// Analyser ConfigFile
 		bool				checkFile();
 		bool				checkValid(string const &line);
@@ -75,8 +78,9 @@ class parsing{
 		void					checkUploadEnable(string const &line, unsigned int nbLine);
 		void					checkUploadStore(string const &line, unsigned int nbLine);
 		void					checkClientMaxBodySizeLocation(string const &line, unsigned int nbLine);
-		
+		void					checkAutoIndex(const string &line, unsigned int nbline);
 		// Assignation
+		void				setDefault(uint16_t *_port, const char *_host, string *_name, Router &rout);
 			//Server
 		void				createServer(string &line, std::ifstream &file, size_t *i);
 		uint16_t			assignPort(const string &line);
@@ -96,5 +100,7 @@ class parsing{
 		void				assignReturn(const string &line, Location &loc);
 		void				assignErrorPage(const string &line, Location &loc);
 		void				assignMaxBody(const string &line, Location &loc);
-
+		void				assignUploadBool(const string &line, Location &loc);
+		void				assignUploadStore(const string &line, Location &loc);
+		void				assignAutoIndex(const string &line, Location &loc);
 };

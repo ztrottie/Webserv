@@ -4,6 +4,7 @@
 #include <cstdlib>
 #include <fstream>
 #include <string>
+#include <type_traits>
 #include <vector>
 
 // client_max_body_size 1B; = 1
@@ -13,6 +14,21 @@
 
 //Quand je vais creer le server, verifier que j'ai rien en dehors du scope du server, donc si j'ai un host random 
 //en dehors, je quitte le programme ou je prend pas en compte la ligne
+
+void	parsing::setDefault(uint16_t *_port, const char *_host, string *_name, Router &rout){
+	if (*_port == 0)
+		*_port = DEFAULTLISTEN;
+	if (_host == NULL)
+		_host = DEFAULTHOST;
+	if (*_name == "")
+		*_name = DEFAULTSERVERNAME;
+	if (rout.getClientMaxBodySize() == -1)
+		rout.setClientMaxBodySize(DEFAULTMAXBODY);
+	if (rout.getRoot() == "")
+		rout.setRoot(DEFAULTROOT);
+	if (rout.getIndex() == "")
+		rout.setIndex(DEFAULTINDEX);
+}
 
 void parsing::assignConfigFile(){
 	string line;
@@ -24,20 +40,7 @@ void parsing::assignConfigFile(){
 		if (verifLine[i] == 0){
 			createServer(line, file, &i);
 		}
-		// cout << "line " << i + 1 << "	" << line << " : " << verifLine[i] << endl;
 	}
-	// rout->setRoot(const std::string &root);
-	// rout->setIndex(const std::string &index);
-	// rout->addAllowedMethod(const std::string &method);
-	// rout->addErrorPage(const int errorNumber, std::string pathToError);
-	//si location
-	// Location *loc = new Location();
-	// loc->addAllowedMethod(const std::string &method);
-	// loc->addErrorPage(const int errorNumber, std::string pathToError);
-	// loc->setIndex(const std::string &index);
-	// loc->setRoot(const std::string &root);
-	// rout->addLocation(const std::string &key, Location *loc);
-	// Server *serv = new Server();
 }
 
 void	parsing::createServer(string &line, std::ifstream &file, size_t *i){
@@ -73,16 +76,15 @@ void	parsing::createServer(string &line, std::ifstream &file, size_t *i){
 				assignLocation(line, file, i, *router);
 		}
 		if (line.find("}") == 0){
-			cout << "SERVER TERMINER" << endl;
+			// cout << "SERVER TERMINER" << endl;
 			break ;
 		}
 		(*i)++;
 	}
-	cout << "Port is " << port << endl;
-	cout << "Host is " << host << endl;
-	cout << "ServerName is " << name << endl;
-	// if (anyAreNull)
-		// setDefault
+	setDefault(&port, host, &name, *router);
+	// cout << "Port is " << port << endl;
+	// cout << "Host is " << host << endl;
+	// cout << "ServerName is " << name << endl;
 	// webserv.addNewServer(port, host, name, router);
 }
 
@@ -146,7 +148,7 @@ void parsing::assignErrorPage(const string &line, Router &rout){
 	for (size_t i = 1; i < split.size(); i++) {
 		if (containsNonDigit(split[i]) == false && split[i].length() > 0){
 			rout.addErrorPage(std::stoi(split[i]), split[split.size() - 1]);
-			cout << split[i] << " a été assigner a " << split[split.size() - 1] << endl;
+			// cout << split[i] << " a été assigner a " << split[split.size() - 1] << endl;
 		}
 	}
 }
@@ -155,10 +157,10 @@ void parsing::assignErrorPage(const string &line, Router &rout){
 // 	std::vector<string> split = splitString(line, ' ');
 // 	for (size_t i = 1; i < split.size(); i++) {
 // 		if (containsNonDigit(split[i]) == false && split[i].length() > 0){
-// 			// rout.setbool = true;
+// 			// rout. = true;
 // 			// rout.setreturncode = split[i];
 // 			// rout.setreturnlocation = split[split.size() - 1];
-// 			//return ;
+// 			// return ;
 // 			cout << split[i] << " a été assigner a " << split[split.size() - 1] << endl;
 // 		}
 // 	}
@@ -169,35 +171,44 @@ void parsing::assignErrorPage(const string &line, Router &rout){
 //----------------------------LOCATION---------------------------------
 
 void	parsing::assignLocation(string &line, std::ifstream &file, size_t *i, Router &rout){
-	if (line.find("location") != 1)
-		return ;
-	Location	loc;
+	string	name = line.substr(line.rfind(" "), (line.length() - line.rfind(" ")) - 1);
+	Location	loc(name);
 	(*i)++;
 	while (*i < verifLine.size()){
 		std::getline(file, line);
 		// cout << line << endl;
 		if (verifLine[*i] == 0){
-			assignAllowedMethods(line, loc);
-			assignIndex(line, loc);
-			assignRoot(line, loc);
-			assignMaxBody(line, loc);
-			// assignReturn(line, loc);
-			assignErrorPage(line, loc);
+			if (findFirstWord(line) == "allowedMethods")
+				assignAllowedMethods(line, loc);
+			if (findFirstWord(line) == "index")
+				assignIndex(line, loc);
+			if (findFirstWord(line) == "root")
+				assignRoot(line, loc);
+			if (findFirstWord(line) == "client_max_body_size")
+				assignMaxBody(line, loc);
+			if (findFirstWord(line) == "return")
+				assignReturn(line, loc);
+			if (findFirstWord(line) == "error_page")
+				assignErrorPage(line, loc);
+			if (findFirstWord(line) == "upload_enable")
+				assignUploadBool(line, loc);
+			if (findFirstWord(line) == "upload_store")
+				assignUploadStore(line, loc);
+			if (findFirstWord(line) == "autoindex")
+				assignAutoIndex(line, loc);
 		}
 		if (line.find("}") == 1){
-			cout << "LOCATION TERMINER" << endl;
+			// cout << "LOCATION TERMINER\n" << endl;
 			break ;
 		}
 		(*i)++;
 	}
-	// if (anyAreNull)
-		// setDefault
-	rout.addLocation("key", &loc);
+	if (loc.getUploadStore() == "")
+		loc.setUploadStore(DEFAULTSTORE);
+	rout.addLocation(loc.getName(), &loc);
 }
 
 void parsing::assignIndex(const string &line, Location &loc){
-	if (line.find("index") != 1)
-		return ;
 	string tempLine = line;
 	tempLine.erase(std::remove_if(tempLine.begin(), tempLine.end(), ::isspace), tempLine.end());
 	tempLine.erase(0, 5); tempLine.erase(tempLine.size() - 1, tempLine.size());
@@ -205,8 +216,6 @@ void parsing::assignIndex(const string &line, Location &loc){
 }
 
 void parsing::assignRoot(const string &line, Location &loc){
-	if (line.find("root") != 1)
-		return ;
 	string tempLine = line;
 	tempLine.erase(std::remove_if(tempLine.begin(), tempLine.end(), ::isspace), tempLine.end());
 	tempLine.erase(0, 4); tempLine.erase(tempLine.size() - 1, tempLine.size());
@@ -214,8 +223,6 @@ void parsing::assignRoot(const string &line, Location &loc){
 }
 
 void	parsing::assignAllowedMethods(const string &line, Location &loc){
-	if (line.find("allowedMethods") != 2)
-		return ;
 	std::vector<std::string> res = splitString(line, ',');
 	for (size_t i = 0 ; i < res.size(); i++){
 		if (i == 0)
@@ -230,19 +237,9 @@ void	parsing::assignAllowedMethods(const string &line, Location &loc){
 	for (size_t i = 0 ; i < res.size(); i++){
 		if (res[i] == "GET")
 			loc.addAllowedMethod(res[i]);
-		else if (res[i] == "PUT")
-			loc.addAllowedMethod(res[i]);
 		else if (res[i] == "POST")
 			loc.addAllowedMethod(res[i]);
-		else if (res[i] == "PATCH")
-			loc.addAllowedMethod(res[i]);
 		else if (res[i] == "DELETE")
-			loc.addAllowedMethod(res[i]);
-		else if (res[i] == "CONNECT")
-			loc.addAllowedMethod(res[i]);
-		else if (res[i] == "OPTIONS")
-			loc.addAllowedMethod(res[i]);
-		else if (res[i] == "TRACE")
 			loc.addAllowedMethod(res[i]);
 	}
 }
@@ -252,7 +249,7 @@ void	parsing::assignErrorPage(const string &line, Location &loc){
 	for (size_t i = 1; i < split.size(); i++) {
 		if (containsNonDigit(split[i]) == false && split[i].length() > 0){
 			loc.addErrorPage(std::stoi(split[i]), split[split.size() - 1]);
-			cout << split[i] << " a été assigner a " << split[split.size() - 1] << endl;
+			// cout << split[i] << " a été assigner a " << split[split.size() - 1] << endl;
 		}
 	}
 }
@@ -275,5 +272,39 @@ void	parsing::assignMaxBody(const string &line, Location &loc){
 	loc.setClientMaxBodySize(CMBS);
 }
 
-// void parsing::assignReturn(const string &line, Location &loc){
-// }
+void parsing::assignReturn(const string &line, Location &loc){
+	std::vector<string> split = splitString(line, ' ');
+	for (size_t i = 1; i < split.size(); i++) {
+		if (containsNonDigit(split[i]) == false && split[i].length() > 0){
+			loc.setRedirection(true);
+			loc.setRedirectionCode(std::stoi(split[i]));
+			loc.setRedirectionLocation(split[split.size() - 1]);
+			// cout << split[i] << " a été assigner a " << split[split.size() - 1] << endl;
+			return ;
+		}
+	}
+}
+
+void	parsing::assignUploadBool(const string &line, Location &loc){
+	int start = line.rfind(" ");
+	string str = line.substr(start + 1, line.length() - start);
+	if (str == "true;")
+		loc.setUploadEnable(true);
+	else if (str == "false;")
+		loc.setUploadEnable(false);
+}
+
+void	parsing::assignUploadStore(const string &line, Location &loc){
+	int start = line.rfind(" ");
+	string str = line.substr(start + 1, (line.length() - 2) - start);
+	loc.setUploadStore(str);
+}
+
+void	parsing::assignAutoIndex(const string &line, Location &loc){
+	int start = line.rfind(" ");
+	string str = line.substr(start + 1, line.length() - start);
+	if (str == "true;")
+		loc.setAutoIndex(true);
+	else if (str == "false;")
+		loc.setAutoIndex(false);
+}
