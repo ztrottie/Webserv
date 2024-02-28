@@ -1,19 +1,4 @@
 #include "../include/parsing.hpp"
-#include <cstddef>
-#include <cstdint>
-#include <cstdlib>
-#include <fstream>
-#include <string>
-#include <type_traits>
-#include <vector>
-
-// client_max_body_size 1B; = 1
-// client_max_body_size 1K; = 1000
-// client_max_body_size 1M; = 1 000 000
-// client_max_body_size 1G; = 1 000 000 000
-
-//Quand je vais creer le server, verifier que j'ai rien en dehors du scope du server, donc si j'ai un host random 
-//en dehors, je quitte le programme ou je prend pas en compte la ligne
 
 void	parsing::setDefault(uint16_t *_port, const char *_host, string *_name, Router &rout){
 	if (*_port == 0)
@@ -28,6 +13,57 @@ void	parsing::setDefault(uint16_t *_port, const char *_host, string *_name, Rout
 		rout.setRoot(DEFAULTROOT);
 	if (rout.getIndex() == "")
 		rout.setIndex(DEFAULTINDEX);
+	if (rout.getLocation() == ""){
+		Location loc("/");
+		loc.addAllowedMethod("GET");
+		loc.addAllowedMethod("POST");
+		loc.addAllowedMethod("DELETE");
+		loc.setUploadStore(DEFAULTSTORE);
+	}
+
+	// Error code
+	if (rout.getErrorForParsing(200) == "")
+		rout.addErrorPage(200, "./www/errors/200.html");
+	if (rout.getErrorForParsing(201) == "")
+		rout.addErrorPage(201, "./www/errors/201.html");
+	if (rout.getErrorForParsing(202) == "")
+		rout.addErrorPage(202, "./www/errors/202.html");
+	if (rout.getErrorForParsing(204) == "")
+		rout.addErrorPage(204, "./www/errors/204.html");
+	if (rout.getErrorForParsing(205) == "")
+		rout.addErrorPage(205, "./www/errors/205.html");
+	if (rout.getErrorForParsing(206) == "")
+		rout.addErrorPage(206, "./www/errors/206.html");
+	if (rout.getErrorForParsing(300) == "")
+		rout.addErrorPage(300, "./www/errors/300.html");
+	if (rout.getErrorForParsing(301) == "")
+		rout.addErrorPage(301, "./www/errors/301.html");
+	if (rout.getErrorForParsing(302) == "")
+		rout.addErrorPage(302, "./www/errors/302.html");
+	if (rout.getErrorForParsing(303) == "")
+		rout.addErrorPage(303, "./www/errors/303.html");
+	if (rout.getErrorForParsing(304) == "")
+		rout.addErrorPage(304, "./www/errors/304.html");
+	if (rout.getErrorForParsing(305) == "")
+		rout.addErrorPage(305, "./www/errors/305.html");
+	if (rout.getErrorForParsing(307) == "")
+		rout.addErrorPage(307, "./www/errors/307.html");
+	if (rout.getErrorForParsing(400) == "")
+		rout.addErrorPage(400, "./www/errors/400.html");
+	if (rout.getErrorForParsing(401) == "")
+		rout.addErrorPage(401, "./www/errors/401.html");
+	if (rout.getErrorForParsing(403) == "")
+		rout.addErrorPage(403, "./www/errors/403.html");
+	if (rout.getErrorForParsing(404) == "")
+		rout.addErrorPage(404, "./www/errors/404.html");
+	if (rout.getErrorForParsing(405) == "")
+		rout.addErrorPage(405, "./www/errors/405.html");
+	if (rout.getErrorForParsing(406) == "")
+		rout.addErrorPage(406, "./www/errors/406.html");
+	if (rout.getErrorForParsing(413) == "")
+		rout.addErrorPage(413, "./www/errors/413.html");
+	if (rout.getErrorForParsing(500) == "")
+		rout.addErrorPage(500, "./www/errors/500.html");
 }
 
 void parsing::assignConfigFile(){
@@ -40,6 +76,7 @@ void parsing::assignConfigFile(){
 		if (verifLine[i] == 0){
 			createServer(line, file, &i);
 		}
+		// cout << line << "	" << verifLine[i] << endl;
 	}
 }
 
@@ -49,6 +86,7 @@ void	parsing::createServer(string &line, std::ifstream &file, size_t *i){
 	uint16_t port = 0;
 	const char *host = NULL;
 	string name;
+	Webserv webserv;
 	Router *router = new Router();
 	(*i)++;
 	while (*i < verifLine.size()){
@@ -82,10 +120,7 @@ void	parsing::createServer(string &line, std::ifstream &file, size_t *i){
 		(*i)++;
 	}
 	setDefault(&port, host, &name, *router);
-	// cout << "Port is " << port << endl;
-	// cout << "Host is " << host << endl;
-	// cout << "ServerName is " << name << endl;
-	// webserv.addNewServer(port, host, name, router);
+	// webserv.addNewServer(port, host, name, router, router->getClientMaxBodySize());
 }
 
 uint16_t	parsing::assignPort(const string &line){
@@ -145,6 +180,7 @@ void parsing::assignIndex(const string &line, Router &rout){
 
 void parsing::assignErrorPage(const string &line, Router &rout){
 	std::vector<string> split = splitString(line, ' ');
+	split[split.size() - 1].erase(split[split.size() - 1].length() - 1, split[split.size() - 1].length());
 	for (size_t i = 1; i < split.size(); i++) {
 		if (containsNonDigit(split[i]) == false && split[i].length() > 0){
 			rout.addErrorPage(std::stoi(split[i]), split[split.size() - 1]);
@@ -172,6 +208,7 @@ void parsing::assignErrorPage(const string &line, Router &rout){
 
 void	parsing::assignLocation(string &line, std::ifstream &file, size_t *i, Router &rout){
 	string	name = line.substr(line.rfind(" "), (line.length() - line.rfind(" ")) - 1);
+	cout << "Name of location in assignation" << name << endl;
 	Location	loc(name);
 	(*i)++;
 	while (*i < verifLine.size()){

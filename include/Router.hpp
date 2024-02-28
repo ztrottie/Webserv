@@ -55,4 +55,5 @@ public:
 	std::string	getRoot() const;
 	std::string	getIndex() const;
 	std::string getErrorForParsing(int code) const;
+	std::string getLocation() const;
 };

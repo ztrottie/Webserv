@@ -171,3 +171,9 @@ std::string Router::getErrorForParsing(int code) const {
 	return it->second;
 }
 
+std::string	Router::getLocation() const{
+	if (_locations.empty()){
+		return "";
+	}
+	return "yessir";
+}

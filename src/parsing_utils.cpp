@@ -41,7 +41,7 @@ string parsing::findFirstWord(string line){
 		return "";
 	int	end = line.find_first_not_of("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_", start);
 	if (end == -1)
-		return "";
+		end = line.length();
 	string res = line.substr(start, end - start);
 	return res;
 }

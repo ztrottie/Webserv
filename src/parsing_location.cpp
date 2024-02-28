@@ -1,4 +1,5 @@
 #include "../include/parsing.hpp"
+#include <algorithm>
 #include <string>
 
 int parsing::isThisTheEnd(string const &line, bool insideLocation){
@@ -11,12 +12,9 @@ int parsing::isThisTheEnd(string const &line, bool insideLocation){
 			return true;
 	}else{
 		if (pos == 0){
-			cout << "TERMINER?" << endl;
 			return true;
 		}
 	}
-	// if (pos != line.length() - 1)
-		// writeTimestamp(YELLOW, "The line must end with \"}\", this location will not be used");
 	return false;
 }
 
@@ -24,12 +22,12 @@ bool	parsing::checkLocation(string &line, unsigned int *nbLine){
 	if (findFirstWord(line) != "location")
 		return -1;
 	cout << BLUE << "[" << RESET << std::to_string(*nbLine + 1) << BLUE << "]";simpleWriteTimestamp(BLUE, "Checking new location");
-	if (isThereSomethingInMyString(line, "location", line.rfind(" ")) == true){
+	if (isThereSomethingInMyString(line, "location", line.rfind(" ")) == true || line.rfind("{") != line.length() - 1){
 		// cout << "allo?" << endl;
 		wagadooMachine(line, defaultIfError, IMPOSTORERROR, *nbLine, "", defaultIfError, verifLine, true);
 		while (isThisTheEnd(line, true) != true){
-			(*nbLine)++;
 			cout << YELLOW << "[" << RESET << std::to_string(*nbLine + 1) << YELLOW << "]";simpleWriteTimestamp(YELLOW, "This line \"" + line + "\" will not be used because the location line was wrong, all the location element will not be used");
+			(*nbLine)++;
 			std::getline(configFile, line);
 			verifLine.push_back(DONT);
 		}
@@ -39,12 +37,20 @@ bool	parsing::checkLocation(string &line, unsigned int *nbLine){
 	// cout << "line " << *nbLine << "	" << line << " : " << verifLine[*nbLine] << endl;
 	(*nbLine)++;
 	while (std::getline(configFile, line)){
-		if (line.length() > 0 && line.find("	}\0\n") == 0){
+		if (findFirstWord(line) == "location"){
+			simpleWriteTimestamp(RED, "You can't have a location inside another one, exiting program");
+			return false;
+		}
+		if (line.find("}") < string::npos){
+			if (line.find("}") != 1 || line.length() != 2){
+				simpleWriteTimestamp(RED, "Location wasn't correctly closed, exiting program");
+				return false;
+			}
 			verifLine.push_back(DONT);
-			break ;
+			break;
 		}
 		else if (checkValid(line) == false){
-			// cout << "invalid in location	" + line << endl;
+			cout << "invalid in location	" + line << endl;
 			verifLine.push_back(DONT);
 			// cout << "line " << *nbLine << "	" << line << " : " << verifLine[*nbLine] << endl;
 		}else{

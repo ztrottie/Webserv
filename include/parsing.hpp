@@ -18,7 +18,6 @@
 #define DEFAULTROOT "./www"
 #define DEFAULTINDEX "index.html"
 #define DEFAULTMAXBODY 1000000
-#define ERRORPAGEFOLDER "./www/errors/"
 #define LOCATIONIFNONE "/"
 
 // Server

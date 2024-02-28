@@ -1,8 +1,4 @@
 #include "../include/parsing.hpp"
-#include <algorithm>
-#include <cstddef>
-#include <stdexcept>
-#include <string>
 
 parsing::parsing(string path): pathConfigFile(path){
 	defaultIfError = false;
@@ -16,7 +12,8 @@ bool	parsing::checkValid(string const &line){
 		return true;
 	if (line.find(" ") == string::npos){
 		res = line;
-		res.erase(res.length() - 1, res.length());
+		if (res.find(";") < string::npos)
+			res.erase(res.length() - 1, res.length());
 	}else{
 		std::vector<std::string> ret = splitString(line, ' ');
 		for (size_t i = 0; i < ret.size(); i++){
@@ -80,7 +77,7 @@ bool	parsing::parseConfigFile(){
 		if (nbLine == 0){
 			checkDefault(line, nbLine);
 		}
-		else if (checkServer(line, &nbLine) == false)
+		if (checkServer(line, &nbLine) == false)
 			return false;
 		if (nbLine == verifLine.size())
 			verifLine.push_back(DONT);
@@ -191,7 +188,10 @@ bool	parsing::checkServer(std::string &line, unsigned int *nbLine){
 			return false;
 		if (checkReturns(line, *nbLine) == false)
 			return false;
-		if (line.find("}\0\n") == 0){
+		if (line.find("}") == 0){
+			if (line.find("}") != 0 || line.length() != 1){
+				return false;
+			}
 			verifLine.push_back(DONT);
 			// cout << "line " << *nbLine << "	" << line << " : " << verifLine[*nbLine] << endl;
 			break ;
@@ -200,9 +200,11 @@ bool	parsing::checkServer(std::string &line, unsigned int *nbLine){
 			verifLine.push_back(DONT);
 		(*nbLine)++;
 	}
-	// cout << "CECI EST LA FIN" << line << "	" << std::to_string(*nbLine) << endl;
-	// cout << "VERIF SIZE: " << std::to_string(verifLine.size()) << "	NBLINE: " << std::to_string(*nbLine) << endl;
-	// cout << "SERVER line " << *nbLine << "	" << line << " : " << verifLine[*nbLine] << endl;
+	if (line.find("}") != 0){
+		simpleWriteTimestamp(RED, "You didnt close the server, quitting the program....");
+		return false;
+	}
+	// cout << line << endl;
 	return true;
 }
 
