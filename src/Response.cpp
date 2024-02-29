@@ -11,7 +11,7 @@
 #include <dirent.h>
 
 Response::Response(Request *request, Router *router, Location *location, int &errorCode) {
-	if (request->getMethod() == "POST" && errorCode == OK && !request->isBodyValid()) {
+	if (request->isValid() == NEEDANSWER) {
 		std::cout << GREEN "here!!!" RESET << std::endl;
 	} else if ((errorCode >= 300 && errorCode != NOTFOUND) || (errorCode == NOTFOUND && request->getFilePath().find(".") == std::string::npos && request->getMethod() != "POST")) {
 		std::string path;
@@ -104,7 +104,6 @@ void Response::contentTypeGenerator(std::string const &path) {
 void Response::handleGet(Request *request, Router *router, Location *location, int &errorCode) {
 	errorCode = openPath(request->getFilePath());
 
-	std::cout << location->getAutoIndex() << std::endl;
 	if (errorCode == INTERNALSERVERROR) {
 		internalServerError(errorCode);
 		return;
@@ -228,26 +227,10 @@ void	Response::handlePost(Request *request, Router *router, Location *location, 
 }
 
 void	Response::handleUploadedFile(Request *request, Location *location, int &errorCode) {
-	request->parseBody();
-	std::string path = location->getUploadStore() + "/" + request->getFileName();
-	std::cout << "opening file: " << path << std::endl;
-	std::ofstream file(path.c_str());
+	(void) location;
+	(void) errorCode;
 
-	if (!file.is_open()) {
-		internalServerError(errorCode);
-		return;
-	}
-	std::cout << "writing content" << std::endl;
-	file << request->getFileContent();
-	file.close();
-	std::cout << "openning the uploaded file" << std::endl;
-	errorCode = openPath(path);
-	if (errorCode >= 300) {
-		std::cout << errorCode << std::endl;
-		internalServerError(errorCode);
-		return;
-	}
-	contentTypeGenerator(path);
+	std::cout << request->getFilePath() << std::endl;
 }
 
 void Response::headerGenerator(int &errorCode, Request *request) {

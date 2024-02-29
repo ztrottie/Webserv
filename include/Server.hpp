@@ -38,6 +38,7 @@ public:
 
 	// Functions
 	Router *getRouter() const;
+	void sendAll(int const &socket, std::string const &fullResponse);
 	int acceptConnection(socketInfo *client);
 	int handleClient(socketInfo *client, int type);
 	void codeMessage(int code, std::string &message);

@@ -1,28 +1,21 @@
 #include "../include/Request.hpp"
 #include "../include/color.h"
 #include "../include/Server.hpp"
+#include <arpa/inet.h>
 #include <cstddef>
+#include <cstdio>
 #include <fstream>
 #include <limits>
+#include <sstream>
 #include <string>
 #include <sys/signal.h>
+#include <sys/stat.h>
 #include <unistd.h>
+#include <variant>
 
-Request::Request(std::string const &received, socketInfo *client, Server *server) : _raw(received) {
-	std::stringstream ss(received);
-	std::getline(ss, _method, ' ');
-	std::getline(ss, _uri, ' ');
-	if (client)
-		_clientAddr = inet_ntoa(client->client_address.sin_addr);
-	_setHostPort();
-	_uriParser();
-	_serverName = server->getName();
-	if (_method == "POST") {
-		_type = _search("Content-Type: ", ';');
-		_bodyLen = std::stoul(_search("Content-Length: ", '\r'));
-		_boundary = _search("boundary=", '\r');
-		_requestBodyParser();
-	}
+Request::Request(socketInfo *client, Server *server) : _client(client), _server(server), _serverName(server->getName()), _clientAddr(inet_ntoa(client->client_address.sin_addr)), _errorCode(OK), _bodyLen(0), _headerDone(false), _bodyStarted(false), _bodyEnded(false) {
+	std::cout << "Created a request!" << std::endl;
+	_raw.clear();
 }
 
 Request::Request(const Request &inst) {
@@ -32,6 +25,8 @@ Request::Request(const Request &inst) {
 
 Request::~Request() {
 	std::cout << "Request destructor" << std::endl;
+	if (_fileStream.is_open())
+		_fileStream.close();
 }
 
 Request& Request::operator=(const Request &rhs) {
@@ -42,15 +37,17 @@ Request& Request::operator=(const Request &rhs) {
 	return *this;
 }
 
-std::string Request::_search(std::string const &searching, char endChar) {
-	size_t start = _raw.find(searching);
+bool Request::_search(std::string const &searching, char endChar, std::string &result) {
+	size_t start = _line.find(searching);
 	if (start != std::string::npos) {
 		start += searching.size();
-		size_t end = _raw.find(endChar, start);
-		if (end != std::string::npos)
-			return _raw.substr(start, end - start);
+		size_t end = _line.find(endChar, start);
+		if (end != std::string::npos) {
+			result = _line.substr(start, end - start);
+			return true;
+		}
 	}
-	return "";
+	return false;
 }
 
 void Request::_uriParser() {
@@ -86,27 +83,83 @@ void Request::_uriParser() {
 	}
 }
 
-void Request::_setHostPort() {
-	size_t hostStart = _raw.find("Host: ");
-	if (hostStart != std::string::npos) {
-		hostStart += 6;
-		size_t hostEnd = _raw.find(":", hostStart);
-		if (hostEnd != std::string::npos) {
-			_host = _raw.substr(hostStart, hostEnd - hostStart);
-			size_t portEnd = _raw.find('\n', hostEnd);
-			if (portEnd != std::string::npos) {
-				_port = _raw.substr(hostEnd + 1, portEnd - hostEnd);
+void Request::headerParser() {
+	std::stringstream ss(_raw);
+	while(std::getline(ss, _line)) {
+		if (_line == "\r") {
+			std::string tmpRaw;
+			while (std::getline(ss, _line)) {
+				std::cout << "found the end" << std::endl; 
+				tmpRaw += _line + "\n";
 			}
+			_raw = tmpRaw;
+			_headerDone = true;
+			return;
+		}
+		if (_method.empty() && _uri.empty()) {
+			std::stringstream firstLineStream(_line);
+			std::getline(firstLineStream, _method, ' ');
+			std::getline(firstLineStream, _uri, ' ');
+			_uriParser();
+		}
+		if (_host.empty() && _port.empty())
+			_setHostPort();
+		if (_type.empty())
+			_search("Content-Type: ", ';', _type);
+		if (!_bodyLenFound) {
+			std::string temp;
+			if (_search("Content-Length: ", '\r', temp)) {
+				_bodyLen = std::stoul(temp);
+				_bodyLenFound = true;
+			}
+		}
+		if (_boundary.empty()) {
+			_search("boundary=", '\r', _boundary);
 		}
 	}
 }
 
+void Request::addData(std::string const &data, size_t const &nbytes) {
+	_raw.append(data, sizeof(nbytes));
+	if (!_headerDone) {
+		std::cout << "making the header of the request" << std::endl;
+		headerParser();
+	}
+	if (_headerDone && _method == "POST" && !_raw.empty()) {
+		std::cout << "header is done!" << std::endl;
+		addBody();
+	}
+}
+
+void Request::_setHostPort() {
+		size_t hostStart = _line.find("Host: ");
+		if (hostStart != std::string::npos) {
+			hostStart += 6;
+			size_t hostEnd = _line.find(":", hostStart);
+			if (hostEnd != std::string::npos) {
+				_host = _line.substr(hostStart, hostEnd - hostStart);
+				if (_port.empty()) {
+					size_t portEnd = _line.find('\n', hostEnd);
+					if (portEnd != std::string::npos) {
+						_port = _line.substr(hostEnd + 1, portEnd - hostEnd);
+					}
+				}
+			}
+		}
+}
+
 int Request::generateTempFile() {
-	std::string tmpFileName = ".tmp";
-	_tempFilePath = "/tmp/";
+	std::string tmpFileName = "tmp";
+	_tempFilePath = "./uploads/";
 	for (size_t fileIndex = 0; fileIndex < std::numeric_limits<size_t>::max(); fileIndex++) {
-		if (access((_tempFilePath + tmpFileName + std::to_string(fileIndex)).c_str(), F_OK) != 0) {
+		int error = access((_tempFilePath + tmpFileName + std::to_string(fileIndex)).c_str(), F_OK);
+		if (error != 0) {
 			_tempFilePath += tmpFileName + std::to_string(fileIndex);
+			_fileStream.open(_tempFilePath);
+			if (!_fileStream.is_open()) {
+				_tempFilePath.clear();
+				return INTERNALSERVERROR;
+			}
 			return OK;
 		}
 	}
@@ -114,34 +167,64 @@ int Request::generateTempFile() {
 	return INTERNALSERVERROR;
 }
 
-void Request::parseFileName(std::string &string) {
-	size_t start = string.find("filename=\"");
-	if (start != std::string::npos) {
-		start += 10;
-		size_t end = string.find("\"", start);
-		if (end != std::string::npos) {
-			_fileName = string.substr(start, end - start);
-		}
+int Request::_findMostOfEndBoundary(size_t & pos, std::string const & string, size_t & resultLength) {
+	std::string search;
+	if ((pos = _raw.find(string)) != std::string::npos) {
+		resultLength = string.length();
+		return (WHOLE);
 	}
+	if (string.length() > _raw.length()) {
+		search = string.substr(0, _raw.length());
+	} else {
+		search = string;
+	}
+	size_t end = search.length();
+	size_t length = _raw.length() - search.length();
+	for (size_t i = 0; i < end; i++) {
+			std::string endString = _raw.substr(length + i);
+			if (endString == search) {
+				pos = length + i;
+				resultLength = search.length();
+				return PART;
+			}
+			search = search.substr(0, end - i);
+	}
+	return NONE;
 }
 
-void Request::_requestBodyParser() {
-	std::string tempBoundary("\r\n\r\n--");
-	tempBoundary.append(_boundary);
-	size_t bodyStart = _raw.rfind(tempBoundary);
-	if (bodyStart != std::string::npos) {
-		bodyStart += tempBoundary.size() + 2;
-		size_t bodyEnd = _raw.find(tempBoundary.append("--"), bodyStart);
-		if (bodyEnd != std::string::npos) {
-			std::string fullBody = _raw.substr(bodyStart, bodyEnd - bodyStart);
-			parseFileName(fullBody);
-			
+void Request::addBody() {
+	if (_errorCode == OK && _tempFilePath.empty()) {
+		if (generateTempFile() == INTERNALSERVERROR) {
+			return;
 		}
 	}
-}
-
-void Request::addBody(std::string &body) {
-	
+	if (_errorCode == OK && !_tempFilePath.empty() && _fileStream.is_open()) {
+		std::string data;
+		std::string firstBoundary = "--" + _boundary + "\r\n";
+		std::string lastBoundary = "--" + _boundary + "--\r\n";
+		size_t pos = 0;
+		size_t length = 0;
+		if (!_bodyStarted && _raw.find(firstBoundary) != std::string::npos)
+			_bodyStarted = true;
+		int code = _findMostOfEndBoundary(pos, lastBoundary, length);
+		if (code == WHOLE) {
+			data = _raw.substr(0, pos + length);
+			_raw = _raw.substr(pos + length);
+			_bodyEnded = true;
+		} else if (code == PART) {
+			data = _raw.substr(0, pos);
+			_raw = _raw.substr(pos);
+		} else {
+			data = _raw;
+			_raw.clear();
+		}
+		_fileStream << data;
+		_fileStream.flush();
+		if (!_raw.empty() && code == WHOLE) {
+			_client->requests.push_back(new Request(_client, _server));
+			_client->requests.back()->addData(_raw, _raw.size());
+		}
+	}
 }
 
 std::string const &Request::getMethod() const {
@@ -209,20 +292,7 @@ bool Request::getAddedIndex() const{
 }
 
 bool Request::isBodyValid() const {
-	
-}
-
-std::string Request::parseBody(std::string &string) {
-	size_t start = string.find("\r\n\r\n");
-	if (start != std::string::npos) {
-		start += 4;
-		std::string tempBoundary = "\r\n";
-		tempBoundary += "--" + _boundary + "--";
-		size_t end = string.find(tempBoundary);
-		if (end != std::string::npos) {
-			
-		}
-	}
+	return (!_fileStream.is_open() && _bodyEnded && _bodyStarted); 
 }
 
 std::string const &Request::getFileContent() const {
@@ -231,4 +301,36 @@ std::string const &Request::getFileContent() const {
 
 std::string const &Request::getFileName() const {
 	return _fileName;
+}
+
+int const &Request::getErrorCode() const {
+	return _errorCode;
+}
+
+bool Request::isHeaderDone() const {
+	return _headerDone;
+}
+
+bool Request::isNeedAnswer() {
+	bool temp;
+	if (_needAnswer == true)
+		temp = true;
+	else
+		temp = false;
+	_needAnswer = false;
+	return temp;
+}
+
+
+int Request::isValid() const {
+	if (_headerDone) {
+		if (_method == "POST" && isBodyValid())
+			return RESPOND;
+		if (_method == "POST" && !_bodyStarted)
+			return NEEDANSWER;
+		else if (_bodyStarted && !_bodyEnded)
+			return WAIT;
+		return RESPOND;
+	}
+	return WAIT;
 }

@@ -2,6 +2,7 @@
 #include <arpa/inet.h>
 #include <fstream>
 #include <string>
+#include <vector>
 
 class Server;
 class Request;
@@ -16,14 +17,20 @@ enum socketStatus {
 	CLOSE
 };
 
+enum requestCode {
+	WAIT,
+	RESPOND,
+	NEEDANSWER
+};
+
 struct socketInfo {
-	int					socket;
-	int					type;
-	int 				mode;
-	Request				*request;
-	bool				hasRequest;
-	struct sockaddr_in	client_address;
-	Server				*serverInst;
+	int						socket;
+	int						type;
+	int 					mode;
+	std::vector<Request*>	requests;
+	bool					hasRequest;
+	struct sockaddr_in		client_address;
+	Server					*serverInst;
 };
 
 enum Codes {

@@ -79,7 +79,6 @@ void signalhandler(int signal) {
 void Webserv::loop() {
 	std::signal(SIGQUIT, signalhandler);
 	while (loopFlag) {
-		// sleep(1);
 		struct kevent events[1];
 		timespec time = {10, 0};
 		int numEvents = kevent(_kq, nullptr, 0, events, 1, &time);

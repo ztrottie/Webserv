@@ -1,14 +1,24 @@
 #pragma once
 #include <cstddef>
+#include <fstream>
 #include <string>
 #include "struct.hpp"
 #include <iostream>
 #include <sstream>
 
+enum {
+	WHOLE,
+	PART,
+	NONE
+};
+
 class Request
 {
 private:
+	socketInfo			*_client;
+	Server				*_server;
 	std::string 		_raw;
+	std::string			_line;
 	std::string			_method;
 	std::string 		_uri;
 	std::string 		_filePath;
@@ -23,18 +33,28 @@ private:
 	std::string 		_fileName;
 	std::string 		_fileContent;
 	std::string			_tempFilePath;
+	std::ofstream		_fileStream;
+	int					_errorCode;
 	size_t				_bodyLen;
 	bool				_addedIndex;
+	bool				_headerDone;
+	bool				_needAnswer;
+	bool				_bodyStarted;
+	bool				_bodyEnded;
+	bool				_bodyLenFound;
+
 
 	//Functions
-	std::string _search(std::string const &searching, char endChar);
+	bool _search(std::string const &searching, char endChar, std::string &result);
 	void _uriParser();
 	void _setHostPort();
 	void _requestBodyParser();
+	void headerParser();
+	int _findMostOfEndBoundary(size_t & pos, std::string const & string, size_t & length);
 
 public:
 	// Constructors / Destructor
-	Request(std::string const &received, socketInfo *client, Server *server);
+	Request(socketInfo *client, Server *server);
 	Request(const Request &inst);
 	~Request();
 
@@ -57,14 +77,18 @@ public:
 	std::string const &getFileContent() const;
 	std::string const &getFileName() const;
 	std::string const &getServerName() const;
+	int const &getErrorCode() const;
 
 	size_t const &getBodyLen() const;
-	void addBody(std::string &body);
+	void addBody();
 	bool isBodyValid() const;
+	bool isNeedAnswer();
 	void setAddedIndex(bool index);
 	bool getAddedIndex() const;
 	void setFilePath(std::string &path);
-	void parseBody();
 	int generateTempFile();
 	void parseFileName(std::string &fullBody);
+	bool isHeaderDone() const;
+	void addData(std::string const &data, size_t const &nbytes);
+	int isValid() const;
 };

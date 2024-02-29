@@ -99,9 +99,11 @@ int Router::checkAllowedMethod(std::string const &method, Location *loc){
 
 void Router::routerMain(Request *request, std::string &fullResponse, int &errorCode){
 	Location *location = NULL;
-	errorCode = OK;
-	if (!(request->getMethod() == "POST" && !request->isBodyValid()))
+	errorCode = request->getErrorCode();
+	std::cout << "error code from request: " << errorCode << std::endl;
+	if (request->isValid() == RESPOND)
 		errorCode = getFile(request, location);
+	std::cout << "error code after getfile: " << errorCode << std::endl;
 	Response response(request, this, location, errorCode);
 	fullResponse = response.getFullResponse();
 }

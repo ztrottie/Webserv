@@ -1,5 +1,6 @@
 #include "../include/Server.hpp"
 #include "../include/Response.hpp"
+#include <new>
 
 Server::Server(uint16_t port, const char *host, std::string name, Router *router, unsigned int const &clientBodySize, socketInfo *server) : _port(port), _host(host), _name(name), _clientBodySize(clientBodySize) {
 	std::cout << YELLOW << timestamp() << " Initializing a Server named " << _name << " on " << _host << ":" << _port << RESET << std::endl;
@@ -60,49 +61,49 @@ int Server::acceptConnection(socketInfo *client) {
 }
 
 int Server::recieveRequest(socketInfo *client) {
-	char buffer[1025];
-	ssize_t totalNbytes = 0;
-	ssize_t	nbytes = 1024;
-	std::string data;
-	while (nbytes == 1024) {
-		std::memset(buffer, 0, sizeof(buffer));
-		nbytes = recv(client->socket, buffer, 1024, 0);
-		if (nbytes == -1)
-			break;
-		data += buffer;
-		totalNbytes += nbytes;
+	char buffer[1024];
+	ssize_t nbytes = recv(client->socket, buffer, sizeof(buffer), 0);
+	if (client->requests.empty() || client->requests.back()->isValid() == RESPOND) {
+		client->requests.push_back(new Request(client, this));
 	}
-	std::cout << timestamp() << " client sokcet: " << client->socket << " sent " << totalNbytes << "bytes" << std::endl;
-	if (totalNbytes == 0) {
+	if (nbytes == 0) {
 		std::cout << timestamp() << RED << " client closed the connection!" << RESET << std::endl;
 		return (CLOSE);
     } else if (nbytes == -1) {
 		std::cout << timestamp() << RED << " problem while recieving data closing connection" << RESET << std::endl;
 		return (CLOSE);
 	}
-	if (!client->hasRequest) {
-		client->request = new Request(data, client, this);
-		client->hasRequest = true;
-	} else {
-		client->request->setBody(data);
-	}
+	client->requests.back()->addData(buffer, nbytes);
 	return (KEEP);
+}
+
+void Server::sendAll(int const &socket, std::string const &fullResponse) {
+	unsigned long totalSent = 0;
+	while (totalSent < fullResponse.size()) {
+		int sent = send(socket, fullResponse.c_str() + totalSent, fullResponse.size() - totalSent, 0);
+		totalSent += sent;
+	}
 }
 
 int Server::handleRequest(socketInfo *client) {
 	int errorCode;
 	std::string fullResponse;
-	if (client->request->getMethod() == "POST" && !client->request->isBodyValid())
+	std::cout << RED << client->requests.back()->isValid() << RESET << std::endl;
+	if (client->requests.back()->isValid() == WAIT)
 		return (KEEP);
-	_serverRouter->routerMain(client->request, fullResponse, errorCode);
-	unsigned long totalSent = 0;
-	while (totalSent < fullResponse.size()) {
-		int sent = send(client->socket, fullResponse.c_str() + totalSent, fullResponse.size() - totalSent, 0);
-		totalSent += sent;
+	else if (client->requests.back()->isValid() == NEEDANSWER) {
+		_serverRouter->routerMain(client->requests.back(), fullResponse, errorCode);
+		sendAll(client->socket, fullResponse);
+		return (KEEP);
+	} else {
+		_serverRouter->routerMain(client->requests.front(), fullResponse, errorCode);
+		sendAll(client->socket, fullResponse);
+		delete client->requests.front();
+		client->requests.erase(client->requests.begin());
+		if (client->requests.size() > 0)
+			return KEEP;
+		return CLOSE;
 	}
-	delete client->request;
-	client->hasRequest = false;
-	return (CLOSE);
 }
 
 int Server::handleClient(socketInfo *client, int type) {
@@ -110,7 +111,7 @@ int Server::handleClient(socketInfo *client, int type) {
 		std::cout << "read request" << std::endl;
 		return recieveRequest(client);
 	}
-	else if (client->hasRequest && type == EVFILT_WRITE) {
+	else if (!client->requests.empty() && type == EVFILT_WRITE) {
 		std::cout << "write request" << std::endl;
 		return handleRequest(client);
 	}
