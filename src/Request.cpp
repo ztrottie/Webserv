@@ -8,6 +8,7 @@
 #include <limits>
 #include <sstream>
 #include <string>
+#include <sys/fcntl.h>
 #include <sys/signal.h>
 #include <sys/stat.h>
 #include <unistd.h>
@@ -25,8 +26,6 @@ Request::Request(const Request &inst) {
 
 Request::~Request() {
 	std::cout << "Request destructor" << std::endl;
-	if (_fileStream.is_open())
-		_fileStream.close();
 }
 
 Request& Request::operator=(const Request &rhs) {
@@ -83,69 +82,58 @@ void Request::_uriParser() {
 	}
 }
 
-void Request::headerParser() {
-	std::stringstream ss(_raw);
-	while(std::getline(ss, _line)) {
-		if (_line == "\r") {
-			std::string tmpRaw;
-			while (std::getline(ss, _line)) {
-				std::cout << "found the end" << std::endl; 
-				tmpRaw += _line + "\n";
-			}
-			_raw = tmpRaw;
-			_headerDone = true;
-			return;
+void Request::headerParser(char **buffer) {
+	size_t headerEnd = _raw.find("\r\n\r\n");
+	if (headerEnd != std::string::npos) {
+		_headerDone = true;
+		std::stringstream ss(_raw);
+		std::getline(ss, _method, ' ');
+		std::getline(ss, _uri, ' ');
+		_uriParser();
+		_setHostPort();
+		std::string bodyLenString;
+		if (_search("Content-Length: ", '\r', bodyLenString)) {
+			_bodyLen = std::stol(bodyLenString);
 		}
-		if (_method.empty() && _uri.empty()) {
-			std::stringstream firstLineStream(_line);
-			std::getline(firstLineStream, _method, ' ');
-			std::getline(firstLineStream, _uri, ' ');
-			_uriParser();
-		}
-		if (_host.empty() && _port.empty())
-			_setHostPort();
-		if (_type.empty())
-			_search("Content-Type: ", ';', _type);
-		if (!_bodyLenFound) {
-			std::string temp;
-			if (_search("Content-Length: ", '\r', temp)) {
-				_bodyLen = std::stoul(temp);
-				_bodyLenFound = true;
-			}
-		}
-		if (_boundary.empty()) {
-			_search("boundary=", '\r', _boundary);
-		}
+		_serverName = _server->getName();
+		_clientAddr = inet_ntoa(_client->client_address.sin_addr);
+		_search("boundary=", '\r', _boundary);
+		_search("Content-Type: ", ';', _type);
+		_raw = _raw.substr(headerEnd + 4);
 	}
 }
 
-void Request::addData(std::string const &data, size_t const &nbytes) {
-	_raw.append(data, sizeof(nbytes));
+void Request::addData(char **buffer, size_t const &nbytes) {
+	_nbytesRead = nbytes;
+	if ((!_bodyStarted && !_bodyEnded) || (_bodyEnded && _bodyStarted)) {
+		_rawSize = _raw.size();
+		_raw.append(*buffer);
+	}
 	if (!_headerDone) {
 		std::cout << "making the header of the request" << std::endl;
 		headerParser();
 	}
 	if (_headerDone && _method == "POST" && !_raw.empty()) {
 		std::cout << "header is done!" << std::endl;
-		addBody();
+		addBody(buffer);
 	}
 }
 
 void Request::_setHostPort() {
-		size_t hostStart = _line.find("Host: ");
-		if (hostStart != std::string::npos) {
-			hostStart += 6;
-			size_t hostEnd = _line.find(":", hostStart);
-			if (hostEnd != std::string::npos) {
-				_host = _line.substr(hostStart, hostEnd - hostStart);
-				if (_port.empty()) {
-					size_t portEnd = _line.find('\n', hostEnd);
-					if (portEnd != std::string::npos) {
-						_port = _line.substr(hostEnd + 1, portEnd - hostEnd);
-					}
+	size_t hostStart = _raw.find("Host: ");
+	if (hostStart != std::string::npos) {
+		hostStart += 6;
+		size_t hostEnd = _raw.find(":", hostStart);
+		if (hostEnd != std::string::npos) {
+			_host = _raw.substr(hostStart, hostEnd - hostStart);
+			if (_port.empty()) {
+				size_t portEnd = _raw.find('\n', hostEnd);
+				if (portEnd != std::string::npos) {
+					_port = _raw.substr(hostEnd + 1, portEnd - hostEnd);
 				}
 			}
 		}
+	}
 }
 
 int Request::generateTempFile() {
@@ -155,11 +143,9 @@ int Request::generateTempFile() {
 		int error = access((_tempFilePath + tmpFileName + std::to_string(fileIndex)).c_str(), F_OK);
 		if (error != 0) {
 			_tempFilePath += tmpFileName + std::to_string(fileIndex);
-			_fileStream.open(_tempFilePath);
-			if (!_fileStream.is_open()) {
-				_tempFilePath.clear();
+			_tempFileFd = open(_tempFilePath.c_str(), O_CREAT | O_WRONLY);
+			if (_tempFileFd == -1)
 				return INTERNALSERVERROR;
-			}
 			return OK;
 		}
 	}
@@ -167,62 +153,60 @@ int Request::generateTempFile() {
 	return INTERNALSERVERROR;
 }
 
-int Request::_findMostOfEndBoundary(size_t & pos, std::string const & string, size_t & resultLength) {
-	std::string search;
-	if ((pos = _raw.find(string)) != std::string::npos) {
-		resultLength = string.length();
-		return (WHOLE);
+void Request::parseFileName() {
+	std::string search = "filename=\"";
+	int start = _raw.find(search);
+	if (start != std::string::npos) {
+		start += search.length();
+		int end = _raw.find("\"", start);
+		if (end != std::string::npos) {
+			_fileName = _raw.substr(start, end - start);
+		}
 	}
-	if (string.length() > _raw.length()) {
-		search = string.substr(0, _raw.length());
-	} else {
-		search = string;
-	}
-	size_t end = search.length();
-	size_t length = _raw.length() - search.length();
-	for (size_t i = 0; i < end; i++) {
-			std::string endString = _raw.substr(length + i);
-			if (endString == search) {
-				pos = length + i;
-				resultLength = search.length();
-				return PART;
-			}
-			search = search.substr(0, end - i);
-	}
-	return NONE;
 }
 
-void Request::addBody() {
+void Request::ParseBodyHeader(char **buffer) {
+	size_t headerEnd = _raw.find("\r\n\r\n");
+	if (headerEnd != std::string::npos) {
+		_bodyStarted = true;
+		_search("filename=\"", '\"', _fileName);
+		if (headerEnd > _rawSize) {
+			size_t nbytes = headerEnd - _rawSize;
+			_nbytesRead -= nbytes;
+			buffer += nbytes;
+		}
+	}
+}
+
+void Request::addBody(char **buffer) {
+	std::string endBoundary = "\r\n--" + _boundary + "--\r\n";
 	if (_errorCode == OK && _tempFilePath.empty()) {
 		if (generateTempFile() == INTERNALSERVERROR) {
+			_errorCode = INTERNALSERVERROR;
 			return;
 		}
 	}
-	if (_errorCode == OK && !_tempFilePath.empty() && _fileStream.is_open()) {
-		std::string data;
-		std::string firstBoundary = "--" + _boundary + "\r\n";
-		std::string lastBoundary = "--" + _boundary + "--\r\n";
-		size_t pos = 0;
-		size_t length = 0;
-		if (!_bodyStarted && _raw.find(firstBoundary) != std::string::npos)
-			_bodyStarted = true;
-		int code = _findMostOfEndBoundary(pos, lastBoundary, length);
-		if (code == WHOLE) {
-			data = _raw.substr(0, pos + length);
-			_raw = _raw.substr(pos + length);
-			_bodyEnded = true;
-		} else if (code == PART) {
-			data = _raw.substr(0, pos);
-			_raw = _raw.substr(pos);
-		} else {
-			data = _raw;
-			_raw.clear();
+	if (_errorCode == OK && !_tempFilePath.empty()) {
+		size_t nbytes = _nbytesRead;
+		if (!_bodyStarted) {
+			ParseBodyHeader(buffer);
 		}
-		_fileStream << data;
-		_fileStream.flush();
-		if (!_raw.empty() && code == WHOLE) {
-			_client->requests.push_back(new Request(_client, _server));
-			_client->requests.back()->addData(_raw, _raw.size());
+		if (_bodyLenWritten != _bodyLen) {
+			if (_bodyLen < _nbytesRead + _bodyLenWritten) {
+				nbytes = _bodyLen - _bodyLenWritten;
+			}
+			while (nbytes > 0) {
+				size_t nbytesWritten = write(_tempFileFd, *buffer, nbytes);
+				nbytes -= nbytesWritten;
+				*buffer += nbytesWritten;
+			}
+		}
+		if (_bodyLenWritten == _bodyLen) {
+			_raw = *buffer;
+			close(_tempFileFd);
+		}
+		if (_raw.find(endBoundary) != std::string::npos && _raw.size() == endBoundary.size()) {
+			
 		}
 	}
 }

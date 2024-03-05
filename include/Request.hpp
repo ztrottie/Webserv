@@ -17,8 +17,7 @@ class Request
 private:
 	socketInfo			*_client;
 	Server				*_server;
-	std::string 		_raw;
-	std::string			_line;
+	std::string	 		_raw;
 	std::string			_method;
 	std::string 		_uri;
 	std::string 		_filePath;
@@ -31,11 +30,14 @@ private:
 	std::string 		_serverName;
 	std::string 		_clientAddr;
 	std::string 		_fileName;
-	std::string 		_fileContent;
 	std::string			_tempFilePath;
-	std::ofstream		_fileStream;
+	int					_tempFileFd;
 	int					_errorCode;
 	size_t				_bodyLen;
+	size_t				_bodyLenWritten;
+	size_t				_nbytesRead;
+	size_t				_bodyNbytes;
+	size_t				_rawSize;
 	bool				_addedIndex;
 	bool				_headerDone;
 	bool				_needAnswer;
@@ -80,15 +82,16 @@ public:
 	int const &getErrorCode() const;
 
 	size_t const &getBodyLen() const;
-	void addBody();
+	void addBody(char **buffer);
 	bool isBodyValid() const;
 	bool isNeedAnswer();
 	void setAddedIndex(bool index);
 	bool getAddedIndex() const;
 	void setFilePath(std::string &path);
 	int generateTempFile();
-	void parseFileName(std::string &fullBody);
+	void parseFileName();
 	bool isHeaderDone() const;
-	void addData(std::string const &data, size_t const &nbytes);
+	void addData(char **buffer, size_t const &nbytes);
 	int isValid() const;
+	void ParseBodyHeader(char **buffer);
 };
