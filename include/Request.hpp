@@ -34,7 +34,6 @@ private:
 	int					_tempFileFd;
 	int					_errorCode;
 	size_t				_bodyLen;
-	size_t				_bodyLenWritten;
 	size_t				_nbytesRead;
 	size_t				_bodyNbytes;
 	size_t				_rawSize;
@@ -44,6 +43,7 @@ private:
 	bool				_bodyStarted;
 	bool				_bodyEnded;
 	bool				_bodyLenFound;
+	size_t				_bodyLenWritten;
 
 
 	//Functions
@@ -51,7 +51,7 @@ private:
 	void _uriParser();
 	void _setHostPort();
 	void _requestBodyParser();
-	void headerParser();
+	void _headerParser(char **buffer);
 	int _findMostOfEndBoundary(size_t & pos, std::string const & string, size_t & length);
 
 public:

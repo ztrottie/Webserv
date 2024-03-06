@@ -1,5 +1,6 @@
 #include "../include/Server.hpp"
 #include "../include/Response.hpp"
+#include <cstring>
 #include <new>
 
 Server::Server(uint16_t port, const char *host, std::string name, Router *router, unsigned int const &clientBodySize, socketInfo *server) : _port(port), _host(host), _name(name), _clientBodySize(clientBodySize) {
@@ -61,8 +62,9 @@ int Server::acceptConnection(socketInfo *client) {
 }
 
 int Server::recieveRequest(socketInfo *client) {
-	char buffer[1024];
-	ssize_t nbytes = recv(client->socket, buffer, sizeof(buffer), 0);
+	char *buffer = new char[1024];
+	std::memset(buffer, 0, 1024);
+	ssize_t nbytes = recv(client->socket, buffer, 1024, 0);
 	if (client->requests.empty() || client->requests.back()->isValid() == RESPOND) {
 		client->requests.push_back(new Request(client, this));
 	}
@@ -73,7 +75,7 @@ int Server::recieveRequest(socketInfo *client) {
 		std::cout << timestamp() << RED << " problem while recieving data closing connection" << RESET << std::endl;
 		return (CLOSE);
 	}
-	client->requests.back()->addData(buffer, nbytes);
+	client->requests.back()->addData(&buffer, nbytes);
 	return (KEEP);
 }
 

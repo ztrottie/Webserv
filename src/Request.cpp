@@ -14,7 +14,7 @@
 #include <unistd.h>
 #include <variant>
 
-Request::Request(socketInfo *client, Server *server) : _client(client), _server(server), _serverName(server->getName()), _clientAddr(inet_ntoa(client->client_address.sin_addr)), _errorCode(OK), _bodyLen(0), _headerDone(false), _bodyStarted(false), _bodyEnded(false) {
+Request::Request(socketInfo *client, Server *server) : _client(client), _server(server), _serverName(server->getName()), _clientAddr(inet_ntoa(client->client_address.sin_addr)), _errorCode(OK), _bodyLen(0), _headerDone(false), _bodyStarted(false), _bodyEnded(false), _bodyLenWritten(0) {
 	std::cout << "Created a request!" << std::endl;
 	_raw.clear();
 }
@@ -37,12 +37,12 @@ Request& Request::operator=(const Request &rhs) {
 }
 
 bool Request::_search(std::string const &searching, char endChar, std::string &result) {
-	size_t start = _line.find(searching);
+	size_t start = _raw.find(searching);
 	if (start != std::string::npos) {
 		start += searching.size();
-		size_t end = _line.find(endChar, start);
+		size_t end = _raw.find(endChar, start);
 		if (end != std::string::npos) {
-			result = _line.substr(start, end - start);
+			result = _raw.substr(start, end - start);
 			return true;
 		}
 	}
@@ -82,9 +82,10 @@ void Request::_uriParser() {
 	}
 }
 
-void Request::headerParser(char **buffer) {
+void Request::_headerParser(char **buffer) {
 	size_t headerEnd = _raw.find("\r\n\r\n");
 	if (headerEnd != std::string::npos) {
+		headerEnd += 4;
 		_headerDone = true;
 		std::stringstream ss(_raw);
 		std::getline(ss, _method, ' ');
@@ -99,23 +100,37 @@ void Request::headerParser(char **buffer) {
 		_clientAddr = inet_ntoa(_client->client_address.sin_addr);
 		_search("boundary=", '\r', _boundary);
 		_search("Content-Type: ", ';', _type);
-		_raw = _raw.substr(headerEnd + 4);
+		if (headerEnd > _rawSize) {
+			size_t nbytes = headerEnd - _rawSize;
+			_nbytesRead -= nbytes;
+			*buffer += nbytes;
+			_rawSize = 0;
+		} else {
+			_rawSize -= headerEnd;
+		} 
+		_raw = _raw.substr(headerEnd);
 	}
 }
 
 void Request::addData(char **buffer, size_t const &nbytes) {
+	std::cout << "received data and making the requests: " << *buffer << std::endl;
+	std::cout << "nbytes received: " << nbytes << std::endl;
 	_nbytesRead = nbytes;
-	if ((!_bodyStarted && !_bodyEnded) || (_bodyEnded && _bodyStarted)) {
-		_rawSize = _raw.size();
-		_raw.append(*buffer);
-	}
+	_rawSize = _raw.size();
+	_raw.append(*buffer, nbytes);
 	if (!_headerDone) {
 		std::cout << "making the header of the request" << std::endl;
-		headerParser();
+		_headerParser(buffer);
+		std::cout << PURPLE "header of the request made" RESET << std::endl;
 	}
 	if (_headerDone && _method == "POST" && !_raw.empty()) {
-		std::cout << "header is done!" << std::endl;
+		std::cout << "adding data to the temp file" << std::endl;
 		addBody(buffer);
+		std::cout << PURPLE "added data to the temp file" RESET << std::endl;
+	}
+	if (isValid() && !_raw.empty()) {
+		_client->requests.push_back(new Request(_client, _server));
+		_client->requests.back()->addData(buffer, _nbytesRead);
 	}
 }
 
@@ -143,7 +158,7 @@ int Request::generateTempFile() {
 		int error = access((_tempFilePath + tmpFileName + std::to_string(fileIndex)).c_str(), F_OK);
 		if (error != 0) {
 			_tempFilePath += tmpFileName + std::to_string(fileIndex);
-			_tempFileFd = open(_tempFilePath.c_str(), O_CREAT | O_WRONLY);
+			_tempFileFd = open(_tempFilePath.c_str(), O_CREAT | O_WRONLY, 0644);
 			if (_tempFileFd == -1)
 				return INTERNALSERVERROR;
 			return OK;
@@ -155,10 +170,10 @@ int Request::generateTempFile() {
 
 void Request::parseFileName() {
 	std::string search = "filename=\"";
-	int start = _raw.find(search);
+	size_t start = _raw.find(search);
 	if (start != std::string::npos) {
 		start += search.length();
-		int end = _raw.find("\"", start);
+		size_t end = _raw.find("\"", start);
 		if (end != std::string::npos) {
 			_fileName = _raw.substr(start, end - start);
 		}
@@ -166,15 +181,20 @@ void Request::parseFileName() {
 }
 
 void Request::ParseBodyHeader(char **buffer) {
+	std::string endBoundary = "\r\n--" + _boundary + "--\r\n";
 	size_t headerEnd = _raw.find("\r\n\r\n");
 	if (headerEnd != std::string::npos) {
+		headerEnd += 4;
 		_bodyStarted = true;
 		_search("filename=\"", '\"', _fileName);
 		if (headerEnd > _rawSize) {
 			size_t nbytes = headerEnd - _rawSize;
 			_nbytesRead -= nbytes;
-			buffer += nbytes;
+			*buffer += nbytes;
 		}
+		_bodyLen -= (headerEnd + endBoundary.length());
+		_raw.clear();
+		_rawSize = 0;
 	}
 }
 
@@ -186,27 +206,31 @@ void Request::addBody(char **buffer) {
 			return;
 		}
 	}
-	if (_errorCode == OK && !_tempFilePath.empty()) {
-		size_t nbytes = _nbytesRead;
+	if (_errorCode == OK) {
 		if (!_bodyStarted) {
 			ParseBodyHeader(buffer);
 		}
-		if (_bodyLenWritten != _bodyLen) {
+		if (_bodyStarted && _bodyLenWritten != _bodyLen) {
 			if (_bodyLen < _nbytesRead + _bodyLenWritten) {
-				nbytes = _bodyLen - _bodyLenWritten;
+				_nbytesRead = _bodyLen - _bodyLenWritten;
 			}
-			while (nbytes > 0) {
-				size_t nbytesWritten = write(_tempFileFd, *buffer, nbytes);
-				nbytes -= nbytesWritten;
+			while (_nbytesRead > 0) {
+				size_t nbytesWritten = write(_tempFileFd, *buffer, _nbytesRead);
+				_nbytesRead -= nbytesWritten;
 				*buffer += nbytesWritten;
+				_bodyLenWritten += nbytesWritten;
+			}
+			if (_bodyLenWritten == _bodyLen) {
+				_raw = *buffer;
+				close(_tempFileFd);
 			}
 		}
-		if (_bodyLenWritten == _bodyLen) {
-			_raw = *buffer;
-			close(_tempFileFd);
-		}
-		if (_raw.find(endBoundary) != std::string::npos && _raw.size() == endBoundary.size()) {
-			
+		if (!_bodyEnded) {
+			size_t end = _raw.find(endBoundary);
+			if (end != std::string::npos) {
+				_bodyEnded = true;
+				_raw.substr(end + endBoundary.length());
+			}
 		}
 	}
 }
@@ -276,11 +300,7 @@ bool Request::getAddedIndex() const{
 }
 
 bool Request::isBodyValid() const {
-	return (!_fileStream.is_open() && _bodyEnded && _bodyStarted); 
-}
-
-std::string const &Request::getFileContent() const {
-	return _fileContent;
+	return (_bodyEnded && _bodyStarted); 
 }
 
 std::string const &Request::getFileName() const {
