@@ -20,6 +20,7 @@ private:
 	std::string _boundary;
 	std::string _clientAddr;
 	std::string _clientBody;
+	std::string _serverName;
 	ssize_t		_bodyLen;
 	bool		_addedIndex;
 	size_t		_contentLenght;
@@ -52,11 +53,11 @@ public:
 	std::string const &getBoundary() const;
 	std::string const &getClientAddress() const;
 	std::string const &getClientBody() const;
+	bool getAddedIndex() const;
 	ssize_t const &getBodyLen() const;
 	void setBody(std::string &body);
 	bool isBodyValid() const;
 	void setAddedIndex(bool index);
-	bool getAddedIndex() const;
 	void setFilePath(std::string &path);
 	void setContentLenght(size_t value);
 	size_t getContentLenght();

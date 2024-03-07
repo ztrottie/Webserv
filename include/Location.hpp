@@ -44,7 +44,6 @@ public:
 	void setAutoIndex(bool const &autoIndex);
 	void addErrorPage(const int errorNumber, std::string pathToError);
 	void addAllowedMethod(std::string const &method);
-	void setClientMaxBodySize(size_t value);
 	void setRedirection(bool value);
 	void setRedirectionCode(int code);
 	void setRedirectionLocation(std::string str);

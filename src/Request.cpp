@@ -30,7 +30,6 @@ Request::~Request() {
 Request& Request::operator=(const Request &rhs) {
 	std::cout << "Request operator = overload" << std::endl;
 	if (this != &rhs) {
-
 	}
 	return *this;
 }
