@@ -20,7 +20,7 @@ private:
 public:
 	// Constructors / Destructor
 	Response();
-	Response(Request *request, Router *router, Location *location, int &errorCode);
+	Response(Request *request);
 	Response(const Response &inst);
 	~Response();
 
@@ -35,10 +35,10 @@ public:
 
 	void internalServerError(int & errorCode);
 	void contentTypeGenerator(std::string const &path);
-	void handleGet(Request *request, Router *router, Location *location, int &errorCode);
-	void handleDelete(Request *request, Router *router, Location *location, int &errorCode);
-	void handlePost(Request *request, Router *router, Location *location, int &errorCode);
-	void handleUploadedFile(Request *request, Location *location, int &errorCode);
+	void handleGet(Request *request, int &errorCode);
+	void handleDelete(Request *request, int &errorCode);
+	void handlePost(Request *request, int &errorCode);
+	void handleUploadedFile(Request *request, int &errorCode);
 	void handleCgi(Request *request, Location *location, int &errorCode);
 	void directoryListing(Request *request, int &errorCode);
 	void headerGenerator(int &errorCode, Request *request);

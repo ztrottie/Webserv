@@ -20,13 +20,14 @@ private:
 	std::map<int, std::string>			_errorPagesLocation;
 	std::string							_rewrite;
 	std::vector<std::string> 			_allowedMethod;
-	long long						_clientMaxBodySize;
+	long long							_clientMaxBodySize;
 	bool								_autoIndex;
 	bool								_uploadEnable;
-	std::string					_uploadStore;
+	std::string							_uploadStore;
 	bool								_redirection;
 	int 								_redirectionCode;
 	std::string							_redirectionLocation;
+	bool								_clientMaxBodySizeSet;
 
 public:
 	// Constructors / Destructor
@@ -62,8 +63,8 @@ public:
 	bool getRedirection() const;
 	int getRedirectionCode() const;
 	std::string getRedirectionLocation() const;
-	void setClientMaxBodySize(long long int value);
-	long long getClientMaxBodySize() const;
+	void setClientMaxBodySize(size_t value);
+	void getClientMaxBodySize(size_t &clientMaxBodySize) const;
 
 
 };

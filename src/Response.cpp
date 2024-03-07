@@ -1,6 +1,5 @@
 #include "../include/Response.hpp"
 #include "../include/struct.hpp"
-#include "../include/color.h"
 #include <iostream>
 #include <fstream>
 #include <ostream>
@@ -9,14 +8,19 @@
 #include <unistd.h>
 #include <cstdio>
 #include <dirent.h>
+#include "../include/color.h"
 
-Response::Response(Request *request, Router *router, Location *location, int &errorCode) {
-	if (request->isValid() == NEEDANSWER) {
-		std::cout << GREEN "here!!!" RESET << std::endl;
-	} else if ((errorCode >= 300 && errorCode != NOTFOUND) || (errorCode == NOTFOUND && request->getFilePath().find(".") == std::string::npos && request->getMethod() != "POST")) {
+Response::Response(Request *request) {
+	int errorPageCode;
+	int errorCode = request->getErrorCode();
+	std::cout << RED << errorCode << RESET << std::endl;
+	if (errorCode >= 300) {
 		std::string path;
 		std::cout << request->getMethod() << errorCode << " error encountered sending error" << std::endl;
-		int errorPageCode = router->getErrorPage(path, errorCode, location);
+		if (errorCode != INTERNALSERVERROR)
+			errorPageCode = request->getRouter()->getErrorPage(path, errorCode, request->getLocation());
+		else
+			errorPageCode = INTERNALSERVERROR;
 		if (errorPageCode == INTERNALSERVERROR || openPath(path) >= 300) {
 			internalServerError(errorCode);
 			headerGenerator(errorCode, request);
@@ -24,14 +28,17 @@ Response::Response(Request *request, Router *router, Location *location, int &er
 			return;
 		}
 		contentTypeGenerator(path);
-	} else if (request->getMethod() == "GET") {
-		handleGet(request, router, location, errorCode);
-	} else if (request->getMethod() == "DELETE") {
-		handleDelete(request, router, location, errorCode);
-	} else if (request->getMethod() == "POST") {
-		handlePost(request, router, location, errorCode);
+	} else if (request->getMethod() == "GET" && request->isValid() == RESPOND) {
+		handleGet(request, errorCode);
+	} else if (request->getMethod() == "DELETE" && request->isValid() == RESPOND) {
+		handleDelete(request, errorCode);
+	} else if (request->getMethod() == "POST" && request->isValid() == RESPOND) {
+		handlePost(request, errorCode);
 	}
 	headerGenerator(errorCode, request);
+	if (request->getLocation()->getRedirection()) {
+		_body.clear();
+	}
 	_fullResponse = _header + _body;
 }
 
@@ -101,26 +108,29 @@ void Response::contentTypeGenerator(std::string const &path) {
 	_contentType = ((it == contentTypeMap.end()) ? "text/plain" : contentTypeMap[fileExtension]);
 }
 
-void Response::handleGet(Request *request, Router *router, Location *location, int &errorCode) {
-	errorCode = openPath(request->getFilePath());
+void Response::handleGet(Request *request, int &errorCode) {
+	std::string path;
+	errorCode = request->getRouter()->getFile(request, path);
+	if (errorCode == OK)
+		errorCode = openPath(request->getFilePath());
 
 	if (errorCode == INTERNALSERVERROR) {
 		internalServerError(errorCode);
 		return;
-	} else if (errorCode >= 300 && location->getAutoIndex() == false) {
+	} else if (errorCode >= 300 && request->getLocation()->getAutoIndex() == false) {
 		std::string errorPath;
-		int errorPageCode = router->getErrorPage(errorPath, errorCode, location);
+		int errorPageCode = request->getRouter()->getErrorPage(errorPath, errorCode, request->getLocation());
 		if (errorPageCode == INTERNALSERVERROR || openPath(errorPath) >= 300)
 			internalServerError(errorCode);
 		contentTypeGenerator(errorPath);
 		return;
-	} else if (errorCode != 200 && location->getAutoIndex()) {
+	} else if (errorCode != 200 && request->getLocation()->getAutoIndex()) {
 		directoryListing(request, errorCode);
 		if (errorCode == INTERNALSERVERROR)
 			return;
 		if (errorCode >= 300){
 			std::string errorPath;
-			int errorPageCode = router->getErrorPage(errorPath, errorCode, location);
+			int errorPageCode = request->getRouter()->getErrorPage(errorPath, errorCode, request->getLocation());
 			if (errorPageCode == INTERNALSERVERROR || openPath(errorPath) >= 300)
 				internalServerError(errorCode);
 			contentTypeGenerator(errorPath);
@@ -131,12 +141,12 @@ void Response::handleGet(Request *request, Router *router, Location *location, i
 	contentTypeGenerator(request->getFilePath());
 }
 
-void Response::handleDelete(Request *request, Router *router, Location *location, int &errorCode) {
+void Response::handleDelete(Request *request, int &errorCode) {
 	std::string path = request->getFilePath();
 	if (access(path.c_str(), F_OK) != 0) {
 		errorCode = NOTFOUND;
 		std::string errorPath;
-		int errorPageCode = router->getErrorPage(errorPath, errorCode, location);
+		int errorPageCode = request->getRouter()->getErrorPage(errorPath, errorCode, request->getLocation());
 		if (errorPageCode == INTERNALSERVERROR || openPath(errorPath) >= 300)
 			internalServerError(errorCode);
 		contentTypeGenerator(errorPath);
@@ -144,7 +154,7 @@ void Response::handleDelete(Request *request, Router *router, Location *location
 	} else {
 		if (std::remove(path.c_str()) != 0)
 			internalServerError(errorCode);
-		if (location->getAutoIndex())
+		if (request->getLocation()->getAutoIndex())
 			directoryListing(request, errorCode);
 		else {
 			_body = "yessir";
@@ -216,34 +226,40 @@ void Response::directoryListing(Request *request, int &errorCode) {
 	_contentType = "text/html";
 }
 
-void	Response::handlePost(Request *request, Router *router, Location *location, int &errorCode) {
-	(void)router;
-	if (location->getUploadEnable() && request->getFilePath().find(".php") == std::string::npos) {
-		handleUploadedFile(request, location, errorCode);
+void	Response::handlePost(Request *request, int &errorCode) {
+	if (request->getLocation()->getUploadEnable() && request->getFilePath().find(".php") == std::string::npos) {
+		handleUploadedFile(request, errorCode);
 	}
 	// else {
 	// 	handleCgi(request, location, errorCode);
 	// }
 }
 
-void	Response::handleUploadedFile(Request *request, Location *location, int &errorCode) {
-	(void) location;
+void	Response::handleUploadedFile(Request *request, int &errorCode) {
 	(void) errorCode;
 
 	std::cout << request->getFilePath() << std::endl;
 }
 
 void Response::headerGenerator(int &errorCode, Request *request) {
+	std::string location;
+	std::string contentType;
+	std::string	contentLength;
+	if (request->getLocation()->getRedirection()) {
+		errorCode = request->getLocation()->getRedirectionCode();
+		location += "Location: " + request->getLocation()->getRedirectionLocation() + "\r\n";
+	} else {
+		contentType = "Content-Type: " + _contentType;
+		contentLength = "Content-Length: ";
+		contentLength.append(std::to_string(_body.size()));
+		contentType += "\r\n";
+		contentLength += "\r\n";
+	}
 	std::string codeMessageString = "HTTP/1.1 ";
-	std::string serverName = "Server: " + request->getServerName() + "\r\n";
-	std::string contentType = "Content-Type: " + _contentType;
-	std::string	contentLength = "Content-Length: ";
 	codeMessage(errorCode, codeMessageString);
-	contentLength.append(std::to_string(_body.size()));
 	codeMessageString += "\r\n";
-	contentType += "\r\n";
-	contentLength += "\r\n";
-	_header += codeMessageString + serverName + contentType + contentLength + "\r\n";
+	std::string serverName = "Server: " + request->getServerName() + "\r\n";
+	_header += codeMessageString + serverName + location +  contentType + contentLength + "\r\n";
 }
 
 void Response::codeMessage(int code, std::string &message) {

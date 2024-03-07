@@ -19,7 +19,7 @@ Server::Server(uint16_t port, const char *host, std::string name, Router *router
 	serverAddr.sin_port = htons(_port);
 	if (bind(server->socket, (struct sockaddr*)&serverAddr, sizeof(serverAddr)) == -1)
 		throw std::invalid_argument("bind creation Failed");
-	listen(server->socket, 5);
+	listen(server->socket, 20);
 	server->type = SERVER;
 	_serverRouter = router;
 	_listSocket = server->socket;
@@ -63,6 +63,7 @@ int Server::acceptConnection(socketInfo *client) {
 
 int Server::recieveRequest(socketInfo *client) {
 	char *buffer = new char[1024];
+	char *tmp = buffer;
 	std::memset(buffer, 0, 1024);
 	ssize_t nbytes = recv(client->socket, buffer, 1024, 0);
 	if (client->requests.empty() || client->requests.back()->isValid() == RESPOND) {
@@ -70,12 +71,15 @@ int Server::recieveRequest(socketInfo *client) {
 	}
 	if (nbytes == 0) {
 		std::cout << timestamp() << RED << " client closed the connection!" << RESET << std::endl;
+		delete [] tmp;
 		return (CLOSE);
     } else if (nbytes == -1) {
 		std::cout << timestamp() << RED << " problem while recieving data closing connection" << RESET << std::endl;
+		delete [] tmp;
 		return (CLOSE);
 	}
 	client->requests.back()->addData(&buffer, nbytes);
+	delete [] tmp;
 	return (KEEP);
 }
 
@@ -88,17 +92,16 @@ void Server::sendAll(int const &socket, std::string const &fullResponse) {
 }
 
 int Server::handleRequest(socketInfo *client) {
-	int errorCode;
 	std::string fullResponse;
 	std::cout << RED << client->requests.back()->isValid() << RESET << std::endl;
 	if (client->requests.back()->isValid() == WAIT)
 		return (KEEP);
 	else if (client->requests.back()->isValid() == NEEDANSWER) {
-		_serverRouter->routerMain(client->requests.back(), fullResponse, errorCode);
+		Response response(client->requests.back());
 		sendAll(client->socket, fullResponse);
 		return (KEEP);
 	} else {
-		_serverRouter->routerMain(client->requests.front(), fullResponse, errorCode);
+		Response response(client->requests.front());
 		sendAll(client->socket, fullResponse);
 		delete client->requests.front();
 		client->requests.erase(client->requests.begin());
@@ -120,7 +123,7 @@ int Server::handleClient(socketInfo *client, int type) {
 	return KEEP;
 }
 
-Router *Server::getRouter() const {
+Router *Server::getRouter() {
 	return _serverRouter;
 }
 

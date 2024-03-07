@@ -37,7 +37,7 @@ public:
 	Server& operator=(const Server &rhs);
 
 	// Functions
-	Router *getRouter() const;
+	Router *getRouter();
 	void sendAll(int const &socket, std::string const &fullResponse);
 	int acceptConnection(socketInfo *client);
 	int handleClient(socketInfo *client, int type);

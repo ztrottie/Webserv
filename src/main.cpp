@@ -21,6 +21,9 @@ int main(void) {
 	upload->setRoot("./uploads");
 	upload->setClientMaxBodySize(1000);
 	loc->setAutoIndex(true);
+	loc->addAllowedMethod("GET");
+	loc->addAllowedMethod("POST");
+	loc->addAllowedMethod("DELETE");
 	bob->addAllowedMethod("GET");
 	bob->addAllowedMethod("POST");
 	bob->setIndex("index.html");

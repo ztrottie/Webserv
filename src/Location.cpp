@@ -1,10 +1,11 @@
 #include "../include/Location.hpp"
+#include <iterator>
 
-Location::Location() {
+Location::Location() : _name("default"), _clientMaxBodySizeSet(false) {
 	std::cout << "Default Location constructor " << std::endl;
 }
 
-Location::Location(std::string const &name) : _name(name) {
+Location::Location(std::string const &name) : _name(name), _clientMaxBodySizeSet(false) {
 
 }
 
@@ -120,10 +121,12 @@ std::string Location::getRedirectionLocation() const{
 	return _redirectionLocation;
 }
 
-long long int Location::getClientMaxBodySize() const{
-	return _clientMaxBodySize;
+void Location::getClientMaxBodySize(size_t &clientMaxBodySize) const {
+	if (_clientMaxBodySizeSet)
+		clientMaxBodySize = _clientMaxBodySize;
 }
 
-void Location::setClientMaxBodySize(long long value){
+void Location::setClientMaxBodySize(size_t value){
+	_clientMaxBodySizeSet = true;
 	_clientMaxBodySize = value;
 }

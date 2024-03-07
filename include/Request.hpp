@@ -3,6 +3,7 @@
 #include <fstream>
 #include <string>
 #include "struct.hpp"
+#include "Location.hpp"
 #include <iostream>
 #include <sstream>
 
@@ -17,6 +18,7 @@ class Request
 private:
 	socketInfo			*_client;
 	Server				*_server;
+	Location			*_location;
 	std::string	 		_raw;
 	std::string			_method;
 	std::string 		_uri;
@@ -37,12 +39,9 @@ private:
 	size_t				_nbytesRead;
 	size_t				_bodyNbytes;
 	size_t				_rawSize;
-	bool				_addedIndex;
 	bool				_headerDone;
-	bool				_needAnswer;
 	bool				_bodyStarted;
 	bool				_bodyEnded;
-	bool				_bodyLenFound;
 	size_t				_bodyLenWritten;
 
 
@@ -79,6 +78,8 @@ public:
 	std::string const &getFileContent() const;
 	std::string const &getFileName() const;
 	std::string const &getServerName() const;
+	Location *getLocation();
+	Router *getRouter();
 	int const &getErrorCode() const;
 
 	size_t const &getBodyLen() const;

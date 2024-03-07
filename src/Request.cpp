@@ -4,7 +4,6 @@
 #include <arpa/inet.h>
 #include <cstddef>
 #include <cstdio>
-#include <fstream>
 #include <limits>
 #include <sstream>
 #include <string>
@@ -12,7 +11,6 @@
 #include <sys/signal.h>
 #include <sys/stat.h>
 #include <unistd.h>
-#include <variant>
 
 Request::Request(socketInfo *client, Server *server) : _client(client), _server(server), _serverName(server->getName()), _clientAddr(inet_ntoa(client->client_address.sin_addr)), _errorCode(OK), _bodyLen(0), _headerDone(false), _bodyStarted(false), _bodyEnded(false), _bodyLenWritten(0) {
 	std::cout << "Created a request!" << std::endl;
@@ -100,6 +98,7 @@ void Request::_headerParser(char **buffer) {
 		_clientAddr = inet_ntoa(_client->client_address.sin_addr);
 		_search("boundary=", '\r', _boundary);
 		_search("Content-Type: ", ';', _type);
+		_errorCode = _server->getRouter()->getLocation(this, _location);
 		if (headerEnd > _rawSize) {
 			size_t nbytes = headerEnd - _rawSize;
 			_nbytesRead -= nbytes;
@@ -200,36 +199,38 @@ void Request::ParseBodyHeader(char **buffer) {
 
 void Request::addBody(char **buffer) {
 	std::string endBoundary = "\r\n--" + _boundary + "--\r\n";
-	if (_errorCode == OK && _tempFilePath.empty()) {
-		if (generateTempFile() == INTERNALSERVERROR) {
-			_errorCode = INTERNALSERVERROR;
-			return;
-		}
-	}
-	if (_errorCode == OK) {
-		if (!_bodyStarted) {
-			ParseBodyHeader(buffer);
-		}
-		if (_bodyStarted && _bodyLenWritten != _bodyLen) {
-			if (_bodyLen < _nbytesRead + _bodyLenWritten) {
-				_nbytesRead = _bodyLen - _bodyLenWritten;
-			}
-			while (_nbytesRead > 0) {
-				size_t nbytesWritten = write(_tempFileFd, *buffer, _nbytesRead);
-				_nbytesRead -= nbytesWritten;
-				*buffer += nbytesWritten;
-				_bodyLenWritten += nbytesWritten;
-			}
-			if (_bodyLenWritten == _bodyLen) {
-				_raw = *buffer;
-				close(_tempFileFd);
+	if (_location->getUploadEnable()) {
+		if (_errorCode == OK && _tempFilePath.empty()) {
+			if (generateTempFile() == INTERNALSERVERROR) {
+				_errorCode = INTERNALSERVERROR;
+				return;
 			}
 		}
-		if (!_bodyEnded) {
-			size_t end = _raw.find(endBoundary);
-			if (end != std::string::npos) {
-				_bodyEnded = true;
-				_raw.substr(end + endBoundary.length());
+		if (_errorCode == OK) {
+			if (!_bodyStarted) {
+				ParseBodyHeader(buffer);
+			}
+			if (_bodyStarted && _bodyLenWritten != _bodyLen) {
+				if (_bodyLen < _nbytesRead + _bodyLenWritten) {
+					_nbytesRead = _bodyLen - _bodyLenWritten;
+				}
+				while (_nbytesRead > 0) {
+					size_t nbytesWritten = write(_tempFileFd, *buffer, _nbytesRead);
+					_nbytesRead -= nbytesWritten;
+					*buffer += nbytesWritten;
+					_bodyLenWritten += nbytesWritten;
+				}
+				if (_bodyLenWritten == _bodyLen) {
+					_raw = *buffer;
+					close(_tempFileFd);
+				}
+			}
+			if (!_bodyEnded) {
+				size_t end = _raw.find(endBoundary);
+				if (end != std::string::npos) {
+					_bodyEnded = true;
+					_raw.substr(end + endBoundary.length());
+				}
 			}
 		}
 	}
@@ -287,16 +288,16 @@ std::string const &Request::getServerName() const{
 	return _serverName;
 }
 
+Location *Request::getLocation() {
+	return _location;
+}
+
+Router *Request::getRouter() {
+	return _server->getRouter();
+}
+
 void Request::setFilePath(std::string &path){
 	_filePath = path;
-}
-
-void Request::setAddedIndex(bool index){
-	_addedIndex = index;
-}
-
-bool Request::getAddedIndex() const{
-	return _addedIndex;
 }
 
 bool Request::isBodyValid() const {
@@ -314,17 +315,6 @@ int const &Request::getErrorCode() const {
 bool Request::isHeaderDone() const {
 	return _headerDone;
 }
-
-bool Request::isNeedAnswer() {
-	bool temp;
-	if (_needAnswer == true)
-		temp = true;
-	else
-		temp = false;
-	_needAnswer = false;
-	return temp;
-}
-
 
 int Request::isValid() const {
 	if (_headerDone) {

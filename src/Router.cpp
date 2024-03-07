@@ -1,8 +1,9 @@
 #include "../include/Router.hpp"
 #include "../include/utils.hpp"
 #include "../include/Response.hpp"
+#include <cstddef>
 
-Router::Router():_clientMaxBodySize(-1){
+Router::Router() {
 	std::cout << timestamp() << " Initializing the server Router!" << std::endl;
 }
 
@@ -30,11 +31,19 @@ void Router::addLocation(std::string const &key, Location *loc){
 	_locations.insert(std::make_pair(key, loc));
 }
 
-long long int Router::getClientMaxBodySize() const{
-	return _clientMaxBodySize;
+size_t Router::getClientMaxBodySize(Location *location) const{
+	size_t value = _clientMaxBodySize;
+	location->getClientMaxBodySize(value);
+	return value;
 }
 
-void Router::setClientMaxBodySize(unsigned int value){
+int Router::isContentLengthValid(Location *location, size_t const &bodyLen) {
+	if (getClientMaxBodySize(location) < bodyLen)
+		return (TOOLARGE);
+	return (OK);
+}
+
+void Router::setClientMaxBodySize(size_t value){
 	_clientMaxBodySize = value;
 }
 
@@ -80,56 +89,31 @@ int Router::getErrorPage(std::string &path, int errorCode, Location *loc){
 	return OK;
 }
 
-int Router::checkAllowedMethod(std::string const &method, Location *loc){
-	int perm;
-	if (loc)
-		perm = loc->isMethodAllowed(method);
-	else
-		perm = NOT_FOUND;
-	if (perm == NOTFOUND)
-		return METHNOTALLOWED;
-	if (perm == NOT_FOUND){
-		std::vector<const std::string>::const_iterator it = _allowedMethod.begin();
-		for (; it != _allowedMethod.end() && *it != method;++it){}
-		if (it == _allowedMethod.end())
-			return METHNOTALLOWED;
-	}
-	return FOUND;
-}
-
-void Router::routerMain(Request *request, std::string &fullResponse, int &errorCode){
-	Location *location = NULL;
-	errorCode = request->getErrorCode();
-	std::cout << "error code from request: " << errorCode << std::endl;
-	if (request->isValid() == RESPOND)
-		errorCode = getFile(request, location);
-	std::cout << "error code after getfile: " << errorCode << std::endl;
-	Response response(request, this, location, errorCode);
-	fullResponse = response.getFullResponse();
-}
-
-int Router::getFile(Request *request, Location *&loc) {
+int Router::getLocation(Request *request, Location *&loc) {
 	std::string uriCopy = request->getFilePath();
 	parseUri(uriCopy);
 	std::map<std::string, Location*>::const_iterator it = _locations.find(uriCopy);
-	if (it != _locations.end())
+	if (it != _locations.end()) {
 		loc = _locations[uriCopy];
-	int methodCode = checkAllowedMethod(request->getMethod(), loc);
-	if (methodCode == METHNOTALLOWED)
-		return METHNOTALLOWED;
-	if (loc->getRoot(uriCopy) == NOT_FOUND)
+		return loc->isMethodAllowed(request->getMethod());
+	}
+	else
+		return INTERNALSERVERROR;
+}
+
+int Router::getFile(Request *request, std::string &path) {
+	std::string uriCopy = request->getFilePath();
+	if (request->getLocation()->getRoot(uriCopy) == NOT_FOUND)
 		uriCopy = _root;
 	uriCopy += request->getFilePath();
 	for (int i = 0; i < 2;i++){
 		int code = checkIfFileIsValid(uriCopy);
 		if (code == INTERNALSERVERROR)
 			return code;
-		if (code == IS_DIR){
+		if (code == IS_DIR && request->getMethod() == "GET"){
 			if (uriCopy.back() != '/')
 				uriCopy += "/";
 			uriCopy += _index;
-			request->setAddedIndex(true);
-			request->setFilePath(uriCopy);
 			continue;
 		}
 		else if (code == IS_FILE)
@@ -137,6 +121,6 @@ int Router::getFile(Request *request, Location *&loc) {
 		else if (code == NOTFOUND)
 			return code;
 	}
-	request->setFilePath(uriCopy);
+	path = uriCopy;
 	return (OK);
 }
