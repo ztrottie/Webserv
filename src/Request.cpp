@@ -98,7 +98,7 @@ void Request::_headerParser(char **buffer) {
 		_clientAddr = inet_ntoa(_client->client_address.sin_addr);
 		_search("boundary=", '\r', _boundary);
 		_search("Content-Type: ", ';', _type);
-		_errorCode = _server->getRouter()->getLocation(this, _location);
+		_errorCode = _server->getRouter()->getLocation(this, _location, _fullPath);
 		if (headerEnd > _rawSize) {
 			size_t nbytes = headerEnd - _rawSize;
 			_nbytesRead -= nbytes;
@@ -306,6 +306,10 @@ bool Request::isBodyValid() const {
 
 std::string const &Request::getFileName() const {
 	return _fileName;
+}
+
+std::string const &Request::getFullPath() const {
+	return _fullPath;
 }
 
 int const &Request::getErrorCode() const {

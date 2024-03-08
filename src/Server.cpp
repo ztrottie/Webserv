@@ -93,15 +93,17 @@ void Server::sendAll(int const &socket, std::string const &fullResponse) {
 
 int Server::handleRequest(socketInfo *client) {
 	std::string fullResponse;
-	std::cout << RED << client->requests.back()->isValid() << RESET << std::endl;
 	if (client->requests.back()->isValid() == WAIT)
 		return (KEEP);
 	else if (client->requests.back()->isValid() == NEEDANSWER) {
 		Response response(client->requests.back());
+		fullResponse = response.getFullResponse();
+		std::cout << PURPLE  << fullResponse << RESET << std::endl;
 		sendAll(client->socket, fullResponse);
 		return (KEEP);
 	} else {
 		Response response(client->requests.front());
+		fullResponse = response.getFullResponse();
 		sendAll(client->socket, fullResponse);
 		delete client->requests.front();
 		client->requests.erase(client->requests.begin());

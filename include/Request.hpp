@@ -23,6 +23,7 @@ private:
 	std::string			_method;
 	std::string 		_uri;
 	std::string 		_filePath;
+	std::string			_fullPath;
 	std::string 		_extraPath;
 	std::string 		_stringQuerry;
 	std::string 		_host;
@@ -78,6 +79,7 @@ public:
 	std::string const &getFileContent() const;
 	std::string const &getFileName() const;
 	std::string const &getServerName() const;
+	std::string const &getFullPath() const;
 	Location *getLocation();
 	Router *getRouter();
 	int const &getErrorCode() const;

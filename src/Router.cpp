@@ -89,12 +89,12 @@ int Router::getErrorPage(std::string &path, int errorCode, Location *loc){
 	return OK;
 }
 
-int Router::getLocation(Request *request, Location *&loc) {
-	std::string uriCopy = request->getFilePath();
-	parseUri(uriCopy);
-	std::map<std::string, Location*>::const_iterator it = _locations.find(uriCopy);
+int Router::getLocation(Request *request, Location *&loc, std::string &fullPath) {
+	fullPath = request->getFilePath();
+	parseUri(fullPath);
+	std::map<std::string, Location*>::const_iterator it = _locations.find(fullPath);
 	if (it != _locations.end()) {
-		loc = _locations[uriCopy];
+		loc = _locations[fullPath];
 		return loc->isMethodAllowed(request->getMethod());
 	}
 	else
@@ -102,7 +102,7 @@ int Router::getLocation(Request *request, Location *&loc) {
 }
 
 int Router::getFile(Request *request, std::string &path) {
-	std::string uriCopy = request->getFilePath();
+	std::string uriCopy = request->getFullPath();
 	if (request->getLocation()->getRoot(uriCopy) == NOT_FOUND)
 		uriCopy = _root;
 	uriCopy += request->getFilePath();

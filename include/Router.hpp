@@ -50,6 +50,6 @@ public:
 	bool checkRedirectionCode(int code);
 	size_t getClientMaxBodySize(Location *location) const;
 	void checkBodySize(Request *request, int &errorCode);
-	int getLocation(Request *request, Location *&loc);
+	int getLocation(Request *request, Location *&loc, std::string &fullPath);
 	int isContentLengthValid(Location *location, size_t const &bodyLen);
 };

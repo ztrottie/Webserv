@@ -36,7 +36,7 @@ Response::Response(Request *request) {
 		handlePost(request, errorCode);
 	}
 	headerGenerator(errorCode, request);
-	if (request->getLocation()->getRedirection()) {
+	if (request->getLocation()->getRedirection() && request->isValid() == RESPOND) {
 		_body.clear();
 	}
 	_fullResponse = _header + _body;
@@ -111,13 +111,13 @@ void Response::contentTypeGenerator(std::string const &path) {
 void Response::handleGet(Request *request, int &errorCode) {
 	std::string path;
 	errorCode = request->getRouter()->getFile(request, path);
+	std::cout << errorCode << std::endl;
 	if (errorCode == OK)
-		errorCode = openPath(request->getFilePath());
-
+		errorCode = openPath(path);
 	if (errorCode == INTERNALSERVERROR) {
 		internalServerError(errorCode);
 		return;
-	} else if (errorCode >= 300 && request->getLocation()->getAutoIndex() == false) {
+	} else if (errorCode >= 300 && (request->getLocation()->getAutoIndex() == false || (request->getLocation()->getAutoIndex() && path.empty()))) {
 		std::string errorPath;
 		int errorPageCode = request->getRouter()->getErrorPage(errorPath, errorCode, request->getLocation());
 		if (errorPageCode == INTERNALSERVERROR || openPath(errorPath) >= 300)
@@ -138,7 +138,7 @@ void Response::handleGet(Request *request, int &errorCode) {
 		}
 		return;
 	}
-	contentTypeGenerator(request->getFilePath());
+	contentTypeGenerator(path);
 }
 
 void Response::handleDelete(Request *request, int &errorCode) {
@@ -245,15 +245,13 @@ void Response::headerGenerator(int &errorCode, Request *request) {
 	std::string location;
 	std::string contentType;
 	std::string	contentLength;
-	if (request->getLocation()->getRedirection()) {
+	std::cout << GREEN "here!" RESET << std::endl;
+	if (request->getLocation()->getRedirection() && request->isValid() == RESPOND) {
 		errorCode = request->getLocation()->getRedirectionCode();
 		location += "Location: " + request->getLocation()->getRedirectionLocation() + "\r\n";
 	} else {
-		contentType = "Content-Type: " + _contentType;
-		contentLength = "Content-Length: ";
-		contentLength.append(std::to_string(_body.size()));
-		contentType += "\r\n";
-		contentLength += "\r\n";
+		contentType = "Content-Type: " + _contentType += "\r\n";
+		contentLength = "Content-Length: " + std::to_string(_body.size()) + "\r\n";
 	}
 	std::string codeMessageString = "HTTP/1.1 ";
 	codeMessage(errorCode, codeMessageString);
