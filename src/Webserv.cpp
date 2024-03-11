@@ -12,7 +12,6 @@ Webserv::Webserv(const Webserv &inst) {
 }
 
 Webserv::~Webserv() {
-	std::cout << "Webserv destructor" << std::endl;
 	for (std::map<int, socketInfo*>::iterator it = _clientMap.begin(); it != _clientMap.end();) {
 		struct kevent clientChanges;
 		int flags;
@@ -30,6 +29,7 @@ Webserv::~Webserv() {
 		it++;
 		_clientMap.erase(tempit);
 	}
+	std::cout << "Webserv destructor" << std::endl;
 }
 
 Webserv& Webserv::operator=(const Webserv &rhs) {

@@ -134,6 +134,7 @@ void	parsing::createServer(string &line, std::ifstream &file, size_t *i, Webserv
 		}
 		(*i)++;
 	}
+	cout << router->getLocation() << endl;
 	setDefault(&port, &host, &name, *router);
 	// cout << "addNewServer avec serveur" << endl;
 	webserv->addNewServer(port, host, name, router, router->getClientMaxBodySize());

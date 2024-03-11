@@ -15,7 +15,7 @@ Location::Location(const Location &inst) {
 }
 
 Location::~Location() {
-	std::cout << "Location destructor" << std::endl;
+	// std::cout << "Location destructor" << std::endl;
 }
 
 Location& Location::operator=(const Location &rhs) {
