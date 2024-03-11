@@ -147,5 +147,9 @@ std::string	Router::getLocationParsing() const{
 	if (_locations.empty()){
 		return "";
 	}
-	return "yessir";
+	string res = "";
+	for (std::map<std::string, Location*>::const_iterator it = _locations.begin(); it != _locations.end(); it++) {
+		res += "|" + it->second->getName() + "|	";
+	}
+	return res;
 }

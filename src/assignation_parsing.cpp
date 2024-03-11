@@ -224,7 +224,7 @@ void parsing::assignErrorPage(const string &line, Router &rout){
 //----------------------------LOCATION---------------------------------
 
 void	parsing::assignLocation(string &line, std::ifstream &file, size_t *i, Router &rout){
-	string	name = line.substr(line.rfind(" "), (line.length() - line.rfind(" ")) - 1);
+	string	name = line.substr(line.rfind(" "), (line.length() - line.rfind(" ")) - 1); name.erase(std::remove_if(name.begin(), name.end(), ::isspace), name.end());
 	// cout << "Name of location in assignation" << name << endl;
 	Location	*loc = new Location(name);
 	(*i)++;
