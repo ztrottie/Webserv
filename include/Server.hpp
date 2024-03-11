@@ -20,16 +20,16 @@
 class Server
 {
 private:
-	int				_listSocket;
-	uint16_t	 	_port;
-	const char		*_host;
-	std::string		_name;
-	unsigned int	_clientBodySize;
-	Router			*_serverRouter;
+	int														_listSocket;
+	uint16_t	 											_port;
+	const char												*_host;
+	std::string												_name;
+	unsigned int											_clientBodySize;
+	Router													*_serverRouter;
 
 public:
 	// Constructors / Destructor
-	Server(uint16_t port, const char *host, std::string name, Router *router, unsigned int const &clientBodySize, socketInfo *server);
+	Server(uint16_t port, const char *host, std::string name, Router *router, socketInfo *server);
 	Server(const Server &inst);
 	~Server();
 
@@ -37,7 +37,8 @@ public:
 	Server& operator=(const Server &rhs);
 
 	// Functions
-	Router *getRouter() const;
+	Router *getRouter();
+	void sendAll(int const &socket, std::string const &fullResponse);
 	int acceptConnection(socketInfo *client);
 	int handleClient(socketInfo *client, int type);
 	void codeMessage(int code, std::string &message);
@@ -46,6 +47,7 @@ public:
 	int recieveRequest(socketInfo *client);
 	int handleRequest(socketInfo *client);
 	void getEnv(socketInfo *client, char **envp);
+	std::string const &getName() const;
 };
 
 // Server_HPP

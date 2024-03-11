@@ -12,7 +12,6 @@ Webserv::Webserv(const Webserv &inst) {
 }
 
 Webserv::~Webserv() {
-	std::cout << "Webserv destructor" << std::endl;
 	for (std::map<int, socketInfo*>::iterator it = _clientMap.begin(); it != _clientMap.end();) {
 		struct kevent clientChanges;
 		int flags;
@@ -30,6 +29,7 @@ Webserv::~Webserv() {
 		it++;
 		_clientMap.erase(tempit);
 	}
+	std::cout << "Webserv destructor" << std::endl;
 }
 
 Webserv& Webserv::operator=(const Webserv &rhs) {
@@ -40,10 +40,10 @@ Webserv& Webserv::operator=(const Webserv &rhs) {
 	return *this;
 }
 
-void Webserv::addNewServer(uint16_t port, const char *host, std::string name, Router *router, unsigned int const &clientBodySize) {
-	socketInfo *server = new socketInfo;
+void Webserv::addNewServer(uint16_t port, const char *host, std::string name, Router *router) {
+	socketInfo *server = new socketInfo; memset(server, 0, sizeof(socketInfo));
 	try {
-		server->serverInst = new Server(port, host, name, router, clientBodySize, server);
+		server->serverInst = new Server(port, host, name, router, server);
 	} catch (std::exception &e) {
 		std::cout << RED << timestamp() << " " << e.what() << RESET << std::endl;
 	}
@@ -55,7 +55,7 @@ void Webserv::addNewServer(uint16_t port, const char *host, std::string name, Ro
 }
 
 void Webserv::acceptConnection(socketInfo *info) {
-	socketInfo *client = new socketInfo;
+	socketInfo *client = new socketInfo; memset(client, 0, sizeof(socketInfo));
 	if (info->serverInst->acceptConnection(client) == CLOSE) {
 		close(client->socket);
 		delete client;
@@ -79,7 +79,6 @@ void signalhandler(int signal) {
 void Webserv::loop() {
 	std::signal(SIGQUIT, signalhandler);
 	while (loopFlag) {
-		// sleep(1);
 		struct kevent events[1];
 		timespec time = {10, 0};
 		int numEvents = kevent(_kq, nullptr, 0, events, 1, &time);

@@ -1,0 +1,1 @@
+Faire que les allowedMethods default soit setter a moment donner
