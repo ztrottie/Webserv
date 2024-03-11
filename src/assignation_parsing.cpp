@@ -75,6 +75,7 @@ void parsing::assignConfigFile(Webserv *webserv){
 	file.open(pathConfigFile);
 	for (size_t i = 0; i < verifLine.size(); i++){
 		std::getline(file, line);
+		// cout << line << " " << verifLine[i] << endl;
 		if (verifLine[i] == 0){
 			createServer(line, file, &i, webserv);
 		}

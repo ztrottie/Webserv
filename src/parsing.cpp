@@ -74,9 +74,8 @@ bool	parsing::parseConfigFile(){
 		// cout << "EN DEHORS DU SERVER	" << line << "	" << std::to_string(nbLine) << endl;
 		if (checkValid(line) == false)
 			return false;
-		if (nbLine == 0){
+		if (nbLine == 0)
 			checkDefault(line, nbLine);
-		}
 		if (checkServer(line, &nbLine) == false)
 			return false;
 		if (nbLine == verifLine.size())
@@ -113,7 +112,8 @@ void	parsing::checkDefault(string const &line, unsigned int nbLine){
 	if ((line.find("acceptDefault") > 0 || line.find("acceptDefault") == string::npos)){
 		simpleWriteTimestamp(YELLOW, "	You choose that the program will close if they're is an error in the ConfigFile");
 		simpleWriteTimestamp(YELLOW, "	If you don't want that, you must include at the beginning of the ConfigFile : \"acceptDefault true\"");
-		verifLine.push_back(DONT);
+		if (findFirstWord(line) != "server")
+			verifLine.push_back(DONT);
 		return ;
 	}
 	if (checkForTabs(line, -1) == false){
@@ -194,6 +194,7 @@ bool	parsing::checkServer(std::string &line, unsigned int *nbLine){
 			// cout << "line " << *nbLine << "	" << line << " : " << verifLine[*nbLine] << endl;
 			break ;
 		}
+		// cout << "INSIDE SERVER line " << *nbLine << "	" << line << " : " << verifLine[*nbLine] << endl;
 		if (*nbLine == verifLine.size())
 			verifLine.push_back(DONT);
 		(*nbLine)++;
