@@ -1,41 +1,62 @@
 #pragma once
 #include <cstddef>
+#include <fstream>
 #include <string>
 #include "struct.hpp"
+#include "Location.hpp"
 #include <iostream>
 #include <sstream>
+
+enum {
+	WHOLE,
+	PART,
+	NONE
+};
 
 class Request
 {
 private:
-	std::string _raw;
-	std::string	_method;
-	std::string _uri;
-	std::string _filePath;
-	std::string _extraPath;
-	std::string _stringQuerry;
-	std::string _host;
-	std::string _port;
-	std::string _type;
-	std::string _boundary;
-	std::string _serverName;
-	std::string _clientAddr;
-	std::string _clientBody;
-	std::string _fileName;
-	std::string _fileContent;
-	ssize_t		_bodyLen;
-	bool		_addedIndex;
-	long long	_contentLenght;
+	socketInfo			*_client;
+	Server				*_server;
+	Location			*_location;
+	std::string	 		_raw;
+	std::string			_method;
+	std::string 		_uri;
+	std::string 		_filePath;
+	std::string			_fullPath;
+	std::string 		_extraPath;
+	std::string 		_stringQuerry;
+	std::string 		_host;
+	std::string 		_port;
+	std::string 		_type;
+	std::string 		_boundary;
+	std::string 		_serverName;
+	std::string 		_clientAddr;
+	std::string 		_fileName;
+	std::string			_tempFilePath;
+	int					_tempFileFd;
+	int					_errorCode;
+	size_t				_bodyLen;
+	size_t				_nbytesRead;
+	size_t				_bodyNbytes;
+	size_t				_rawSize;
+	bool				_headerDone;
+	bool				_bodyStarted;
+	bool				_bodyEnded;
+	size_t				_bodyLenWritten;
+
 
 	//Functions
-	std::string _search(std::string const &searching, char endChar);
+	bool _search(std::string const &searching, char endChar, std::string &result);
 	void _uriParser();
 	void _setHostPort();
 	void _requestBodyParser();
+	void _headerParser(char **buffer);
+	int _findMostOfEndBoundary(size_t & pos, std::string const & string, size_t & length);
 
 public:
 	// Constructors / Destructor
-	Request(std::string const &received, socketInfo *client, Server *server);
+	Request(socketInfo *client, Server *server);
 	Request(const Request &inst);
 	~Request();
 
@@ -58,14 +79,22 @@ public:
 	std::string const &getFileContent() const;
 	std::string const &getFileName() const;
 	std::string const &getServerName() const;
+	std::string const &getFullPath() const;
+	Location *getLocation();
+	Router *getRouter();
+	int const &getErrorCode() const;
 
-	ssize_t const &getBodyLen() const;
-	void setBody(std::string &body);
+	size_t const &getBodyLen() const;
+	void addBody(char **buffer);
 	bool isBodyValid() const;
+	bool isNeedAnswer();
 	void setAddedIndex(bool index);
 	bool getAddedIndex() const;
 	void setFilePath(std::string &path);
-	void parseBody();
-	void setContentLenght(size_t value);
-	long long getContentLength() const;
+	int generateTempFile();
+	void parseFileName();
+	bool isHeaderDone() const;
+	void addData(char **buffer, size_t const &nbytes);
+	int isValid() const;
+	void ParseBodyHeader(char **buffer);
 };

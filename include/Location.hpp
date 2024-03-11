@@ -27,6 +27,7 @@ private:
 	bool								_redirection;
 	int 								_redirectionCode;
 	std::string							_redirectionLocation;
+	bool								_clientMaxBodySizeSet;
 
 public:
 	// Constructors / Destructor
