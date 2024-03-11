@@ -226,30 +226,30 @@ void parsing::assignErrorPage(const string &line, Router &rout){
 void	parsing::assignLocation(string &line, std::ifstream &file, size_t *i, Router &rout){
 	string	name = line.substr(line.rfind(" "), (line.length() - line.rfind(" ")) - 1);
 	// cout << "Name of location in assignation" << name << endl;
-	Location	loc(name);
+	Location	*loc = new Location(name);
 	(*i)++;
 	while (*i < verifLine.size()){
 		std::getline(file, line);
 		// cout << line << endl;
 		if (verifLine[*i] == 0){
 			if (findFirstWord(line) == "allowedMethods")
-				assignAllowedMethods(line, loc);
+				assignAllowedMethods(line, *loc);
 			if (findFirstWord(line) == "index")
-				assignIndex(line, loc);
+				assignIndex(line, *loc);
 			if (findFirstWord(line) == "root")
-				assignRoot(line, loc);
+				assignRoot(line, *loc);
 			if (findFirstWord(line) == "client_max_body_size")
-				assignMaxBody(line, loc);
+				assignMaxBody(line, *loc);
 			if (findFirstWord(line) == "return")
-				assignReturn(line, loc);
+				assignReturn(line, *loc);
 			if (findFirstWord(line) == "error_page")
-				assignErrorPage(line, loc);
+				assignErrorPage(line, *loc);
 			if (findFirstWord(line) == "upload_enable")
-				assignUploadBool(line, loc);
+				assignUploadBool(line, *loc);
 			if (findFirstWord(line) == "upload_store")
-				assignUploadStore(line, loc);
+				assignUploadStore(line, *loc);
 			if (findFirstWord(line) == "autoindex")
-				assignAutoIndex(line, loc);
+				assignAutoIndex(line, *loc);
 		}
 		if (line.find("}") == 1){
 			// cout << "LOCATION TERMINER\n" << endl;
@@ -257,14 +257,14 @@ void	parsing::assignLocation(string &line, std::ifstream &file, size_t *i, Route
 		}
 		(*i)++;
 	}
-	if (loc.getUploadStore() == "")
-		loc.setUploadStore(DEFAULTSTORE);
-	if (loc.getAllowedMethods() == ""){
-		loc.addAllowedMethod("GET");
-		loc.addAllowedMethod("POST");
-		loc.addAllowedMethod("DELETE");
+	if (loc->getUploadStore() == "")
+		loc->setUploadStore(DEFAULTSTORE);
+	if (loc->getAllowedMethods() == ""){
+		loc->addAllowedMethod("GET");
+		loc->addAllowedMethod("POST");
+		loc->addAllowedMethod("DELETE");
 	}
-	rout.addLocation(loc.getName(), &loc);
+	rout.addLocation(loc->getName(), loc);
 }
 
 void parsing::assignIndex(const string &line, Location &loc){
