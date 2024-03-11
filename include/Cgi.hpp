@@ -10,7 +10,7 @@ class Cgi
 {
 private:
 
-	char *_env[];
+	const char *_env[];
 
 public:
 	// Constructors / Destructor

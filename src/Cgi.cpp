@@ -42,6 +42,8 @@ void Cgi::env(Request *request, Router *router){
 	serverPort += request->getPort();
 
 	const char *env[] = {gatewayInterface.c_str(), requestMethod.c_str(), queryString.c_str(), contentType.c_str(), contentLength.c_str(), clientAddr.c_str(), requestURI.c_str(), serverProtocol.c_str(), serverSoftware.c_str(), serverName.c_str(), serverPort.c_str()};
+	for (int i = 0; i < 12;i++)
+		_env[i] = env[i];
 }
 
 char** Cgi::execute(Request *request){
