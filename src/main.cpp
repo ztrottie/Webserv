@@ -19,7 +19,8 @@ int main(void) {
 	upload->setAutoIndex(false);
 	upload->setIndex("");
 	upload->setRoot("./uploads");
-	upload->setClientMaxBodySize(1000);
+	upload->addAllowedMethod("POST");
+	upload->setClientMaxBodySize(10000000);
 	loc->setAutoIndex(true);
 	loc->addAllowedMethod("GET");
 	loc->addAllowedMethod("POST");

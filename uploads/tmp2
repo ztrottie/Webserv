@@ -1,0 +1,27 @@
+#include <fstream>
+#include <string>
+#include <iostream>
+#include "stdlib.h"
+
+// int main(void) {
+// 	std::string string = "hello\0World";
+
+// 	if (string.find("World") != std::string::npos) {
+// 		std::cout << "found the word!";
+// 	} else {
+// 		std::cout << "didnt found the word!";
+// 	}
+// 	std::ofstream of("lol.txt");
+// 	of << string;
+// 	std::cout << string.size() << std::endl;
+// 	std::cout << std::endl;
+// }
+
+
+int main() {
+	std::string nig = "hell\0World";
+
+	std::cout << nig.size() << std::endl;
+    
+    return 0;
+}

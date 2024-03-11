@@ -13,17 +13,20 @@
 Response::Response(Request *request) {
 	int errorPageCode;
 	int errorCode = request->getErrorCode();
+	if (errorCode == OK && request->getMethod() == "POST" && request->isValid() == NEEDANSWER) {
+		errorCode = ACCEPTED;
+	}
 	std::cout << RED << errorCode << RESET << std::endl;
 	if (errorCode >= 300) {
+		std::cout << request->getMethod() << " " << errorCode << " error encountered sending error" << std::endl;
 		std::string path;
-		std::cout << request->getMethod() << errorCode << " error encountered sending error" << std::endl;
 		if (errorCode != INTERNALSERVERROR)
 			errorPageCode = request->getRouter()->getErrorPage(path, errorCode, request->getLocation());
 		else
 			errorPageCode = INTERNALSERVERROR;
 		if (errorPageCode == INTERNALSERVERROR || openPath(path) >= 300) {
-			internalServerError(errorCode);
-			headerGenerator(errorCode, request);
+			internalServerError(errorPageCode);
+			headerGenerator(errorPageCode, request);
 			_fullResponse = _header + _body;
 			return;
 		}
@@ -238,17 +241,17 @@ void	Response::handlePost(Request *request, int &errorCode) {
 void	Response::handleUploadedFile(Request *request, int &errorCode) {
 	(void) errorCode;
 
-	std::cout << request->getFilePath() << std::endl;
+	std::cout << "HandleUploadedFile:filePath: " << request->getFilePath() << std::endl;
 }
 
 void Response::headerGenerator(int &errorCode, Request *request) {
 	std::string location;
 	std::string contentType;
 	std::string	contentLength;
-	std::cout << GREEN "here!" RESET << std::endl;
 	if (request->getLocation()->getRedirection() && request->isValid() == RESPOND) {
 		errorCode = request->getLocation()->getRedirectionCode();
 		location += "Location: " + request->getLocation()->getRedirectionLocation() + "\r\n";
+		_body.clear();
 	} else {
 		contentType = "Content-Type: " + _contentType += "\r\n";
 		contentLength = "Content-Length: " + std::to_string(_body.size()) + "\r\n";
@@ -321,6 +324,9 @@ void Response::codeMessage(int code, std::string &message) {
 			break;
 		case (TOOLARGE):
 			message += "413 Request Entity Too Large";
+			break;
+		case (INTERNALSERVERROR):
+			message += "500 Internal Server Error";
 			break;
 	}
 }

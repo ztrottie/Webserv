@@ -74,9 +74,9 @@ int Server::recieveRequest(socketInfo *client) {
 		delete [] tmp;
 		return (CLOSE);
     } else if (nbytes == -1) {
-		std::cout << timestamp() << RED << " problem while recieving data closing connection" << RESET << std::endl;
+		std::cout << timestamp() << RED << " read to far exiting" << RESET << std::endl;
 		delete [] tmp;
-		return (CLOSE);
+		return (KEEP);
 	}
 	client->requests.back()->addData(&buffer, nbytes);
 	delete [] tmp;
@@ -95,22 +95,15 @@ int Server::handleRequest(socketInfo *client) {
 	std::string fullResponse;
 	if (client->requests.back()->isValid() == WAIT)
 		return (KEEP);
-	else if (client->requests.back()->isValid() == NEEDANSWER) {
-		Response response(client->requests.back());
-		fullResponse = response.getFullResponse();
-		std::cout << PURPLE  << fullResponse << RESET << std::endl;
-		sendAll(client->socket, fullResponse);
-		return (KEEP);
-	} else {
+	else if (client->requests.back()->isValid() == RESPOND) {
 		Response response(client->requests.front());
 		fullResponse = response.getFullResponse();
 		sendAll(client->socket, fullResponse);
 		delete client->requests.front();
 		client->requests.erase(client->requests.begin());
-		if (client->requests.size() > 0)
-			return KEEP;
-		return CLOSE;
+		return KEEP;
 	}
+	return (KEEP);
 }
 
 int Server::handleClient(socketInfo *client, int type) {

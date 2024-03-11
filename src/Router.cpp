@@ -48,6 +48,7 @@ void Router::setClientMaxBodySize(size_t value){
 }
 
 void Router::parseUri(std::string &cpy){
+	std::cout << cpy << std::endl;
 	for (std::map<std::string, Location*>::const_iterator it = _locations.end(); it == _locations.end();){
 		it = _locations.find(cpy);
 		if (it == _locations.end()){
@@ -57,7 +58,7 @@ void Router::parseUri(std::string &cpy){
 }
 
 void Router::trimURI(std::string &uri){
-	std::cout << uri << std::endl;
+	std::cout << "timURI: " << uri << std::endl;
 	size_t index = uri.rfind('/');
 	if (index == 0){
 		uri = '/';

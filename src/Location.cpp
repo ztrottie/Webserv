@@ -30,7 +30,7 @@ Location& Location::operator=(const Location &rhs) {
 
 int Location::isMethodAllowed(std::string const &method){
 	if (_allowedMethod.size() == 0)
-		return NOT_FOUND;
+		return INTERNALSERVERROR;
 	std::vector<const std::string>::const_iterator it = _allowedMethod.begin();
 	for (; it != _allowedMethod.end() && *it != method;++it){}
 	if (it == _allowedMethod.end())

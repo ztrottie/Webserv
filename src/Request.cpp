@@ -91,14 +91,17 @@ void Request::_headerParser(char **buffer) {
 		_uriParser();
 		_setHostPort();
 		std::string bodyLenString;
+		_errorCode = _server->getRouter()->getLocation(this, _location, _fullPath);
 		if (_search("Content-Length: ", '\r', bodyLenString)) {
 			_bodyLen = std::stol(bodyLenString);
+			if (_bodyLen > getRouter()->getClientMaxBodySize(_location) && _errorCode == OK)
+				_errorCode = TOOLARGE;
 		}
 		_serverName = _server->getName();
 		_clientAddr = inet_ntoa(_client->client_address.sin_addr);
 		_search("boundary=", '\r', _boundary);
 		_search("Content-Type: ", ';', _type);
-		_errorCode = _server->getRouter()->getLocation(this, _location, _fullPath);
+		std::cout << GREEN << _errorCode << RESET << std::endl;
 		if (headerEnd > _rawSize) {
 			size_t nbytes = headerEnd - _rawSize;
 			_nbytesRead -= nbytes;
@@ -185,7 +188,8 @@ void Request::ParseBodyHeader(char **buffer) {
 	if (headerEnd != std::string::npos) {
 		headerEnd += 4;
 		_bodyStarted = true;
-		_search("filename=\"", '\"', _fileName);
+		if (_errorCode == OK)
+			_search("filename=\"", '\"', _fileName);
 		if (headerEnd > _rawSize) {
 			size_t nbytes = headerEnd - _rawSize;
 			_nbytesRead -= nbytes;
@@ -199,39 +203,50 @@ void Request::ParseBodyHeader(char **buffer) {
 
 void Request::addBody(char **buffer) {
 	std::string endBoundary = "\r\n--" + _boundary + "--\r\n";
-	if (_location->getUploadEnable()) {
-		if (_errorCode == OK && _tempFilePath.empty()) {
-			if (generateTempFile() == INTERNALSERVERROR) {
-				_errorCode = INTERNALSERVERROR;
-				return;
-			}
+	std::cout << "preparing to add data to the temp file!" << std::endl;
+	if (_errorCode == OK && _tempFilePath.empty()) {
+		if (generateTempFile() == INTERNALSERVERROR) {
+			_errorCode = INTERNALSERVERROR;
+			return;
+		}
+	}
+	if (!_bodyStarted) {
+		ParseBodyHeader(buffer);
+	}
+	if (_bodyStarted && _bodyLenWritten != _bodyLen) {
+		if (_bodyLen < _nbytesRead + _bodyLenWritten) {
+			_nbytesRead = _bodyLen - _bodyLenWritten;
 		}
 		if (_errorCode == OK) {
-			if (!_bodyStarted) {
-				ParseBodyHeader(buffer);
+			while (_nbytesRead > 0) {
+				size_t nbytesWritten = write(_tempFileFd, *buffer, _nbytesRead);
+				_nbytesRead -= nbytesWritten;
+				*buffer += nbytesWritten;
+				_bodyLenWritten += nbytesWritten;
 			}
-			if (_bodyStarted && _bodyLenWritten != _bodyLen) {
-				if (_bodyLen < _nbytesRead + _bodyLenWritten) {
-					_nbytesRead = _bodyLen - _bodyLenWritten;
-				}
-				while (_nbytesRead > 0) {
-					size_t nbytesWritten = write(_tempFileFd, *buffer, _nbytesRead);
-					_nbytesRead -= nbytesWritten;
-					*buffer += nbytesWritten;
-					_bodyLenWritten += nbytesWritten;
-				}
-				if (_bodyLenWritten == _bodyLen) {
-					_raw = *buffer;
-					close(_tempFileFd);
-				}
+		} else {
+			_bodyLenWritten += _nbytesRead;
+			*buffer += _nbytesRead;
+		}
+		if (_bodyLenWritten == _bodyLen) {
+			_raw = *buffer;
+			if (_errorCode == OK && !_tempFilePath.empty())
+				close(_tempFileFd);
+		}
+	}
+	if (_bodyLenWritten == _bodyLen && !_bodyEnded) {
+		size_t end = _raw.find(endBoundary);
+		if (end != std::string::npos) {
+			_bodyEnded = true;
+			if (end > 0) {
+				if (_errorCode == OK && !_tempFilePath.empty())
+					std::remove(_tempFilePath.c_str());
+				_errorCode = TOOLARGE;
 			}
-			if (!_bodyEnded) {
-				size_t end = _raw.find(endBoundary);
-				if (end != std::string::npos) {
-					_bodyEnded = true;
-					_raw.substr(end + endBoundary.length());
-				}
-			}
+			if (_errorCode == OK)
+				_errorCode = CREATED;
+			_raw = _raw.substr(end + endBoundary.length());
+			_rawSize = _raw.size();
 		}
 	}
 }
@@ -322,11 +337,7 @@ bool Request::isHeaderDone() const {
 
 int Request::isValid() const {
 	if (_headerDone) {
-		if (_method == "POST" && isBodyValid())
-			return RESPOND;
-		if (_method == "POST" && !_bodyStarted)
-			return NEEDANSWER;
-		else if (_bodyStarted && !_bodyEnded)
+		if (_method == "POST" && !isBodyValid())
 			return WAIT;
 		return RESPOND;
 	}
