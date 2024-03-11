@@ -186,8 +186,6 @@ bool	parsing::checkServer(std::string &line, unsigned int *nbLine){
 			return false;
 		if (checkClientMaxBodySize(line, *nbLine) == false)
 			return false;
-		if (checkReturns(line, *nbLine) == false)
-			return false;
 		if (line.find("}") == 0){
 			if (line.find("}") != 0 || line.length() != 1){
 				return false;
@@ -508,61 +506,6 @@ bool	parsing::checkClientMaxBodySize(string const &line, unsigned int nbLine){
 		if (defaultIfError == false)
 			return false;
 		return true;
-	}
-	verifLine.push_back(OKPARS);
-	selectMessage(VALID, NOERR, nbLine, "	\"" + line + "\"");
-	// cout << "line " << nbLine << "	" << line << " : " << verifLine[nbLine] << endl;
-	return true;
-}
-
-bool	parsing::checkReturns(string const &line, unsigned int nbLine){
-	if (findFirstWord(line) != "return")
-		return -1;
-	if (checkIdentationParsing(line, "return", false) == false){
-		wagadooMachine(line, defaultIfError, IDENTATIONERROR, nbLine, "", defaultIfError, verifLine, false);
-		if (defaultIfError == false)
-			return false;
-		return true;
-	}
-	if (checkVargule(line) == false){
-		wagadooMachine(line, defaultIfError, VARGULEERR, nbLine, "", defaultIfError, verifLine, false);
-		if (defaultIfError == false)
-			return false;
-		return true;
-	}
-	if (checkForArgs(line, 8) == false){
-		wagadooMachine(line, defaultIfError, NUMBERARGSERROR, nbLine, "", defaultIfError, verifLine, false);
-		if (defaultIfError == false)
-			return false;
-		return true;
-	}
-	if (checkForTabs(line, 0) == false){
-		wagadooMachine(line, defaultIfError, SPACEERROR, nbLine, "", defaultIfError, verifLine, false);
-		if (defaultIfError == false)
-			return false;
-		return true;
-	}
-	std::vector<string> split = splitString(line, ' ');
-	if (split[split.size() - 1].substr(0, 5) == "https"){
-		;
-	}else if (split[split.size() - 1][0] == '/' || split[split.size() - 1][0] == '"' || split[split.size() - 1][0] == '$'){
-		;
-	}else if(containsNonDigit(split[split.size() - 1]) == false){
-		;
-	}
-	else{
-		wagadooMachine(line, defaultIfError, WRONGRETURN, nbLine, "", defaultIfError, verifLine, false);
-		if (defaultIfError == false)
-			return false;
-		return true;
-	}
-	for (size_t i = 1; i <= split.size() - 2; i++){
-		if (containsNonDigit(split[i]) == true){
-			wagadooMachine(line, defaultIfError, DIGITERROR, nbLine, "", defaultIfError, verifLine, false);
-			if (defaultIfError == false)
-				return false;
-			return true;
-		}
 	}
 	verifLine.push_back(OKPARS);
 	selectMessage(VALID, NOERR, nbLine, "	\"" + line + "\"");

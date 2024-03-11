@@ -14,12 +14,13 @@ void	parsing::setDefault(uint16_t *_port, const char **_host, string *_name, Rou
 		rout.setRoot(DEFAULTROOT);
 	if (rout.getIndex() == "")
 		rout.setIndex(DEFAULTINDEX);
-	if (rout.getLocationParsing() == ""){
-		Location loc("/");
-		loc.addAllowedMethod("GET");
-		loc.addAllowedMethod("POST");
-		loc.addAllowedMethod("DELETE");
-		loc.setUploadStore(DEFAULTSTORE);
+	if (rout.getLocationParsing() == "" || rout.getLocationParsing().find("	/	") == string::npos){
+		Location *loc = new Location("/");
+		loc->addAllowedMethod("GET");
+		loc->addAllowedMethod("POST");
+		loc->addAllowedMethod("DELETE");
+		loc->setUploadStore(DEFAULTSTORE);
+		rout.addLocation(loc->getName(), loc);
 	}
 
 	// Error code
@@ -134,7 +135,6 @@ void	parsing::createServer(string &line, std::ifstream &file, size_t *i, Webserv
 		}
 		(*i)++;
 	}
-	cout << router->getLocationParsing() << endl;
 	setDefault(&port, &host, &name, *router);
 	// cout << "addNewServer avec serveur" << endl;
 	webserv->addNewServer(port, host, name, router);
