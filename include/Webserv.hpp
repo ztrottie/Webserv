@@ -2,8 +2,8 @@
 #include <sys/types.h>
 #include <sys/event.h>
 #include <sys/time.h>
-#include "Server.hpp"
 #include "struct.hpp"
+#include "Server.hpp"
 
 #include <csignal>
 #include <map>

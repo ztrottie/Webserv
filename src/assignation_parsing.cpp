@@ -1,12 +1,13 @@
 #include "../include/parsing.hpp"
 
-void	parsing::setDefault(uint16_t *_port, const char *_host, string *_name, Router &rout){
+void	parsing::setDefault(uint16_t *_port, const char **_host, string *_name, Router &rout){
 	if (*_port == 0)
 		*_port = DEFAULTLISTEN;
-	if (_host == NULL)
-		_host = DEFAULTHOST;
+	if (*_host == NULL)
+		*_host = DEFAULTHOST;
 	if (*_name == "")
 		*_name = DEFAULTSERVERNAME;
+	//router
 	if (rout.getClientMaxBodySize() == -1)
 		rout.setClientMaxBodySize(DEFAULTMAXBODY);
 	if (rout.getRoot() == "")
@@ -66,7 +67,7 @@ void	parsing::setDefault(uint16_t *_port, const char *_host, string *_name, Rout
 		rout.addErrorPage(500, "./www/errors/500.html");
 }
 
-void parsing::assignConfigFile(){
+void parsing::assignConfigFile(Webserv *webserv){
 	string line;
 	std::ifstream file;
 
@@ -74,24 +75,38 @@ void parsing::assignConfigFile(){
 	for (size_t i = 0; i < verifLine.size(); i++){
 		std::getline(file, line);
 		if (verifLine[i] == 0){
-			createServer(line, file, &i);
+			createServer(line, file, &i, webserv);
 		}
-		// cout << line << "	" << verifLine[i] << endl;
+	}
+	bool flag = false;
+	file.close();
+	file.open(pathConfigFile);
+	while (std::getline(file, line)){
+		if (line.find("server") == 0 && line.find("server_name") == string::npos)
+			flag = true;
+	}
+	if (verifLine.size() == 0 || flag == false){
+		uint16_t _port = 0;
+		const char *_host = NULL;
+		string _name = "";
+		Router *router = new Router();
+		setDefault(&_port, &_host, &_name, *router);
+		// cout << "addNewServer avec aucun server" << endl;
+		webserv->addNewServer(_port, _host, _name, router, router->getClientMaxBodySize());
 	}
 }
 
-void	parsing::createServer(string &line, std::ifstream &file, size_t *i){
+void	parsing::createServer(string &line, std::ifstream &file, size_t *i, Webserv *webserv){
 	if (line.find("server") != 0 || line.find("server_name") != string::npos)
 		return ;
 	uint16_t port = 0;
 	const char *host = NULL;
 	string name;
-	Webserv webserv;
 	Router *router = new Router();
 	(*i)++;
 	while (*i < verifLine.size()){
 		std::getline(file, line);
-		// cout << line << endl;
+		// cout << line << verifLine[*i] << endl;
 		if (verifLine[*i] == 0){
 			if (port == 0 && findFirstWord(line) == "listen"){
 				port = assignPort(line);
@@ -119,8 +134,9 @@ void	parsing::createServer(string &line, std::ifstream &file, size_t *i){
 		}
 		(*i)++;
 	}
-	setDefault(&port, host, &name, *router);
-	// webserv.addNewServer(port, host, name, router, router->getClientMaxBodySize());
+	setDefault(&port, &host, &name, *router);
+	// cout << "addNewServer avec serveur" << endl;
+	webserv->addNewServer(port, host, name, router, router->getClientMaxBodySize());
 }
 
 uint16_t	parsing::assignPort(const string &line){
@@ -208,7 +224,7 @@ void parsing::assignErrorPage(const string &line, Router &rout){
 
 void	parsing::assignLocation(string &line, std::ifstream &file, size_t *i, Router &rout){
 	string	name = line.substr(line.rfind(" "), (line.length() - line.rfind(" ")) - 1);
-	cout << "Name of location in assignation" << name << endl;
+	// cout << "Name of location in assignation" << name << endl;
 	Location	loc(name);
 	(*i)++;
 	while (*i < verifLine.size()){
@@ -242,6 +258,11 @@ void	parsing::assignLocation(string &line, std::ifstream &file, size_t *i, Route
 	}
 	if (loc.getUploadStore() == "")
 		loc.setUploadStore(DEFAULTSTORE);
+	if (loc.getAllowedMethods() == ""){
+		loc.addAllowedMethod("GET");
+		loc.addAllowedMethod("POST");
+		loc.addAllowedMethod("DELETE");
+	}
 	rout.addLocation(loc.getName(), &loc);
 }
 

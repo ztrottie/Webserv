@@ -39,11 +39,13 @@ using std::string;
 using std::cout;
 using std::endl;
 
+class Webserv;
+
 class parsing{
 	public:
 		parsing(string path);
 		bool parseConfigFile();
-		void assignConfigFile();
+		void assignConfigFile(Webserv *webserv);
 		~parsing();
 
 	private:
@@ -79,9 +81,9 @@ class parsing{
 		void					checkClientMaxBodySizeLocation(string const &line, unsigned int nbLine);
 		void					checkAutoIndex(const string &line, unsigned int nbline);
 		// Assignation
-		void				setDefault(uint16_t *_port, const char *_host, string *_name, Router &rout);
+		void				setDefault(uint16_t *_port, const char **_host, string *_name, Router &rout);
 			//Server
-		void				createServer(string &line, std::ifstream &file, size_t *i);
+		void				createServer(string &line, std::ifstream &file, size_t *i, Webserv *webserv);
 		uint16_t			assignPort(const string &line);
 		string				assignHost(const string &line);
 		string				assignServerName(const string &line);

@@ -1,7 +1,7 @@
 NAME	=	webserv
 
 CC		=	c++
-CFLAGS	=	-Wall -Werror -Wextra -std=c++98 -Wno-shadow -Wshadow
+CFLAGS	=	-Wall -Werror -Wextra -std=c++98 -Wno-shadow -Wshadow -g
 
 SRC_DIR	=	src/
 BIN_DIR	=	bin/
@@ -42,6 +42,6 @@ fclean: clean
 re: fclean all
 
 run: re all
-	@./webserv
+	@./webserv configFile/config.cfg
 
 .PHONY:	all clean fclean re

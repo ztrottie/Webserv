@@ -1,4 +1,5 @@
 #include "../include/utils.hpp"
+#include <cstdlib>
 #include <string>
 #include <vector>
 
@@ -7,6 +8,7 @@ std::string	timestamp() {
 	std::tm* localTime = std::localtime(&currentTime);
 	char timestampValue[21];
 	std::strftime(timestampValue, sizeof(timestampValue), "[%Y-%m-%d %H:%M:%S]", localTime);
+	timestampValue[sizeof(timestampValue) - 1] = '\0';
 	std::string tmp = timestampValue;
 	return (tmp);
 }

@@ -15,8 +15,9 @@ Server::Server(uint16_t port, const char *host, std::string name, Router *router
 	serverAddr.sin_family = AF_INET;
 	serverAddr.sin_addr.s_addr = inet_addr(_host);
 	serverAddr.sin_port = htons(_port);
-	if (bind(server->socket, (struct sockaddr*)&serverAddr, sizeof(serverAddr)) == -1)
+	if (bind(server->socket, (struct sockaddr*)&serverAddr, sizeof(serverAddr)) == -1){
 		throw std::invalid_argument("bind creation Failed");
+	}
 	listen(server->socket, 5);
 	server->type = SERVER;
 	_serverRouter = router;

@@ -144,7 +144,7 @@ void	parsing::checkDefault(string const &line, unsigned int nbLine){
 }
 
 bool	parsing::checkServer(std::string &line, unsigned int *nbLine){
-	if (line.find("server") == string::npos || line.find("server_name") != string::npos)
+	if (findFirstWord(line) != "server")
 		return -1;
 	if (line.find("server") > 0){
 		selectMessage(WRONG, IDENTATIONERROR, *nbLine, ", it must not have any");

@@ -41,7 +41,7 @@ Webserv& Webserv::operator=(const Webserv &rhs) {
 }
 
 void Webserv::addNewServer(uint16_t port, const char *host, std::string name, Router *router, unsigned int const &clientBodySize) {
-	socketInfo *server = new socketInfo;
+	socketInfo *server = new socketInfo; memset(server, 0, sizeof(socketInfo));
 	try {
 		server->serverInst = new Server(port, host, name, router, clientBodySize, server);
 	} catch (std::exception &e) {
@@ -55,7 +55,7 @@ void Webserv::addNewServer(uint16_t port, const char *host, std::string name, Ro
 }
 
 void Webserv::acceptConnection(socketInfo *info) {
-	socketInfo *client = new socketInfo;
+	socketInfo *client = new socketInfo; memset(client, 0, sizeof(socketInfo));
 	if (info->serverInst->acceptConnection(client) == CLOSE) {
 		close(client->socket);
 		delete client;
