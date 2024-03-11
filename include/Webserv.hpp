@@ -26,7 +26,7 @@ public:
 	Webserv& operator=(const Webserv &rhs);
 
 	// Functions
-	void addNewServer(uint16_t port, const char *host, std::string name, Router *router, unsigned int const &clientBodySize);
+	void addNewServer(uint16_t port, const char *host, std::string name, Router *router);
 	void acceptConnection(socketInfo *info);
 	void loop();
 };

@@ -8,13 +8,13 @@ void	parsing::setDefault(uint16_t *_port, const char **_host, string *_name, Rou
 	if (*_name == "")
 		*_name = DEFAULTSERVERNAME;
 	//router
-	if (rout.getClientMaxBodySize() == -1)
+	if (rout.getClientMaxBodySizeParsing() == -1)
 		rout.setClientMaxBodySize(DEFAULTMAXBODY);
 	if (rout.getRoot() == "")
 		rout.setRoot(DEFAULTROOT);
 	if (rout.getIndex() == "")
 		rout.setIndex(DEFAULTINDEX);
-	if (rout.getLocation() == ""){
+	if (rout.getLocationParsing() == ""){
 		Location loc("/");
 		loc.addAllowedMethod("GET");
 		loc.addAllowedMethod("POST");
@@ -92,7 +92,7 @@ void parsing::assignConfigFile(Webserv *webserv){
 		Router *router = new Router();
 		setDefault(&_port, &_host, &_name, *router);
 		// cout << "addNewServer avec aucun server" << endl;
-		webserv->addNewServer(_port, _host, _name, router, router->getClientMaxBodySize());
+		webserv->addNewServer(_port, _host, _name, router);
 	}
 }
 
@@ -134,10 +134,10 @@ void	parsing::createServer(string &line, std::ifstream &file, size_t *i, Webserv
 		}
 		(*i)++;
 	}
-	cout << router->getLocation() << endl;
+	cout << router->getLocationParsing() << endl;
 	setDefault(&port, &host, &name, *router);
 	// cout << "addNewServer avec serveur" << endl;
-	webserv->addNewServer(port, host, name, router, router->getClientMaxBodySize());
+	webserv->addNewServer(port, host, name, router);
 }
 
 uint16_t	parsing::assignPort(const string &line){

@@ -29,7 +29,7 @@ private:
 
 public:
 	// Constructors / Destructor
-	Server(uint16_t port, const char *host, std::string name, Router *router, unsigned int const &clientBodySize, socketInfo *server);
+	Server(uint16_t port, const char *host, std::string name, Router *router, socketInfo *server);
 	Server(const Server &inst);
 	~Server();
 

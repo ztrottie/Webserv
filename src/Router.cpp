@@ -37,6 +37,10 @@ size_t Router::getClientMaxBodySize(Location *location) const{
 	return value;
 }
 
+long long Router::getClientMaxBodySizeParsing() const{
+	return (_clientMaxBodySize);
+}
+
 int Router::isContentLengthValid(Location *location, size_t const &bodyLen) {
 	if (getClientMaxBodySize(location) < bodyLen)
 		return (TOOLARGE);
@@ -139,7 +143,7 @@ std::string Router::getErrorForParsing(int code) const {
 	return it->second;
 }
 
-std::string	Router::getLocation() const{
+std::string	Router::getLocationParsing() const{
 	if (_locations.empty()){
 		return "";
 	}

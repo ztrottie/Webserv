@@ -50,7 +50,7 @@ public:
 	void setRedirection(bool value);
 	void setRedirectionCode(int code);
 	void setRedirectionLocation(std::string str);
-	void setClientMaxBodySize(long long int value);
+	void setClientMaxBodySize(size_t value);
 
 	// Functions
 	int isMethodAllowed(std::string const &method);
@@ -64,11 +64,9 @@ public:
 	bool				getRedirection() const;
 	int					getRedirectionCode() const;
 	std::string			getRedirectionLocation() const;
-	long long			getClientMaxBodySize() const;
+	void 				getClientMaxBodySize(size_t &clientMaxBodySize) const;
 	std::string			getAllowedMethods() const;
 	std::string			getIndex() const;
-
-
 };
 
 // Location_HPP

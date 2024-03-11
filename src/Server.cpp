@@ -3,7 +3,7 @@
 #include <cstring>
 #include <new>
 
-Server::Server(uint16_t port, const char *host, std::string name, Router *router, unsigned int const &clientBodySize, socketInfo *server) : _port(port), _host(host), _name(name), _clientBodySize(clientBodySize) {
+Server::Server(uint16_t port, const char *host, std::string name, Router *router, socketInfo *server) : _port(port), _host(host), _name(name) {
 	std::cout << YELLOW << timestamp() << " Initializing a Server named " << _name << " on " << _host << ":" << _port << RESET << std::endl;
 	server->socket = socket(AF_INET, SOCK_STREAM, 0);
 	int reuse = 1;
@@ -17,7 +17,7 @@ Server::Server(uint16_t port, const char *host, std::string name, Router *router
 	serverAddr.sin_family = AF_INET;
 	serverAddr.sin_addr.s_addr = inet_addr(_host);
 	serverAddr.sin_port = htons(_port);
-	if (bind(server->socket, (struct sockaddr*)&serverAddr, sizeof(serverAddr)) == -1){
+	if (bind(server->socket, (struct sockaddr*)&serverAddr, sizeof(serverAddr)) == -1)
 		throw std::invalid_argument("bind creation Failed");
 	listen(server->socket, 20);
 	server->type = SERVER;

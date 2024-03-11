@@ -40,10 +40,10 @@ Webserv& Webserv::operator=(const Webserv &rhs) {
 	return *this;
 }
 
-void Webserv::addNewServer(uint16_t port, const char *host, std::string name, Router *router, unsigned int const &clientBodySize) {
+void Webserv::addNewServer(uint16_t port, const char *host, std::string name, Router *router) {
 	socketInfo *server = new socketInfo; memset(server, 0, sizeof(socketInfo));
 	try {
-		server->serverInst = new Server(port, host, name, router, clientBodySize, server);
+		server->serverInst = new Server(port, host, name, router, server);
 	} catch (std::exception &e) {
 		std::cout << RED << timestamp() << " " << e.what() << RESET << std::endl;
 	}
