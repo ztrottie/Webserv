@@ -1,5 +1,7 @@
 #include "../include/Location.hpp"
+#include "../include/struct.hpp"
 #include <iterator>
+#include <iostream>
 
 Location::Location() : _name("default"), _clientMaxBodySizeSet(false) {
 	std::cout << "Default Location constructor " << std::endl;
@@ -41,14 +43,14 @@ int Location::isMethodAllowed(std::string const &method){
 int Location::isErrorCodeValid(int const &errorCode, std::string &path){
 	std::map<int, std::string>::const_iterator it = _errorPagesLocation.find(errorCode);
 	if (it == _errorPagesLocation.end())
-		return NOT_FOUND;
+		return NOTFOUND;
 	path = _errorPagesLocation[errorCode];
 	return FOUND;
 }
 
 int Location::getRoot(std::string &root){
 	if (_root.empty())
-		return NOT_FOUND;
+		return NOTFOUND;
 	root = _root;
 	return FOUND;
 }

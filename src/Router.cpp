@@ -1,6 +1,5 @@
 #include "../include/Router.hpp"
 #include "../include/utils.hpp"
-#include "../include/Response.hpp"
 #include <cstddef>
 
 Router::Router() {
@@ -52,13 +51,16 @@ void Router::setClientMaxBodySize(size_t value){
 }
 
 void Router::parseUri(std::string &cpy){
-	std::cout << cpy << std::endl;
+	for (std::map<std::string, Location*>::const_iterator it = _locations.begin(); it != _locations.end(); it++){
+		std::cout << it->second->getName() << std::endl;
+	}
 	for (std::map<std::string, Location*>::const_iterator it = _locations.end(); it == _locations.end();){
 		it = _locations.find(cpy);
 		if (it == _locations.end()){
 			trimURI(cpy);
 		}
 	}
+	std::cout << cpy << std::endl;
 }
 
 void Router::trimURI(std::string &uri){
@@ -108,7 +110,7 @@ int Router::getLocation(Request *request, Location *&loc, std::string &fullPath)
 
 int Router::getFile(Request *request, std::string &path) {
 	std::string uriCopy = request->getFullPath();
-	if (request->getLocation()->getRoot(uriCopy) == NOT_FOUND)
+	if (request->getLocation()->getRoot(uriCopy) == NOTFOUND)
 		uriCopy = _root;
 	uriCopy += request->getFilePath();
 	for (int i = 0; i < 2;i++){

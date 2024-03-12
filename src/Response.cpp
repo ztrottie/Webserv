@@ -1,16 +1,18 @@
 #include "../include/Response.hpp"
 #include "../include/struct.hpp"
+#include <cstddef>
 #include <iostream>
 #include <fstream>
 #include <ostream>
 #include <sstream>
+#include <sys/fcntl.h>
 #include <sys/unistd.h>
 #include <unistd.h>
 #include <cstdio>
 #include <dirent.h>
 #include "../include/color.h"
 
-Response::Response(Request *request) {
+Response::Response(Request *request, int flag) {
 	int errorPageCode;
 	int errorCode = request->getErrorCode();
 	if (errorCode == OK && request->getMethod() == "POST" && request->isValid() == NEEDANSWER) {
@@ -26,7 +28,7 @@ Response::Response(Request *request) {
 			errorPageCode = INTERNALSERVERROR;
 		if (errorPageCode == INTERNALSERVERROR || openPath(path) >= 300) {
 			internalServerError(errorPageCode);
-			headerGenerator(errorPageCode, request);
+			headerGenerator(errorPageCode, request, flag);
 			_fullResponse = _header + _body;
 			return;
 		}
@@ -38,7 +40,7 @@ Response::Response(Request *request) {
 	} else if (request->getMethod() == "POST" && request->isValid() == RESPOND) {
 		handlePost(request, errorCode);
 	}
-	headerGenerator(errorCode, request);
+	headerGenerator(errorCode, request, flag);
 	if (request->getLocation()->getRedirection() && request->isValid() == RESPOND) {
 		_body.clear();
 	}
@@ -84,6 +86,7 @@ int Response::openPath(std::string const &path) {
     oss << file.rdbuf();
     _body = oss.str();
 	file.close();
+
 	return (OK);
 }
 
@@ -239,15 +242,40 @@ void	Response::handlePost(Request *request, int &errorCode) {
 }
 
 void	Response::handleUploadedFile(Request *request, int &errorCode) {
-	(void) errorCode;
-
-	std::cout << "HandleUploadedFile:filePath: " << request->getFilePath() << std::endl;
+	int tempFileFd = open(request->getTempFilePath().c_str(), O_RDONLY);
+	std::string filePath = request->getLocation()->getUploadStore();
+	if (filePath.back() != '/')
+		filePath += "/";
+	filePath += request->getFileName();
+	int fileFd = open(request->getFilePath().c_str(), O_CREAT | O_WRONLY, 0644); 
+	if (tempFileFd < 0 || fileFd < 0) {
+		if (tempFileFd > 0)
+			close(tempFileFd);
+		if (fileFd > 0)
+			close(fileFd);
+		internalServerError(errorCode);
+		return;
+	}
+	size_t nbytes = 1024;
+	char buffer[1024];
+	while (1) {
+		nbytes = read(tempFileFd, buffer, sizeof(buffer));
+		if (nbytes <= 0)
+			break;
+		write(fileFd, buffer, nbytes);
+	}
+	if (openPath(filePath) >= 300) {
+		internalServerError(errorCode);
+		return;
+	}
+	contentTypeGenerator(filePath);
 }
 
-void Response::headerGenerator(int &errorCode, Request *request) {
+void Response::headerGenerator(int &errorCode, Request *request, int flag) {
 	std::string location;
 	std::string contentType;
 	std::string	contentLength;
+	std::string connection;
 	if (request->getLocation()->getRedirection() && request->isValid() == RESPOND) {
 		errorCode = request->getLocation()->getRedirectionCode();
 		location += "Location: " + request->getLocation()->getRedirectionLocation() + "\r\n";
@@ -256,11 +284,14 @@ void Response::headerGenerator(int &errorCode, Request *request) {
 		contentType = "Content-Type: " + _contentType += "\r\n";
 		contentLength = "Content-Length: " + std::to_string(_body.size()) + "\r\n";
 	}
+	if (flag == CLOSE) {
+		connection = "Connection: close\r\n";
+	}
 	std::string codeMessageString = "HTTP/1.1 ";
 	codeMessage(errorCode, codeMessageString);
 	codeMessageString += "\r\n";
 	std::string serverName = "Server: " + request->getServerName() + "\r\n";
-	_header += codeMessageString + serverName + location +  contentType + contentLength + "\r\n";
+	_header += codeMessageString + serverName + location +  contentType + contentLength + connection + "\r\n";
 }
 
 void Response::codeMessage(int code, std::string &message) {

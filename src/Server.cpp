@@ -19,7 +19,7 @@ Server::Server(uint16_t port, const char *host, std::string name, Router *router
 	serverAddr.sin_port = htons(_port);
 	if (bind(server->socket, (struct sockaddr*)&serverAddr, sizeof(serverAddr)) == -1)
 		throw std::invalid_argument("bind creation Failed");
-	listen(server->socket, 20);
+	listen(server->socket, 1000);
 	server->type = SERVER;
 	_serverRouter = router;
 	_listSocket = server->socket;
@@ -62,10 +62,9 @@ int Server::acceptConnection(socketInfo *client) {
 }
 
 int Server::recieveRequest(socketInfo *client) {
-	char *buffer = new char[1024];
+	char *buffer = new char[4000];
 	char *tmp = buffer;
-	std::memset(buffer, 0, 1024);
-	ssize_t nbytes = recv(client->socket, buffer, 1024, 0);
+	ssize_t nbytes = recv(client->socket, buffer, 4000, 0);
 	if (client->requests.empty() || client->requests.back()->isValid() == RESPOND) {
 		client->requests.push_back(new Request(client, this));
 	}
@@ -96,12 +95,15 @@ int Server::handleRequest(socketInfo *client) {
 	if (client->requests.back()->isValid() == WAIT)
 		return (KEEP);
 	else if (client->requests.back()->isValid() == RESPOND) {
-		Response response(client->requests.front());
+		int flag = KEEP;
+		if (client->requests.size() == 1)
+			flag = CLOSE;
+		Response response(client->requests.front(), flag);
 		fullResponse = response.getFullResponse();
 		sendAll(client->socket, fullResponse);
 		delete client->requests.front();
 		client->requests.erase(client->requests.begin());
-		return KEEP;
+		return flag;
 	}
 	return (KEEP);
 }

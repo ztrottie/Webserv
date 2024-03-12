@@ -13,10 +13,9 @@
 #include <sstream>
 #include "../include/color.h"
 #include "../include/utils.hpp"
-#include "../include/Request.hpp"
 #include "../include/Response.hpp"
 
-
+class request;
 class Server
 {
 private:
