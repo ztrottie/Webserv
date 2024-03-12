@@ -10,7 +10,9 @@ class Cgi
 {
 private:
 
-	const char *_env[];
+	int			_inputFd;
+	int			_outputFd;
+	const char 		*_env[100];
 
 public:
 	// Constructors / Destructor
@@ -22,7 +24,7 @@ public:
 	Cgi& operator=(const Cgi &rhs);
 
 	// Functions
-	char** execute(Request *request);
+	void execute(Request *request, Router *router);
 	void env(Request *request, Router *router);
 
 };

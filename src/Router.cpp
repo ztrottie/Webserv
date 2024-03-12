@@ -1,9 +1,8 @@
 #include "../include/Router.hpp"
 #include "../include/utils.hpp"
 #include "../include/Response.hpp"
-#include <cstddef>
 
-Router::Router() {
+Router::Router():_clientMaxBodySize(-1){
 	std::cout << timestamp() << " Initializing the server Router!" << std::endl;
 }
 
@@ -31,28 +30,15 @@ void Router::addLocation(std::string const &key, Location *loc){
 	_locations.insert(std::make_pair(key, loc));
 }
 
-size_t Router::getClientMaxBodySize(Location *location) const{
-	size_t value = _clientMaxBodySize;
-	location->getClientMaxBodySize(value);
-	return value;
+long long int Router::getClientMaxBodySize() const{
+	return _clientMaxBodySize;
 }
 
-long long Router::getClientMaxBodySizeParsing() const{
-	return (_clientMaxBodySize);
-}
-
-int Router::isContentLengthValid(Location *location, size_t const &bodyLen) {
-	if (getClientMaxBodySize(location) < bodyLen)
-		return (TOOLARGE);
-	return (OK);
-}
-
-void Router::setClientMaxBodySize(size_t value){
+void Router::setClientMaxBodySize(unsigned int value){
 	_clientMaxBodySize = value;
 }
 
 void Router::parseUri(std::string &cpy){
-	std::cout << cpy << std::endl;
 	for (std::map<std::string, Location*>::const_iterator it = _locations.end(); it == _locations.end();){
 		it = _locations.find(cpy);
 		if (it == _locations.end()){
@@ -62,13 +48,30 @@ void Router::parseUri(std::string &cpy){
 }
 
 void Router::trimURI(std::string &uri){
-	std::cout << "timURI: " << uri << std::endl;
+	std::cout << uri << std::endl;
 	size_t index = uri.rfind('/');
 	if (index == 0){
 		uri = '/';
 		return ;
 	}
 	uri = uri.substr(0, index);
+}
+
+void Router::checkBodySize(Request *request, int &errorCode){
+	Location *loc;
+	std::string uri = request->getFilePath();
+	std::map<std::string, Location*>::const_iterator it = _locations.find(uri);
+	if (it != _locations.end() && loc->getClientMaxBodySize() > 0){
+		if (request->getContentLenght() > loc->getClientMaxBodySize()){
+			errorCode = 413;
+			return ;
+		}
+	}
+	else if (request->getContentLenght() > _clientMaxBodySize){
+		errorCode = 413;
+		return ;
+	}
+	errorCode = OK;
 }
 
 int Router::checkIfFileIsValid(std::string const &path){
@@ -94,31 +97,56 @@ int Router::getErrorPage(std::string &path, int errorCode, Location *loc){
 	return OK;
 }
 
-int Router::getLocation(Request *request, Location *&loc, std::string &fullPath) {
-	fullPath = request->getFilePath();
-	parseUri(fullPath);
-	std::map<std::string, Location*>::const_iterator it = _locations.find(fullPath);
-	if (it != _locations.end()) {
-		loc = _locations[fullPath];
-		return loc->isMethodAllowed(request->getMethod());
-	}
+int Router::checkAllowedMethod(std::string const &method, Location *loc){
+	int perm;
+	if (loc)
+		perm = loc->isMethodAllowed(method);
 	else
-		return INTERNALSERVERROR;
+		perm = NOT_FOUND;
+	if (perm == NOTFOUND)
+		return METHNOTALLOWED;
+	if (perm == NOT_FOUND){
+		std::vector<const std::string>::const_iterator it = _allowedMethod.begin();
+		for (; it != _allowedMethod.end() && *it != method;++it){}
+		if (it == _allowedMethod.end())
+			return METHNOTALLOWED;
+	}
+	return FOUND;
 }
 
-int Router::getFile(Request *request, std::string &path) {
-	std::string uriCopy = request->getFullPath();
-	if (request->getLocation()->getRoot(uriCopy) == NOT_FOUND)
+int Router::routerMain(Request *request, std::string &body, std::string &contentType){
+	Location *location;
+	int errorCode;
+	checkBodySize(request, errorCode);
+	errorCode = getFile(request, location);
+	Response response(request, this, location, errorCode);
+	body = response.getBody();
+	contentType = response.getContentType();
+	return errorCode;
+}
+
+int Router::getFile(Request *request, Location *&loc) {
+	std::string uriCopy = request->getFilePath();
+	parseUri(uriCopy);
+	std::map<std::string, Location*>::const_iterator it = _locations.find(uriCopy);
+	if (it != _locations.end())
+		loc = _locations[uriCopy];
+	int methodCode = checkAllowedMethod(request->getMethod(), loc);
+	if (methodCode == METHNOTALLOWED)
+		return METHNOTALLOWED;
+	if (loc->getRoot(uriCopy) == NOT_FOUND)
 		uriCopy = _root;
 	uriCopy += request->getFilePath();
 	for (int i = 0; i < 2;i++){
 		int code = checkIfFileIsValid(uriCopy);
 		if (code == INTERNALSERVERROR)
 			return code;
-		if (code == IS_DIR && request->getMethod() == "GET"){
+		if (code == IS_DIR){
 			if (uriCopy.back() != '/')
 				uriCopy += "/";
 			uriCopy += _index;
+			request->setAddedIndex(true);
+			request->setFilePath(uriCopy);
 			continue;
 		}
 		else if (code == IS_FILE)
@@ -126,30 +154,6 @@ int Router::getFile(Request *request, std::string &path) {
 		else if (code == NOTFOUND)
 			return code;
 	}
-	path = uriCopy;
+	request->setFilePath(uriCopy);
 	return (OK);
-}
-
-std::string	Router::getRoot() const {
-	return _root;
-}
-
-std::string	Router::getIndex() const {
-	return _index;
-}
-
-std::string Router::getErrorForParsing(int code) const {
-	std::map<int, std::string>::const_iterator it = _errorPagesLocation.find(code);
-	return it->second;
-}
-
-std::string	Router::getLocationParsing() const{
-	if (_locations.empty()){
-		return "";
-	}
-	string res = "";
-	for (std::map<std::string, Location*>::const_iterator it = _locations.begin(); it != _locations.end(); it++) {
-		res += "|" + it->second->getName() + "|	";
-	}
-	return res;
 }
