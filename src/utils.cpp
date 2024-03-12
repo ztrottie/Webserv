@@ -104,7 +104,7 @@ bool	verifyAllowedMethods(std::string const &line){
 			res[i].erase(0, 1);
 		else if (i < res.size()){
 			res[i].erase(0, 1);
-			res[i].erase(res[i].size() - 1, res[i].size());
+			res[i].erase(res[i].length() - 1, res[i].length());
 		}
 	}
 	for (size_t i = 0 ; i < res.size(); i++){

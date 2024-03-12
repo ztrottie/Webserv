@@ -186,11 +186,20 @@ bool	parsing::checkServer(std::string &line, unsigned int *nbLine){
 			return false;
 		if (checkClientMaxBodySize(line, *nbLine) == false)
 			return false;
+		if (findFirstWord(line) == "allowedMethods" == true){
+			wagadooMachine(line, false, IMPOSTORERROR, *nbLine, "", defaultIfError, verifLine, false);
+			return false;
+		}
+		if (findFirstWord(line) == "return" == true){
+			wagadooMachine(line, false, IMPOSTORERROR, *nbLine, "", defaultIfError, verifLine, false);
+			return false;
+		}
 		if (line.find("}") == 0){
 			if (line.find("}") != 0 || line.length() != 1){
 				return false;
 			}
 			verifLine.push_back(DONT);
+			selectMessage(VALID, NOERR,*nbLine, " \"" + line + "\"");
 			// cout << "line " << *nbLine << "	" << line << " : " << verifLine[*nbLine] << endl;
 			break ;
 		}
@@ -241,7 +250,7 @@ bool	parsing::checkHost(string const &line, unsigned int nbLine){
 		return true;
 	}
 	verifLine.push_back(OKPARS);
-	selectMessage(VALID, NOERR, nbLine, "	\"" + line + "\"");
+	selectMessage(VALID, NOERR, nbLine, " \"" + line + "\"");
 	// cout << "line " << nbLine << "	" << line << " : " << verifLine[nbLine] << endl;
 	return true;
 }
@@ -287,7 +296,7 @@ bool	parsing::checkListen(string const &line, unsigned int nbLine){
 		return true;
 	}
 	verifLine.push_back(OKPARS);
-	selectMessage(VALID, NOERR, nbLine, "	\"" + line + "\"");
+	selectMessage(VALID, NOERR, nbLine, " \"" + line + "\"");
 	// cout << "line " << nbLine << "	" << line << " : " << verifLine[nbLine] << endl;
 	return true;
 }
@@ -326,7 +335,7 @@ bool	parsing::checkServerName(string const &line, unsigned int nbLine){
 		return true;
 	}
 	verifLine.push_back(OKPARS);
-	selectMessage(VALID, NOERR, nbLine, "	\"" + line + "\"");
+	selectMessage(VALID, NOERR, nbLine, " \"" + line + "\"");
 	// cout << "line " << nbLine << "	" << line << " : " << verifLine[nbLine] << endl;
 	return true;
 }
@@ -365,7 +374,7 @@ bool	parsing::checkRoot(string const &line, unsigned int nbLine){
 		return true;
 	}
 	verifLine.push_back(OKPARS);
-	selectMessage(VALID, NOERR, nbLine, "	\"" + line + "\"");
+	selectMessage(VALID, NOERR, nbLine, " \"" + line + "\"");
 	// cout << "line " << nbLine << "	" << line << " : " << verifLine[nbLine] << endl;
 	return true;
 }
@@ -404,7 +413,7 @@ bool	parsing::checkIndex(string const &line, unsigned int nbLine){
 		return true;
 	}
 	verifLine.push_back(OKPARS);
-	selectMessage(VALID, NOERR, nbLine, "	\"" + line + "\"");
+	selectMessage(VALID, NOERR, nbLine, " \"" + line + "\"");
 	// cout << "line " << nbLine << "	" << line << " : " << verifLine[nbLine] << endl;
 	return true;
 }
@@ -455,7 +464,7 @@ bool	parsing::checkErrorPage(string const &line, unsigned int nbLine){
 		}
 	}
 	verifLine.push_back(OKPARS);
-	selectMessage(VALID, NOERR, nbLine, "	\"" + line + "\"");
+	selectMessage(VALID, NOERR, nbLine, " \"" + line + "\"");
 	// cout << "line " << nbLine << "	" << line << " : " << verifLine[nbLine] << endl;
 	return true;
 }
@@ -509,7 +518,7 @@ bool	parsing::checkClientMaxBodySize(string const &line, unsigned int nbLine){
 		return true;
 	}
 	verifLine.push_back(OKPARS);
-	selectMessage(VALID, NOERR, nbLine, "	\"" + line + "\"");
+	selectMessage(VALID, NOERR, nbLine, " \"" + line + "\"");
 	// cout << "line " << nbLine << "	" << line << " : " << verifLine[nbLine] << endl;
 	return true;
 }

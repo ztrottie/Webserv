@@ -7,6 +7,7 @@ void	parsing::setDefault(uint16_t *_port, const char **_host, string *_name, Rou
 		*_host = DEFAULTHOST;
 	if (*_name == "")
 		*_name = DEFAULTSERVERNAME;
+
 	//router
 	if (rout.getClientMaxBodySizeParsing() == -1)
 		rout.setClientMaxBodySize(DEFAULTMAXBODY);
