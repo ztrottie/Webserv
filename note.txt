@@ -1,0 +1,12 @@
+320 (224 direct, 96 indirect) bytes in 1 blocks are definitely lost in loss record 78 of 89
+==64908==    at 0x10023CB62: operator new(unsigned long) (in /Users/rapelcha/homebrew/Cellar/valgrind/HEAD-7d4b46c/libexec/valgrind/vgpreload_memcheck-amd64-darwin.so)
+==64908==    by 0x10003643F: parsing::setDefault(unsigned short*, char const**, std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> >*, Router&) (assignation_parsing.cpp:22)
+==64908==    by 0x1000388AA: parsing::createServer(std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> >&, std::__1::basic_ifstream<char, std::__1::char_traits<char> >&, unsigned long*, Webserv*) (assignation_parsing.cpp:139)
+==64908==    by 0x100037962: parsing::assignConfigFile(Webserv*) (assignation_parsing.cpp:83)
+==64908==    by 0x1000025BA: main (main.cpp:19)
+==64908== 
+==64908== 2,192 (128 direct, 2,064 indirect) bytes in 1 blocks are definitely lost in loss record 87 of 89
+==64908==    at 0x10023CB62: operator new(unsigned long) (in /Users/rapelcha/homebrew/Cellar/valgrind/HEAD-7d4b46c/libexec/valgrind/vgpreload_memcheck-amd64-darwin.so)
+==64908==    by 0x100037F4F: parsing::createServer(std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> >&, std::__1::basic_ifstream<char, std::__1::char_traits<char> >&, unsigned long*, Webserv*) (assignation_parsing.cpp:109)
+==64908==    by 0x100037962: parsing::assignConfigFile(Webserv*) (assignation_parsing.cpp:83)
+==64908==    by 0x1000025BA: main (main.cpp:19)
