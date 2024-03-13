@@ -11,7 +11,7 @@ private:
 
 	int			_inputFd;
 	int			_outputFd;
-	const char 		*_env[100];
+	const char 		*_env[12];
 
 public:
 	// Constructors / Destructor
@@ -23,9 +23,8 @@ public:
 	Cgi& operator=(const Cgi &rhs);
 
 	// Functions
-	void execute(Request *request);
+	void execute(Request *request, std::string const &bodyPath);
 	void env(Request *request);
-
 };
 
 // Cgi_HPP

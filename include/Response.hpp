@@ -38,7 +38,7 @@ public:
 	void handleDelete(Request *request, int &errorCode);
 	void handlePost(Request *request, int &errorCode);
 	void handleUploadedFile(Request *request, int &errorCode);
-	void handleCgi(Request *request, Location *location, int &errorCode);
+	void handleCgi(Request *request, int &errorCode);
 	void directoryListing(Request *request, int &errorCode);
 	void headerGenerator(int &errorCode, Request *request, int flag);
 	void codeMessage(int code, std::string &message);

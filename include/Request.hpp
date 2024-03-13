@@ -25,6 +25,7 @@ private:
 	std::string 		_clientAddr;
 	std::string 		_fileName;
 	std::string			_tempFilePath;
+	std::string			_extension;
 	int					_tempFileFd;
 	int					_errorCode;
 	size_t				_bodyLen;
@@ -72,6 +73,7 @@ public:
 	std::string const &getServerName() const;
 	std::string const &getFullPath() const;
 	std::string const &getTempFilePath() const;
+	std::string const &getExtension() const;
 	Location *getLocation();
 	Router *getRouter();
 	int const &getErrorCode() const;
@@ -83,7 +85,7 @@ public:
 	void setAddedIndex(bool index);
 	bool getAddedIndex() const;
 	void setFilePath(std::string &path);
-	int generateTempFile();
+	int generateTempFile(std::string &tempFilePath, int &tempFileFd);
 	void parseFileName();
 	bool isHeaderDone() const;
 	void addData(char **buffer, size_t const &nbytes);
