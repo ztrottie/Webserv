@@ -41,45 +41,46 @@ void Cgi::env(Request *request){
 	std::string serverPort = "SERVER_PORT=";
 	serverPort += request->getPort();
 
-	const char *env[] = {gatewayInterface.c_str(), requestMethod.c_str(), queryString.c_str(), contentType.c_str(), contentLength.c_str(), clientAddr.c_str(), requestURI.c_str(), serverProtocol.c_str(), serverSoftware.c_str(), serverName.c_str(), serverPort.c_str()};
+	const char *env[] = {gatewayInterface.c_str(), requestMethod.c_str(), queryString.c_str(), contentType.c_str(), contentLength.c_str(), clientAddr.c_str(), requestURI.c_str(), serverProtocol.c_str(), serverSoftware.c_str(), serverName.c_str(), serverPort.c_str(), NULL};
 	for (int i = 0; i < 12;i++)
 		_env[i] = env[i];
 }
 
-void Cgi::execute(Request *request){
+void Cgi::execute(Request *request, std::string const &bodyPath){
 	const char *argv[] = {"/usr/bin/php", request->getFilePath().c_str(), NULL};
-	_inputFd = open(request->getTempFilePath().c_str(), _inputFd, O_RDWR);
-	_outputFd = open(request->getFilePath().c_str(), _outputFd, O_RDWR);
+	if (!request->getTempFilePath().empty())
+		_inputFd = open(request->getTempFilePath().c_str(), O_RDWR);
+	_outputFd = open(bodyPath.c_str(), O_RDWR);
 	int pid = fork();
 	int status;
-	
-	if (_inputFd == -1){
-		std::cout << "Error\n cannot open file!" << std::endl;
-		return ;
-	}
-	if (_outputFd == -1){
-		std::cout << "Error\n cannot open file!" << std::endl;
-		return ;
-	}
-	env(request);
-	if (pid == -1){
-		std::cout << "Error while forking ⬆️➡️⬇️⬇️⬇️ on hiroshima" << std::endl;
-		return ;
-	}
 	if (pid == 0){
-		if (dup2(_inputFd, STDIN_FILENO) == -1){
-				std::cout << "Cannot dup2 fd for some reason!" << std::endl;
-				return ;
-			}
-			close(_inputFd);
-			if (dup2(_outputFd, STDOUT_FILENO) == -1){
-				std::cout << "Cannot dup2 fd for some reason!" << std::endl;
-				return ;
-			}
-			close(_outputFd);
-			status = execve(argv[0], const_cast<char* const *>(argv), const_cast<char * const *>(_env));
-			exit(0);
+		if (!request->getTempFilePath().empty() && _inputFd == -1){
+			std::cout << "Error\n cannot open infile!" << std::endl;
+			return ;
 		}
-	else
+		if (_outputFd == -1){
+			std::cout << "Error\n cannot open outfile!" << std::endl;
+			return ;
+		}
+		env(request);
+		if (pid == -1){
+			std::cout << "Error while forking ⬆️➡️⬇️⬇️⬇️ on hiroshima" << std::endl;
+			return ;
+		}
+		if (!request->getTempFilePath().empty() && dup2(_inputFd, STDIN_FILENO) == -1){
+			std::cout << "Cannot dup2 fd for some reason!" << std::endl;
+			return ;
+		}
+		if (!request->getTempFilePath().empty())
+			close(_inputFd);
+		if (dup2(_outputFd, STDOUT_FILENO) == -1){
+			std::cout << "Cannot dup2 fd for some reason!" << std::endl;
+			return ;
+		}
+		close(_outputFd);
+		status = execve(argv[0], const_cast<char* const *>(argv), const_cast<char * const *>(_env));
+		exit(0);
+	} else {
 		waitpid(pid, &status, 0);
+	}
 }

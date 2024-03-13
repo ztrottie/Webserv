@@ -1,5 +1,6 @@
 #include "../include/Response.hpp"
 #include "../include/struct.hpp"
+#include "../include/Cgi.hpp"
 #include <cstddef>
 #include <iostream>
 #include <fstream>
@@ -16,9 +17,6 @@
 Response::Response(Request *request, int flag) {
 	int errorPageCode;
 	int errorCode = request->getErrorCode();
-	if (errorCode == OK && request->getMethod() == "POST" && request->isValid() == NEEDANSWER) {
-		errorCode = ACCEPTED;
-	}
 	std::cout << RED << errorCode << RESET << std::endl;
 	if (errorCode >= 300) {
 		std::cout << request->getMethod() << " " << errorCode << " error encountered sending error" << std::endl;
@@ -34,6 +32,8 @@ Response::Response(Request *request, int flag) {
 			return;
 		}
 		contentTypeGenerator(path);
+	} else if (!request->getExtension().empty() && request->getExtension() == "php?" && request->isValid() == RESPOND) {
+		handleCgi(request, errorCode);
 	} else if (request->getMethod() == "GET" && request->isValid() == RESPOND) {
 		handleGet(request, errorCode);
 	} else if (request->getMethod() == "DELETE" && request->isValid() == RESPOND) {
@@ -168,14 +168,16 @@ void Response::handleDelete(Request *request, int &errorCode) {
 	} else {
 		if (std::remove(path.c_str()) != 0)
 			internalServerError(errorCode);
-		size_t end = path.rfind("/");
+		std::string newPath = request->getFilePath();
+		size_t end = newPath.rfind("/");
 		if (end != std::string::npos) {
-			std::string newPath = path.substr(0, end);
+			newPath = newPath.substr(0, end);
 			request->setFilePath(newPath);
 		}
-		if (request->getLocation()->getAutoIndex())
+		std::cout << PURPLE << newPath << RESET << std::endl;
+		if (request->getLocation()->getAutoIndex()) {
 			directoryListing(request, errorCode);
-		else {
+		} else {
 			_body = "yessir";
 			_contentType = "text/plain";
 			errorCode = OK;
@@ -217,9 +219,9 @@ void Response::directoryListing(Request *request, int &errorCode) {
 	if (path.back() == '/' && filePath.front() == '/') {
 		path += filePath.substr(1);
 	}
-	std::cout << path << std::endl;
 	DIR *dir;
 	struct dirent* entry;
+	std::cout << GREEN << path << RESET << std::endl;
 	if (access(path.c_str(), F_OK) != 0) {
 		errorCode = NOTFOUND;
 		return;
@@ -243,12 +245,19 @@ void Response::directoryListing(Request *request, int &errorCode) {
 }
 
 void	Response::handlePost(Request *request, int &errorCode) {
-	if (request->getLocation()->getUploadEnable() && request->getFilePath().find(".php") == std::string::npos) {
+	if (request->getLocation()->getUploadEnable() && request->getFilePath().find(".") == std::string::npos) {
 		handleUploadedFile(request, errorCode);
+	} else {
+		errorCode = METHNOTALLOWED;
+		std::string errorPath;
+		int errorPageCode = request->getRouter()->getErrorPage(errorPath, errorCode, request->getLocation());
+		if (errorPageCode == INTERNALSERVERROR || openPath(errorPath) >= 300) {
+			internalServerError(errorCode);
+			return;
+		}
+		contentTypeGenerator(errorPath);
+		return;
 	}
-	// else {
-	// 	handleCgi(request, location, errorCode);
-	// }
 }
 
 void	Response::handleUploadedFile(Request *request, int &errorCode) {
@@ -274,6 +283,8 @@ void	Response::handleUploadedFile(Request *request, int &errorCode) {
 			break;
 		write(fileFd, buffer, nbytes);
 	}
+	close(fileFd);
+	std::remove(request->getTempFilePath().c_str());
 	if (openPath(filePath) >= 300) {
 		internalServerError(errorCode);
 		return;
@@ -372,6 +383,46 @@ void Response::codeMessage(int code, std::string &message) {
 	}
 }
 
-// void Response::handleCgi(Request *request, Location *location, int &errorCode) {
-	
-// }
+void Response::handleCgi(Request *request, int &errorCode) {
+	std::string bodyResponse;
+	int			fd = -1;
+	std::string path = request->getRouter()->getRoot(request->getLocation());
+	std::string filePath = request->getFilePath();
+	if (path.back() == '/' && filePath.front() == '/') {
+		path += filePath.substr(1);
+	}
+	request->setFilePath(path);
+	bool isValid = (access(path.c_str(), F_OK) == 0);
+	errorCode = request->generateTempFile(bodyResponse, fd);
+	std::cout << bodyResponse << std::endl;
+	if (errorCode >= 300 || bodyResponse.empty() || fd < 0 || !isValid) {
+		std::cout << "here?" << std::endl;
+		if (errorCode == OK && !isValid)
+			errorCode = FORBIDDEN;
+		else if (errorCode == OK && isValid)
+			errorCode = NOTFOUND;
+		if (fd > 0) {
+			close(fd);
+			std::remove(bodyResponse.c_str());
+		}
+		std::string errorPath;
+		int errorPageCode = request->getRouter()->getErrorPage(errorPath, errorCode, request->getLocation());
+		if (errorPageCode == INTERNALSERVERROR || openPath(errorPath) >= 300) {
+			internalServerError(errorCode);
+			return;
+		}
+		contentTypeGenerator(errorPath);
+		return;
+	}
+	close(fd);
+	Cgi cgi;
+	cgi.execute(request, bodyResponse);
+	if (openPath(bodyResponse) >= 300) {
+		std::remove(request->getTempFilePath().c_str());
+		std::remove(bodyResponse.c_str());
+		internalServerError(errorCode);
+		return;
+	}
+	std::remove(request->getTempFilePath().c_str());
+	std::remove(bodyResponse.c_str());
+}

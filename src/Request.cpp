@@ -78,6 +78,11 @@ void Request::_uriParser() {
 			_filePath = _uri;
 		}
 	}
+	size_t start = _filePath.find(".");
+	if (start != std::string::npos) {
+		start += 1;
+			_extension = _filePath.substr(start);
+	}
 }
 
 void Request::_headerParser(char **buffer) {
@@ -148,20 +153,20 @@ void Request::_setHostPort() {
 	}
 }
 
-int Request::generateTempFile() {
+int Request::generateTempFile(std::string &tempFilePath, int &tempFileFd) {
 	std::string tmpFileName = "tmp";
-	_tempFilePath = "/tmp/";
+	tempFilePath = "/tmp/";
 	for (size_t fileIndex = 0; fileIndex < std::numeric_limits<size_t>::max(); fileIndex++) {
-		int error = access((_tempFilePath + tmpFileName + std::to_string(fileIndex)).c_str(), F_OK);
+		int error = access((tempFilePath + tmpFileName + std::to_string(fileIndex)).c_str(), F_OK);
 		if (error != 0) {
-			_tempFilePath += tmpFileName + std::to_string(fileIndex);
-			_tempFileFd = open(_tempFilePath.c_str(), O_CREAT | O_WRONLY, 0644);
-			if (_tempFileFd == -1)
+			tempFilePath += tmpFileName + std::to_string(fileIndex);
+			tempFileFd = open(tempFilePath.c_str(), O_CREAT | O_RDWR, 0644);
+			if (tempFileFd == -1)
 				return INTERNALSERVERROR;
 			return OK;
 		}
 	}
-	_tempFilePath.clear();
+	tempFilePath.clear();
 	return INTERNALSERVERROR;
 }
 
@@ -204,7 +209,7 @@ void Request::addBody(char **buffer) {
 	// if (_errorCode == OK && _uri.find(".php") == std::string::npos && (!_location->getUploadEnable() || _location->getUploadStore().empty()))
 	// 	_errorCode = FORBIDDEN;
 	if (_errorCode == OK && _tempFilePath.empty()) {
-		if (generateTempFile() == INTERNALSERVERROR) {
+		if (generateTempFile(_tempFilePath, _tempFileFd) == INTERNALSERVERROR) {
 			_errorCode = INTERNALSERVERROR;
 			return;
 		}
@@ -330,6 +335,10 @@ std::string const &Request::getFullPath() const {
 
 std::string const &Request::getTempFilePath() const {
 	return _tempFilePath;
+}
+
+std::string const &Request::getExtension() const {
+	return _extension;
 }
 
 int const &Request::getErrorCode() const {
