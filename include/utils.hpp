@@ -40,7 +40,7 @@ void						simpleWriteTimestamp(std::string color, std::string const &message);
 bool						containsNonDigit(const std::string& str);
 // std::string					retIsThereSomethingInMyString(std::string const &input, std::string const &beginning, std::string const& end, bool erase);
 std::vector<std::string>	splitString(std::string const &input, char delimiter);
-bool						verifyAllowedMethods(std::string const &line);
+bool						verifyAllowedMethods(std::string &line);
 bool						checkIdentationLocation(const std::string &line);
 
 //parsing

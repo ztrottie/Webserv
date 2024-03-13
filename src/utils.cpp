@@ -1,4 +1,5 @@
 #include "../include/utils.hpp"
+#include <cstddef>
 #include <cstdlib>
 #include <string>
 #include <vector>
@@ -95,17 +96,13 @@ std::vector<std::string> splitString(std::string const &input, char delimiter){
 	return result;
 }
 
-bool	verifyAllowedMethods(std::string const &line){
+bool	verifyAllowedMethods(std::string &line){
+	line.erase(0, 16);
 	std::vector<std::string> res = splitString(line, ',');
 	for (size_t i = 0 ; i < res.size(); i++){
-		if (i == 0)
-			res[i].erase(0, 17);
-		else if (i < res.size() - 1)
-			res[i].erase(0, 1);
-		else if (i < res.size()){
-			res[i].erase(0, 1);
-			res[i].erase(res[i].size() - 1, res[i].size());
-		}
+		res[i].erase(std::remove_if(res[i].begin(), res[i].end(), ::isspace), res[i].end());
+		if (res[i].find(";") != string::npos)
+			res[i].erase(res[i].length() - 1, res[i].length());
 	}
 	for (size_t i = 0 ; i < res.size(); i++){
 		if (res[i] == "GET")

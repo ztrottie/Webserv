@@ -152,9 +152,9 @@ std::string	Router::getLocationParsing() const{
 	if (_locations.empty()){
 		return "";
 	}
-	string res = "";
+	string res = "	";
 	for (std::map<std::string, Location*>::const_iterator it = _locations.begin(); it != _locations.end(); it++) {
-		res += "|" + it->second->getName() + "|	";
+		res += it->second->getName() + "	";
 	}
 	return res;
 }

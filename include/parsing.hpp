@@ -73,7 +73,7 @@ class parsing{
 		bool					checkLocation(string &line, unsigned int *nbLine);
 		void					checkIndexLocation(string const &line, unsigned int nbLine);
 		void					checkRootLocation(string const &line, unsigned int nbLine);
-		void					checkAllowedMethods(string const &line, unsigned int nbLine);
+		void					checkAllowedMethods(string &line, unsigned int nbLine);
 		void					checkErrorPageLocation(string const &line, unsigned int nbLine);
 		void					checkReturnsLocation(string const &line, unsigned int nbLine);
 		void					checkUploadEnable(string const &line, unsigned int nbLine);

@@ -1,1 +1,11 @@
-Faire que les allowedMethods default soit setter a moment donner
+server{	marche pas
+
+	location /{
+		allowedMethods GET, POST, DELETE;
+		server_name coucou;
+		return 402;
+		return https://youtube.com;
+		return index.html;
+		return "coucou";
+	}
+le dernier return apparait pas dans le assign
