@@ -5,6 +5,20 @@
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<link rel="icon" type="image/x-icon" href="/favicon.ico">
 	<title>Ropel</title>
+	<script>
+        function deleteResource() {
+            var xhr = new XMLHttpRequest();
+            xhr.open('DELETE', 'https://example.com/resource-to-delete', true);
+            xhr.onreadystatechange = function () {
+                if (xhr.readyState === 4 && xhr.status === 200) {
+                    alert('Resource deleted successfully!');
+                } else if (xhr.readyState === 4 && xhr.status !== 200) {
+                    alert('Failed to delete resource. Status code: ' + xhr.status);
+                }
+            };
+            xhr.send();
+        }
+    </script>
 </head>
 <body>
 	<h1>HELLO WORLD!!!!!!</h1>
@@ -18,8 +32,29 @@
     </form>
 	<br>
 
-	<form action="dirList.php" method="get">
-		<input type="submit" value="dir">
-	</form>
+	<h2>Delete File</h2>
+    <form id="deleteForm">
+        <label for="filename">Filename:</label>
+        <input type="text" id="filename" name="filename">
+        <button type="button" onclick="deleteFile()">Delete File</button>
+    </form>
+
+    <script>
+        function deleteFile() {
+            var filename = document.getElementById("filename").value;
+            var xhr = new XMLHttpRequest();
+            xhr.open('DELETE', '/uploads/' + encodeURIComponent(filename), true);
+            xhr.onreadystatechange = function () {
+                if (xhr.readyState === 4) {
+                    if (xhr.status === 200) {
+                        alert('File deleted successfully!');
+                    } else {
+                        alert('Failed to delete file. Status code: ' + xhr.status);
+                    }
+                }
+            };
+            xhr.send();
+        }
+    </script>
 </body>
 </html>

@@ -1,15 +1,10 @@
 #pragma once
 #include <cstddef>
 #include <map>
-#include <iostream>
 #include <string>
 #include <vector>
-#include "struct.hpp"
 
 class Router;
-
-#define FOUND 1
-#define NOT_FOUND 0
 
 class Location
 {

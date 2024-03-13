@@ -10,7 +10,7 @@ void	parsing::setDefault(uint16_t *_port, const char **_host, string *_name, Rou
 	//router
 	if (rout.getClientMaxBodySizeParsing() == -1)
 		rout.setClientMaxBodySize(DEFAULTMAXBODY);
-	if (rout.getRoot() == "")
+	if (rout.getRoot(NULL) == "")
 		rout.setRoot(DEFAULTROOT);
 	if (rout.getIndex() == "")
 		rout.setIndex(DEFAULTINDEX);

@@ -109,26 +109,21 @@ void Request::_headerParser(char **buffer) {
 			_rawSize = 0;
 		} else {
 			_rawSize -= headerEnd;
-		} 
+		}
+		std::cout << _raw << std::endl;
 		_raw = _raw.substr(headerEnd);
 	}
 }
 
 void Request::addData(char **buffer, size_t const &nbytes) {
-	std::cout << "received data and making the requests: " << *buffer << std::endl;
-	std::cout << "nbytes received: " << nbytes << std::endl;
 	_nbytesRead = nbytes;
 	_rawSize = _raw.size();
 	_raw.append(*buffer, nbytes);
 	if (!_headerDone) {
-		std::cout << "making the header of the request" << std::endl;
 		_headerParser(buffer);
-		std::cout << PURPLE "header of the request made" RESET << std::endl;
 	}
 	if (_headerDone && _method == "POST" && !_raw.empty()) {
-		std::cout << "adding data to the temp file" << std::endl;
 		addBody(buffer);
-		std::cout << PURPLE "added data to the temp file" RESET << std::endl;
 	}
 	if (isValid() && !_raw.empty()) {
 		_client->requests.push_back(new Request(_client, _server));
@@ -155,7 +150,7 @@ void Request::_setHostPort() {
 
 int Request::generateTempFile() {
 	std::string tmpFileName = "tmp";
-	_tempFilePath = "./uploads/";
+	_tempFilePath = "/tmp/";
 	for (size_t fileIndex = 0; fileIndex < std::numeric_limits<size_t>::max(); fileIndex++) {
 		int error = access((_tempFilePath + tmpFileName + std::to_string(fileIndex)).c_str(), F_OK);
 		if (error != 0) {
@@ -188,7 +183,7 @@ void Request::ParseBodyHeader(char **buffer) {
 	if (headerEnd != std::string::npos) {
 		headerEnd += 4;
 		_bodyStarted = true;
-		if (_errorCode == OK)
+		if (_errorCode == OK && _fileName.empty())
 			_search("filename=\"", '\"', _fileName);
 		if (headerEnd > _rawSize) {
 			size_t nbytes = headerEnd - _rawSize;
@@ -203,7 +198,11 @@ void Request::ParseBodyHeader(char **buffer) {
 
 void Request::addBody(char **buffer) {
 	std::string endBoundary = "\r\n--" + _boundary + "--\r\n";
-	std::cout << "preparing to add data to the temp file!" << std::endl;
+	std::cout << _errorCode << std::endl;
+	// std::cout << _location->getUploadEnable() << std::endl;
+	// std::cout << _location->getUploadStore() << std::endl;
+	// if (_errorCode == OK && _uri.find(".php") == std::string::npos && (!_location->getUploadEnable() || _location->getUploadStore().empty()))
+	// 	_errorCode = FORBIDDEN;
 	if (_errorCode == OK && _tempFilePath.empty()) {
 		if (generateTempFile() == INTERNALSERVERROR) {
 			_errorCode = INTERNALSERVERROR;
@@ -230,11 +229,13 @@ void Request::addBody(char **buffer) {
 		}
 		if (_bodyLenWritten == _bodyLen) {
 			_raw = *buffer;
+			_rawSize = _nbytesRead;
 			if (_errorCode == OK && !_tempFilePath.empty())
 				close(_tempFileFd);
 		}
 	}
 	if (_bodyLenWritten == _bodyLen && !_bodyEnded) {
+		std::cout << _raw << std::endl;
 		size_t end = _raw.find(endBoundary);
 		if (end != std::string::npos) {
 			_bodyEnded = true;
@@ -325,6 +326,10 @@ std::string const &Request::getFileName() const {
 
 std::string const &Request::getFullPath() const {
 	return _fullPath;
+}
+
+std::string const &Request::getTempFilePath() const {
+	return _tempFilePath;
 }
 
 int const &Request::getErrorCode() const {

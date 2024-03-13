@@ -1,17 +1,8 @@
 #pragma once
 #include <cstddef>
-#include <fstream>
 #include <string>
 #include "struct.hpp"
 #include "Location.hpp"
-#include <iostream>
-#include <sstream>
-
-enum {
-	WHOLE,
-	PART,
-	NONE
-};
 
 class Request
 {
@@ -80,6 +71,7 @@ public:
 	std::string const &getFileName() const;
 	std::string const &getServerName() const;
 	std::string const &getFullPath() const;
+	std::string const &getTempFilePath() const;
 	Location *getLocation();
 	Router *getRouter();
 	int const &getErrorCode() const;

@@ -1,5 +1,6 @@
 #include "../include/Webserv.hpp"
 #include <sys/event.h>
+#include <vector>
 
 Webserv::Webserv() : _nbServer(0), _nbClients(0) {
 	std::cout << GREEN << timestamp() << " Starting the webserv..." << RESET << std::endl;
@@ -80,8 +81,7 @@ void Webserv::loop() {
 	std::signal(SIGQUIT, signalhandler);
 	while (loopFlag) {
 		struct kevent events[1];
-		timespec time = {10, 0};
-		int numEvents = kevent(_kq, nullptr, 0, events, 1, &time);
+		int numEvents = kevent(_kq, nullptr, 0, events, 1, NULL);
 		for (int i = 0; i < numEvents; i++) {
 			std::map<int, socketInfo*>::const_iterator it = _clientMap.find(events[i].ident);
 			if (it != _clientMap.end()) {
@@ -96,6 +96,9 @@ void Webserv::loop() {
 						_nbClients--;
 						close(info->socket);
 						_clientMap.erase(info->socket);
+						for (std::vector<Request*>::const_iterator requestIterator = info->requests.begin(); requestIterator != info->requests.end(); requestIterator++) {
+							delete *requestIterator;
+						}
 						delete info;
 					}
 				}
