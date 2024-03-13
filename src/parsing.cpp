@@ -71,7 +71,6 @@ bool	parsing::parseConfigFile(){
 		return false;
 	}
 	while (std::getline(configFile, line)){
-		// cout << "EN DEHORS DU SERVER	" << line << "	" << std::to_string(nbLine) << endl;
 		if (checkValid(line) == false)
 			return false;
 		if (nbLine == 0)
@@ -140,7 +139,6 @@ void	parsing::checkDefault(string const &line, unsigned int nbLine){
 		selectMessage(DEFAULT, NOERR, nbLine, "	You choose that the program will close if they're is an error in the ConfigFile. If you don't want that, you must include at the beginning of the ConfigFile : \"acceptDefault true\"");
 	}
 	verifLine.push_back(DONT);
-	// cout << "line " << nbLine << "	" << line << " : " << verifLine[nbLine] << endl;
 }
 
 bool	parsing::checkServer(std::string &line, unsigned int *nbLine){
@@ -164,9 +162,7 @@ bool	parsing::checkServer(std::string &line, unsigned int *nbLine){
 	}
 	verifLine.push_back(OKPARS);
 	selectMessage(VALID, NOERR, *nbLine, "	\"" + line + "\"");
-	// cout << "SERVER line " << *nbLine << "	" << line << " : " << verifLine[*nbLine] << endl;
 	(*nbLine)++;
-	// std::getline(configFile, line);
 	while (std::getline(configFile, line)){
 		if (checkValid(line) == false)
 			return false;
@@ -200,10 +196,8 @@ bool	parsing::checkServer(std::string &line, unsigned int *nbLine){
 			}
 			verifLine.push_back(DONT);
 			selectMessage(VALID, NOERR,*nbLine, " \"" + line + "\"");
-			// cout << "line " << *nbLine << "	" << line << " : " << verifLine[*nbLine] << endl;
 			break ;
 		}
-		// cout << "INSIDE SERVER line " << *nbLine << "	" << line << " : " << verifLine[*nbLine] << endl;
 		if (*nbLine == verifLine.size())
 			verifLine.push_back(DONT);
 		(*nbLine)++;
@@ -212,7 +206,6 @@ bool	parsing::checkServer(std::string &line, unsigned int *nbLine){
 		simpleWriteTimestamp(RED, "You didnt close the server, quitting the program....");
 		return false;
 	}
-	// cout << line << endl;
 	return true;
 }
 
@@ -251,7 +244,6 @@ bool	parsing::checkHost(string const &line, unsigned int nbLine){
 	}
 	verifLine.push_back(OKPARS);
 	selectMessage(VALID, NOERR, nbLine, " \"" + line + "\"");
-	// cout << "line " << nbLine << "	" << line << " : " << verifLine[nbLine] << endl;
 	return true;
 }
 
@@ -297,7 +289,6 @@ bool	parsing::checkListen(string const &line, unsigned int nbLine){
 	}
 	verifLine.push_back(OKPARS);
 	selectMessage(VALID, NOERR, nbLine, " \"" + line + "\"");
-	// cout << "line " << nbLine << "	" << line << " : " << verifLine[nbLine] << endl;
 	return true;
 }
 
@@ -336,7 +327,6 @@ bool	parsing::checkServerName(string const &line, unsigned int nbLine){
 	}
 	verifLine.push_back(OKPARS);
 	selectMessage(VALID, NOERR, nbLine, " \"" + line + "\"");
-	// cout << "line " << nbLine << "	" << line << " : " << verifLine[nbLine] << endl;
 	return true;
 }
 
@@ -375,7 +365,6 @@ bool	parsing::checkRoot(string const &line, unsigned int nbLine){
 	}
 	verifLine.push_back(OKPARS);
 	selectMessage(VALID, NOERR, nbLine, " \"" + line + "\"");
-	// cout << "line " << nbLine << "	" << line << " : " << verifLine[nbLine] << endl;
 	return true;
 }
 
@@ -414,7 +403,6 @@ bool	parsing::checkIndex(string const &line, unsigned int nbLine){
 	}
 	verifLine.push_back(OKPARS);
 	selectMessage(VALID, NOERR, nbLine, " \"" + line + "\"");
-	// cout << "line " << nbLine << "	" << line << " : " << verifLine[nbLine] << endl;
 	return true;
 }
 
@@ -453,9 +441,6 @@ bool	parsing::checkErrorPage(string const &line, unsigned int nbLine){
 				return false;
 			return true;
 		}
-		if (containsNonDigit(split[i]) == false){
-			// if ()
-		}
 		if (containsNonDigit(split[i]) == true){
 			wagadooMachine(line, defaultIfError, DIGITERROR, nbLine, "", defaultIfError, verifLine, false);
 			if (defaultIfError == false)
@@ -465,7 +450,6 @@ bool	parsing::checkErrorPage(string const &line, unsigned int nbLine){
 	}
 	verifLine.push_back(OKPARS);
 	selectMessage(VALID, NOERR, nbLine, " \"" + line + "\"");
-	// cout << "line " << nbLine << "	" << line << " : " << verifLine[nbLine] << endl;
 	return true;
 }
 
@@ -519,7 +503,6 @@ bool	parsing::checkClientMaxBodySize(string const &line, unsigned int nbLine){
 	}
 	verifLine.push_back(OKPARS);
 	selectMessage(VALID, NOERR, nbLine, " \"" + line + "\"");
-	// cout << "line " << nbLine << "	" << line << " : " << verifLine[nbLine] << endl;
 	return true;
 }
 

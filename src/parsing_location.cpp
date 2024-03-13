@@ -39,7 +39,6 @@ bool	parsing::checkLocation(string &line, unsigned int *nbLine){
 	}
 	verifLine.push_back(OKPARS);
 	selectMessage(VALID, NOERR, *nbLine, " \"" + line + "\"");
-	// cout << "line " << *nbLine << "	" << line << " : " << verifLine[*nbLine] << endl;
 	(*nbLine)++;
 	while (std::getline(configFile, line)){
 		if (findFirstWord(line) == "location"){
@@ -72,7 +71,6 @@ bool	parsing::checkLocation(string &line, unsigned int *nbLine){
 		}
 		else if (checkValid(line) == false){
 			verifLine.push_back(DONT);
-			// cout << "line " << *nbLine << "	" << line << " : " << verifLine[*nbLine] << endl;
 		}else{
 			checkIndexLocation(line, *nbLine);
 			checkRootLocation(line, *nbLine);
@@ -87,7 +85,6 @@ bool	parsing::checkLocation(string &line, unsigned int *nbLine){
 		(*nbLine)++;
 	}
 	selectMessage(VALID, NOERR, *nbLine, " \"" + line + "\"");
-	// cout << "location line " << *nbLine << "	" << line << " : " << verifLine[*nbLine] << endl;
 	return true;
 }
 
@@ -121,7 +118,6 @@ void	parsing::checkUploadEnable(string const &line, unsigned int nbLine){
 	}
 	selectMessage(VALID, NOERR, nbLine, " \"" + line + "\"");
 	verifLine.push_back(OKPARS);
-	// cout << "line " << nbLine << "	" << line << " : " << verifLine[nbLine] << endl;
 }
 
 void	parsing::checkUploadStore(string const &line, unsigned int nbLine){
@@ -149,7 +145,6 @@ void	parsing::checkUploadStore(string const &line, unsigned int nbLine){
 	}
 	selectMessage(VALID, NOERR, nbLine, " \"" + line + "\"");
 	verifLine.push_back(OKPARS);
-	// cout << "line " << nbLine << "	" << line << " : " << verifLine[nbLine] << endl;
 }
 
 void	parsing::checkIndexLocation(string const &line, unsigned int nbLine){
@@ -177,7 +172,6 @@ void	parsing::checkIndexLocation(string const &line, unsigned int nbLine){
 	}
 	selectMessage(VALID, NOERR, nbLine, " \"" + line + "\"");
 	verifLine.push_back(OKPARS);
-	// cout << "line " << nbLine << "	" << line << " : " << verifLine[nbLine] << endl;
 }
 
 void	parsing::checkRootLocation(string const &line, unsigned int nbLine){
@@ -205,7 +199,6 @@ void	parsing::checkRootLocation(string const &line, unsigned int nbLine){
 	}
 	selectMessage(VALID, NOERR, nbLine, " \"" + line + "\"");
 	verifLine.push_back(OKPARS);
-	// cout << "line " << nbLine << "	" << line << " : " << verifLine[nbLine] << endl;
 }
 
 void	parsing::checkAllowedMethods(string &line, unsigned int nbLine){
@@ -233,7 +226,6 @@ void	parsing::checkAllowedMethods(string &line, unsigned int nbLine){
 	}
 	selectMessage(VALID, NOERR, nbLine, " \"" + line + "\"");
 	verifLine.push_back(OKPARS);
-	// cout << "line " << nbLine << "	" << line << " : " << verifLine[nbLine] << endl;
 }
 
 void	parsing::checkErrorPageLocation(string const &line, unsigned int nbLine){
@@ -268,7 +260,6 @@ void	parsing::checkErrorPageLocation(string const &line, unsigned int nbLine){
 	}
 	selectMessage(VALID, NOERR, nbLine, " \"" + line + "\"");
 	verifLine.push_back(OKPARS);
-	// cout << "line " << nbLine << "	" << line << " : " << verifLine[nbLine] << endl;
 }
 
 void	parsing::checkReturnsLocation(string const &line, unsigned int nbLine){
@@ -312,7 +303,6 @@ void	parsing::checkReturnsLocation(string const &line, unsigned int nbLine){
 	}
 	selectMessage(VALID, NOERR, nbLine, " \"" + line + "\"");
 	verifLine.push_back(OKPARS);
-	// cout << "line " << nbLine << "	" << line << " : " << verifLine[nbLine] << endl;
 }
 
 void	parsing::checkClientMaxBodySizeLocation(string const &line, unsigned int nbLine){
@@ -351,7 +341,6 @@ void	parsing::checkClientMaxBodySizeLocation(string const &line, unsigned int nb
 	}
 	verifLine.push_back(OKPARS);
 	selectMessage(VALID, NOERR, nbLine, " \"" + line + "\"");
-	// cout << "line " << nbLine << "	" << line << " : " << verifLine[nbLine] << endl;
 }
 
 void	parsing::checkAutoIndex(string const &line, unsigned int nbLine){
@@ -384,5 +373,4 @@ void	parsing::checkAutoIndex(string const &line, unsigned int nbLine){
 	}
 	selectMessage(VALID, NOERR, nbLine, " \"" + line + "\"");
 	verifLine.push_back(OKPARS);
-	// cout << "line " << nbLine << "	" << line << " : " << verifLine[nbLine] << endl;
 }

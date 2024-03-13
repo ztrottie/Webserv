@@ -79,7 +79,6 @@ void parsing::assignConfigFile(Webserv *webserv){
 	file.open(pathConfigFile);
 	for (size_t i = 0; i < verifLine.size(); i++){
 		std::getline(file, line);
-		// cout << line << " " << verifLine[i] << endl;
 		if (verifLine[i] == 0){
 			createServer(line, file, &i, webserv);
 		}
@@ -97,7 +96,6 @@ void parsing::assignConfigFile(Webserv *webserv){
 		string _name = "";
 		Router *router = new Router();
 		setDefault(&_port, &_host, &_name, *router);
-		// cout << "addNewServer avec aucun server" << endl;
 		webserv->addNewServer(_port, _host, _name, router);
 	}
 }
@@ -112,7 +110,6 @@ void	parsing::createServer(string &line, std::ifstream &file, size_t *i, Webserv
 	(*i)++;
 	while (*i < verifLine.size()){
 		std::getline(file, line);
-		// cout << line << verifLine[*i] << endl;
 		if (verifLine[*i] == 0){
 			if (port == 0 && findFirstWord(line) == "listen"){
 				port = assignPort(line);
@@ -135,13 +132,11 @@ void	parsing::createServer(string &line, std::ifstream &file, size_t *i, Webserv
 				assignLocation(line, file, i, *router);
 		}
 		if (line.find("}") == 0){
-			// cout << "SERVER TERMINER" << endl;
 			break ;
 		}
 		(*i)++;
 	}
 	setDefault(&port, &host, &name, *router);
-	// cout << "addNewServer avec serveur" << endl;
 	webserv->addNewServer(port, host, name, router);
 }
 
@@ -206,7 +201,6 @@ void parsing::assignErrorPage(const string &line, Router &rout){
 	for (size_t i = 1; i < split.size(); i++) {
 		if (containsNonDigit(split[i]) == false && split[i].length() > 0){
 			rout.addErrorPage(std::stoi(split[i]), split[split.size() - 1]);
-			// cout << split[i] << " a été assigner a " << split[split.size() - 1] << endl;
 		}
 	}
 }
@@ -215,12 +209,10 @@ void parsing::assignErrorPage(const string &line, Router &rout){
 
 void	parsing::assignLocation(string &line, std::ifstream &file, size_t *i, Router &rout){
 	string	name = line.substr(line.rfind(" "), (line.length() - line.rfind(" ")) - 1); name.erase(std::remove_if(name.begin(), name.end(), ::isspace), name.end());
-	// cout << "Name of location in assignation	" << name << endl;
 	Location	*loc = new Location(name);
 	(*i)++;
 	while (*i < verifLine.size()){
 		std::getline(file, line);
-		// cout << "LINE	" << line << " " << verifLine[*i] << endl;
 		if (verifLine[*i] == 0){
 			if (findFirstWord(line) == "allowedMethods")
 				assignAllowedMethods(line, *loc);
@@ -242,7 +234,6 @@ void	parsing::assignLocation(string &line, std::ifstream &file, size_t *i, Route
 				assignAutoIndex(line, *loc);
 		}
 		if (line.find("}") == 1){
-			// cout << "LOCATION TERMINER\n" << endl;
 			break ;
 		}
 		(*i)++;
@@ -298,7 +289,6 @@ void	parsing::assignErrorPage(const string &line, Location &loc){
 	for (size_t i = 1; i < split.size(); i++) {
 		if (containsNonDigit(split[i]) == false && split[i].length() > 0){
 			loc.addErrorPage(std::stoi(split[i]), split[split.size() - 1]);
-			// cout << split[i] << " a été assigner a " << split[split.size() - 1] << endl;
 		}
 	}
 }
@@ -323,7 +313,6 @@ void	parsing::assignMaxBody(const string &line, Location &loc){
 
 void parsing::assignReturn(const string &line, Location &loc){
 	string tempLine = line;
-	// cout << "ASSIGN RETURN	" << tempLine << endl;
 	tempLine.erase(0, 9);
 	loc.setRedirection(true);
 	std::vector<string> res = splitString(tempLine, ' ');

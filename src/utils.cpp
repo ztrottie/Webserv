@@ -97,8 +97,9 @@ std::vector<std::string> splitString(std::string const &input, char delimiter){
 }
 
 bool	verifyAllowedMethods(std::string &line){
-	line.erase(0, 16);
-	std::vector<std::string> res = splitString(line, ',');
+	string tempLine = line;
+	tempLine.erase(0, 16);
+	std::vector<std::string> res = splitString(tempLine, ',');
 	for (size_t i = 0 ; i < res.size(); i++){
 		res[i].erase(std::remove_if(res[i].begin(), res[i].end(), ::isspace), res[i].end());
 		if (res[i].find(";") != string::npos)

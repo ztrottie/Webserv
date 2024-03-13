@@ -20,15 +20,12 @@ bool	checkIdentationParsing(std::string const &line, std::string const &firstWor
 	if (isInsideLocation == true)
 		nbIdentation = 2;
 	if (line.find(firstWord) != nbIdentation){
-		// cout << "ah bon?" << endl;
 		return false;
 	}
 	if (line[0] != '	'){
-		// cout << "ah oui?" << endl;
 		return false;
 	}else if(isInsideLocation == true){
 		if (line[1] != '	'){
-			// cout << "meeehhh?" << endl;
 			return false;
 		}
 	}
@@ -87,9 +84,3 @@ bool	checkForArgs(string const &line, size_t minSizeExpected){
 	}
 	return true;
 }
-
-// bool	checkErrorCode(int errorCode){
-// 	switch (errorCode) {
-// 		case
-// 	}
-// }
