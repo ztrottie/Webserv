@@ -1,4 +1,7 @@
 #include "../include/parsing.hpp"
+#include <algorithm>
+#include <string>
+#include <vector>
 
 void	parsing::setDefault(uint16_t *_port, const char **_host, string *_name, Router &rout){
 	if (*_port == 0)
@@ -208,31 +211,16 @@ void parsing::assignErrorPage(const string &line, Router &rout){
 	}
 }
 
-// void	parsing::assignReturn(const string &line, Router &rout){
-// 	std::vector<string> split = splitString(line, ' ');
-// 	for (size_t i = 1; i < split.size(); i++) {
-// 		if (containsNonDigit(split[i]) == false && split[i].length() > 0){
-// 			// rout. = true;
-// 			// rout.setreturncode = split[i];
-// 			// rout.setreturnlocation = split[split.size() - 1];
-// 			// return ;
-// 			cout << split[i] << " a été assigner a " << split[split.size() - 1] << endl;
-// 		}
-// 	}
-// }
-
-
-
 //----------------------------LOCATION---------------------------------
 
 void	parsing::assignLocation(string &line, std::ifstream &file, size_t *i, Router &rout){
 	string	name = line.substr(line.rfind(" "), (line.length() - line.rfind(" ")) - 1); name.erase(std::remove_if(name.begin(), name.end(), ::isspace), name.end());
-	// cout << "Name of location in assignation" << name << endl;
+	// cout << "Name of location in assignation	" << name << endl;
 	Location	*loc = new Location(name);
 	(*i)++;
 	while (*i < verifLine.size()){
 		std::getline(file, line);
-		// cout << line << endl;
+		// cout << "LINE	" << line << " " << verifLine[*i] << endl;
 		if (verifLine[*i] == 0){
 			if (findFirstWord(line) == "allowedMethods")
 				assignAllowedMethods(line, *loc);
@@ -334,16 +322,29 @@ void	parsing::assignMaxBody(const string &line, Location &loc){
 }
 
 void parsing::assignReturn(const string &line, Location &loc){
-	std::vector<string> split = splitString(line, ' ');
-	for (size_t i = 1; i < split.size(); i++) {
-		if (containsNonDigit(split[i]) == false && split[i].length() > 0){
-			loc.setRedirection(true);
-			loc.setRedirectionCode(std::stoi(split[i]));
-			loc.setRedirectionLocation(split[split.size() - 1]);
-			// cout << split[i] << " a été assigner a " << split[split.size() - 1] << endl;
-			return ;
+	string tempLine = line;
+	// cout << "ASSIGN RETURN	" << tempLine << endl;
+	tempLine.erase(0, 9);
+	loc.setRedirection(true);
+	std::vector<string> res = splitString(tempLine, ' ');
+	for (size_t i = 0; i < res.size(); i++){
+		res[i].erase(std::remove_if(res[i].begin(), res[i].end(), ::isspace), res[i].end());
+		if (res[i].find(";") != string::npos)
+			res[i].erase(res[i].length() - 1, res[i].length());
+	}
+	for (size_t i = 0; i < res.size(); i++){
+		if (!res[i].empty()){
+			if (containsNonDigit(res[i]) == false){
+				loc.setRedirectionCode(std::stoi(res[i]));
+			}else if (res[i].find("\"") < string::npos){
+				res[i].erase(std::remove(res[i].begin(), res[i].end(), '"'), res[i].end());
+				loc.setRedirectionLocation(res[i], true);
+			}else {
+				loc.setRedirectionLocation(res[i], false);
+			}
 		}
 	}
+	(void)loc;
 }
 
 void	parsing::assignUploadBool(const string &line, Location &loc){

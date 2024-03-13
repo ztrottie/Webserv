@@ -23,7 +23,9 @@ bool	parsing::checkLocation(string &line, unsigned int *nbLine){
 	if (findFirstWord(line) != "location")
 		return -1;
 	cout << BLUE << "[" << RESET << std::to_string(*nbLine + 1) << BLUE << "]"; simpleWriteTimestamp(BLUE, "Checking new location");
-	if (isThereSomethingInMyString(line, "location", line.rfind(" ")) == true || line.rfind("{") != line.length() - 1){
+	string name = line.substr(line.rfind(" ") + 1, line.rfind("{") - (line.rfind(" ") + 1));
+	if (isThereSomethingInMyString(line, "location", line.rfind(" ")) == true || line.rfind("{") != line.length() - 1 ||
+		name.empty() || name[0] != '/'){
 		wagadooMachine(line, defaultIfError, IMPOSTORERROR, *nbLine, "", defaultIfError, verifLine, true);
 		if (line.rfind("{") != line.length() - 1)
 			return true;
@@ -44,7 +46,23 @@ bool	parsing::checkLocation(string &line, unsigned int *nbLine){
 			simpleWriteTimestamp(RED, "You can't have a location inside another one, exiting program");
 			return false;
 		}
-		if (line.find("}") < string::npos){
+		else if (findFirstWord(line) == "server"){
+			simpleWriteTimestamp(RED, "This line can't be inside the location : " + line);
+			verifLine.push_back(DONT);
+		}
+		else if (findFirstWord(line) == "server_name"){
+			simpleWriteTimestamp(RED, "This line can't be inside the location : " + line);
+			verifLine.push_back(DONT);
+		}
+		else if (findFirstWord(line) == "listen"){
+			simpleWriteTimestamp(RED, "This line can't be inside the location : " + line);
+			verifLine.push_back(DONT);
+		}
+		else if (findFirstWord(line) == "host"){
+			simpleWriteTimestamp(RED, "This line can't be inside the location : " + line);
+			verifLine.push_back(DONT);
+		}
+		else if (line.find("}") < string::npos){
 			if (line.find("}") != 1 || line.length() != 2){
 				simpleWriteTimestamp(RED, "Location wasn't correctly closed, exiting program");
 				return false;
@@ -190,7 +208,7 @@ void	parsing::checkRootLocation(string const &line, unsigned int nbLine){
 	// cout << "line " << nbLine << "	" << line << " : " << verifLine[nbLine] << endl;
 }
 
-void	parsing::checkAllowedMethods(string const &line, unsigned int nbLine){
+void	parsing::checkAllowedMethods(string &line, unsigned int nbLine){
 	if (findFirstWord(line) != "allowedMethods")
 		return ;
 	if (checkIdentationParsing(line, "allowedMethods", true) == false){
@@ -273,7 +291,9 @@ void	parsing::checkReturnsLocation(string const &line, unsigned int nbLine){
 		return ;
 	}
 	std::vector<string> split = splitString(line, ' ');
-	if (split[split.size() - 1].substr(0, 5) == "https"){
+	if (split[split.size() - 1].length() > 5 && split[split.size() - 1].substr(split[split.size() - 1].length() - 6, split[split.size() - 1].length()) == ".html;"){
+		;
+	}else if (split[split.size() - 1].substr(0, 5) == "https"){
 		;
 	}else if (split[split.size() - 1][0] == '/' || split[split.size() - 1][0] == '"' || split[split.size() - 1][0] == '$'){
 		;

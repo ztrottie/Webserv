@@ -28,6 +28,7 @@ private:
 	int 								_redirectionCode;
 	std::string							_redirectionLocation;
 	bool								_clientMaxBodySizeSet;
+	bool								_redirIsString;
 
 public:
 	// Constructors / Destructor
@@ -49,7 +50,7 @@ public:
 	void setUploadStore(std::string const &value);
 	void setRedirection(bool value);
 	void setRedirectionCode(int code);
-	void setRedirectionLocation(std::string str);
+	void setRedirectionLocation(std::string str, bool isString);
 	void setClientMaxBodySize(size_t value);
 
 	// Functions

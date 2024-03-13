@@ -113,8 +113,9 @@ void Location::setRedirectionCode(int code){
 	_redirectionCode = code;
 }
 
-void Location::setRedirectionLocation(std::string str){
+void Location::setRedirectionLocation(std::string str, bool isString){
 	_redirectionLocation = str;
+	_redirIsString = isString;
 }
 
 std::string Location::getRedirectionLocation() const{
