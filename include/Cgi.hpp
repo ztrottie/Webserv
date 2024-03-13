@@ -1,10 +1,9 @@
 #pragma once
 
-#include "Router.hpp"
 #include "Request.hpp"
-#include "Server.hpp"
-#include "Response.hpp"
-#include "Client.hpp"
+#include <unistd.h>
+#include <fcntl.h>
+#include <iostream>
 
 class Cgi
 {

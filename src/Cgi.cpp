@@ -1,11 +1,4 @@
 #include "../include/Cgi.hpp"
-#include <cstdlib>
-#include <fstream>
-#include <iostream>
-#include <sys/fcntl.h>
-#include <sys/wait.h>
-#include <system_error>
-#include <unistd.h>
 
 Cgi::Cgi() {
 	std::cout << "Default Cgi constructor " << std::endl;
@@ -74,19 +67,19 @@ void Cgi::execute(Request *request){
 		return ;
 	}
 	if (pid == 0){
-	if (dup2(_inputFd, STDIN_FILENO) == -1){
-			std::cout << "Cannot dup2 fd for some reason!" << std::endl;
-			return ;
+		if (dup2(_inputFd, STDIN_FILENO) == -1){
+				std::cout << "Cannot dup2 fd for some reason!" << std::endl;
+				return ;
+			}
+			close(_inputFd);
+			if (dup2(_outputFd, STDOUT_FILENO) == -1){
+				std::cout << "Cannot dup2 fd for some reason!" << std::endl;
+				return ;
+			}
+			close(_outputFd);
+			status = execve(argv[0], const_cast<char* const *>(argv), const_cast<char * const *>(_env));
+			exit(0);
 		}
-		close(_inputFd);
-		if (dup2(_outputFd, STDOUT_FILENO) == -1){
-			std::cout << "Cannot dup2 fd for some reason!" << std::endl;
-			return ;
-		}
-		close(_outputFd);
-		status = execve(argv[0], const_cast<char* const *>(argv), const_cast<char * const *>(_env));
-		exit(0);
-	}
 	else
 		waitpid(pid, &status, 0);
 }
