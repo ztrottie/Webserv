@@ -88,7 +88,7 @@ int Router::checkIfFileIsValid(std::string const &path){
 
 int Router::getErrorPage(std::string &path, int errorCode, Location *loc){
 	std::map<int, std::string>::const_iterator it = _errorPagesLocation.find(errorCode);
-	if (!loc || !loc->isErrorCodeValid(errorCode, path)){
+	if (!loc || loc->isErrorCodeValid(errorCode, path) == NOTFOUND){
 		if (it == _errorPagesLocation.end())
 			return INTERNALSERVERROR;
 		path = _errorPagesLocation[errorCode];	
@@ -132,7 +132,10 @@ int Router::getFile(Request *request, std::string &path) {
 	return (OK);
 }
 
-std::string	Router::getRoot() const {
+std::string	Router::getRoot(Location *loc) const {
+	std::string root;
+	if (loc && loc->getRoot(root) == FOUND)
+		return root;
 	return _root;
 }
 

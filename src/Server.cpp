@@ -1,7 +1,10 @@
 #include "../include/Server.hpp"
 #include "../include/Response.hpp"
 #include <cstring>
-#include <new>
+#ifndef BUFFER_SIZE
+# define BUFFER_SIZE 1024
+#endif
+
 
 Server::Server(uint16_t port, const char *host, std::string name, Router *router, socketInfo *server) : _port(port), _host(host), _name(name) {
 	std::cout << YELLOW << timestamp() << " Initializing a Server named " << _name << " on " << _host << ":" << _port << RESET << std::endl;
@@ -62,9 +65,10 @@ int Server::acceptConnection(socketInfo *client) {
 }
 
 int Server::recieveRequest(socketInfo *client) {
-	char *buffer = new char[4000];
+	char *buffer = new char[BUFFER_SIZE];
 	char *tmp = buffer;
-	ssize_t nbytes = recv(client->socket, buffer, 4000, 0);
+	ssize_t nbytes = recv(client->socket, buffer, BUFFER_SIZE, 0);
+	std::memset(buffer + nbytes, 0, BUFFER_SIZE - nbytes);
 	if (client->requests.empty() || client->requests.back()->isValid() == RESPOND) {
 		client->requests.push_back(new Request(client, this));
 	}

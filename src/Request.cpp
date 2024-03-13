@@ -109,7 +109,8 @@ void Request::_headerParser(char **buffer) {
 			_rawSize = 0;
 		} else {
 			_rawSize -= headerEnd;
-		} 
+		}
+		std::cout << _raw << std::endl;
 		_raw = _raw.substr(headerEnd);
 	}
 }
@@ -182,7 +183,7 @@ void Request::ParseBodyHeader(char **buffer) {
 	if (headerEnd != std::string::npos) {
 		headerEnd += 4;
 		_bodyStarted = true;
-		if (_errorCode == OK)
+		if (_errorCode == OK && _fileName.empty())
 			_search("filename=\"", '\"', _fileName);
 		if (headerEnd > _rawSize) {
 			size_t nbytes = headerEnd - _rawSize;
@@ -228,11 +229,13 @@ void Request::addBody(char **buffer) {
 		}
 		if (_bodyLenWritten == _bodyLen) {
 			_raw = *buffer;
+			_rawSize = _nbytesRead;
 			if (_errorCode == OK && !_tempFilePath.empty())
 				close(_tempFileFd);
 		}
 	}
 	if (_bodyLenWritten == _bodyLen && !_bodyEnded) {
+		std::cout << _raw << std::endl;
 		size_t end = _raw.find(endBoundary);
 		if (end != std::string::npos) {
 			_bodyEnded = true;

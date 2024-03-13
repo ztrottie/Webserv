@@ -3,6 +3,7 @@
 #include <cstddef>
 #include <iostream>
 #include <fstream>
+#include <iterator>
 #include <ostream>
 #include <sstream>
 #include <sys/fcntl.h>
@@ -117,13 +118,12 @@ void Response::contentTypeGenerator(std::string const &path) {
 void Response::handleGet(Request *request, int &errorCode) {
 	std::string path;
 	errorCode = request->getRouter()->getFile(request, path);
-	std::cout << errorCode << std::endl;
 	if (errorCode == OK)
 		errorCode = openPath(path);
 	if (errorCode == INTERNALSERVERROR) {
 		internalServerError(errorCode);
 		return;
-	} else if (errorCode >= 300 && (request->getLocation()->getAutoIndex() == false || (request->getLocation()->getAutoIndex() && path.empty()))) {
+	} else if (errorCode >= 300 && request->getLocation()->getAutoIndex() == false) {
 		std::string errorPath;
 		int errorPageCode = request->getRouter()->getErrorPage(errorPath, errorCode, request->getLocation());
 		if (errorPageCode == INTERNALSERVERROR || openPath(errorPath) >= 300)
@@ -132,6 +132,7 @@ void Response::handleGet(Request *request, int &errorCode) {
 		return;
 	} else if (errorCode != 200 && request->getLocation()->getAutoIndex()) {
 		directoryListing(request, errorCode);
+		std::cout << errorCode << std::endl;
 		if (errorCode == INTERNALSERVERROR)
 			return;
 		if (errorCode >= 300){
@@ -148,18 +149,30 @@ void Response::handleGet(Request *request, int &errorCode) {
 }
 
 void Response::handleDelete(Request *request, int &errorCode) {
-	std::string path = request->getFilePath();
+	std::string path = request->getRouter()->getRoot(request->getLocation());
+	std::string filePath = request->getFilePath();
+	if (path.back() == '/' && filePath.front() == '/') {
+		path += filePath.substr(1);
+	}
+	std::cout << path << std::endl;
 	if (access(path.c_str(), F_OK) != 0) {
 		errorCode = NOTFOUND;
 		std::string errorPath;
 		int errorPageCode = request->getRouter()->getErrorPage(errorPath, errorCode, request->getLocation());
-		if (errorPageCode == INTERNALSERVERROR || openPath(errorPath) >= 300)
+		if (errorPageCode == INTERNALSERVERROR || openPath(errorPath) >= 300) {
 			internalServerError(errorCode);
+			return;
+		}
 		contentTypeGenerator(errorPath);
 		return;
 	} else {
 		if (std::remove(path.c_str()) != 0)
 			internalServerError(errorCode);
+		size_t end = path.rfind("/");
+		if (end != std::string::npos) {
+			std::string newPath = path.substr(0, end);
+			request->setFilePath(newPath);
+		}
 		if (request->getLocation()->getAutoIndex())
 			directoryListing(request, errorCode);
 		else {
@@ -167,6 +180,7 @@ void Response::handleDelete(Request *request, int &errorCode) {
 			_contentType = "text/plain";
 			errorCode = OK;
 		}
+		std::cout << errorCode << std::endl;
 	}
 }
 
@@ -198,16 +212,12 @@ std::string Response::_linkGenerator(std::string const &name) const {
 }
 
 void Response::directoryListing(Request *request, int &errorCode) {
-	size_t end = request->getFilePath().rfind("/");
-	if (end == std::string::npos) {
-		internalServerError(errorCode);
-		return;
+	std::string path = request->getRouter()->getRoot(request->getLocation());
+	std::string filePath = request->getFilePath();
+	if (path.back() == '/' && filePath.front() == '/') {
+		path += filePath.substr(1);
 	}
-	std::string path;
-	if (end != 0)
-		path = request->getFilePath().substr(0 , end);
-	else
-		path = "/";
+	std::cout << path << std::endl;
 	DIR *dir;
 	struct dirent* entry;
 	if (access(path.c_str(), F_OK) != 0) {
@@ -247,7 +257,7 @@ void	Response::handleUploadedFile(Request *request, int &errorCode) {
 	if (filePath.back() != '/')
 		filePath += "/";
 	filePath += request->getFileName();
-	int fileFd = open(request->getFilePath().c_str(), O_CREAT | O_WRONLY, 0644); 
+	int fileFd = open(filePath.c_str(), O_CREAT | O_WRONLY, 0644); 
 	if (tempFileFd < 0 || fileFd < 0) {
 		if (tempFileFd > 0)
 			close(tempFileFd);

@@ -53,7 +53,7 @@ public:
 
 	long long	getClientMaxBodySizeParsing() const;
 	size_t 		getClientMaxBodySize(Location *location) const;
-	std::string	getRoot() const;
+	std::string	getRoot(Location *loc) const;
 	std::string	getIndex() const;
 	std::string getErrorForParsing(int code) const;
 	std::string getLocationParsing() const;
