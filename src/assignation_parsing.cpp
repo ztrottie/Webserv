@@ -12,10 +12,10 @@ void	parsing::setDefault(uint16_t *_port, const char **_host, string *_name, Rou
 		*_name = DEFAULTSERVERNAME;
 
 	//router
-	if (rout.getClientMaxBodySizeParsing() == -1)
-		rout.setClientMaxBodySize(DEFAULTMAXBODY);
 	if (rout.getRoot(NULL) == "")
 		rout.setRoot(DEFAULTROOT);
+	if (rout.getClientMaxBodySizeParsing() == -1)
+		rout.setClientMaxBodySize(DEFAULTMAXBODY);
 	if (rout.getIndex() == "")
 		rout.setIndex(DEFAULTINDEX);
 	if (rout.getLocationParsing() == "" || rout.getLocationParsing().find("	/	") == string::npos){

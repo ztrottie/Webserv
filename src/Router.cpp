@@ -4,6 +4,7 @@
 
 Router::Router() {
 	std::cout << timestamp() << " Initializing the server Router!" << std::endl;
+	_clientMaxBodySize = -1;
 }
 
 Router::~Router() {
@@ -37,6 +38,7 @@ size_t Router::getClientMaxBodySize(Location *location) const{
 }
 
 long long Router::getClientMaxBodySizeParsing() const{
+	// cout << _clientMaxBodySize << endl;
 	return (_clientMaxBodySize);
 }
 
