@@ -5,6 +5,7 @@
 
 Location::Location() : _name("default"), _clientMaxBodySizeSet(false) {
 	std::cout << "Default Location constructor " << std::endl;
+	_redirectionCode = -1;
 }
 
 Location::Location(std::string const &name) : _name(name), _clientMaxBodySizeSet(false) {

@@ -333,7 +333,6 @@ void parsing::assignReturn(const string &line, Location &loc){
 			}
 		}
 	}
-	(void)loc;
 }
 
 void	parsing::assignUploadBool(const string &line, Location &loc){
