@@ -111,15 +111,28 @@ void	parsing::createServer(string &line, std::ifstream &file, size_t *i, Webserv
 	while (*i < verifLine.size()){
 		std::getline(file, line);
 		if (verifLine[*i] == 0){
-			if (port == 0 && findFirstWord(line) == "listen"){
-				port = assignPort(line);
+			if (findFirstWord(line) == "listen"){
+				if (port > 0){
+					cout << RED << "Port is already set, this port: " << line << " will not be used" RESET << endl;
+				}else {
+					port = assignPort(line);
+				}
 			}
-			if (host == NULL && findFirstWord(line) == "host"){
-				string temp = assignHost(line);
-				host = temp.c_str();
+			if (findFirstWord(line) == "host"){
+				if (host != NULL){
+					cout << RED << "Host is already set, this host: " << line << " will not be used" RESET << endl;
+				}else {
+					string temp = assignHost(line);
+					host = temp.c_str();
+				}
 			}
-			if (name.empty() && findFirstWord(line) == "server_name")
-				name = assignServerName(line);
+			if (findFirstWord(line) == "server_name"){
+				if (!name.empty()){
+					cout << RED << "Server_name is already set, this server_name: " << line << " will not be used" RESET << endl;
+				}else {
+					name = assignServerName(line);
+				}
+			}
 			if (findFirstWord(line) == "client_max_body_size")
 				assignMaxBody(line, *router);
 			if (findFirstWord(line) == "root")
@@ -164,6 +177,10 @@ string	parsing::assignServerName(const string &line){
 }
 
 void	parsing::assignMaxBody(const string &line, Router &rout){
+	if (rout.getClientMaxBodySizeParsing() > -1){
+		cout << RED << "Client_max_body_size is already set, this client_max_body_size: " << line << " will not be used" RESET << endl;
+		return ;
+	}
 	unsigned long	CMBS = 0;
 	string tempLine = line;
 	tempLine.erase(std::remove_if(tempLine.begin(), tempLine.end(), ::isspace), tempLine.end());
@@ -182,6 +199,10 @@ void	parsing::assignMaxBody(const string &line, Router &rout){
 }
 
 void parsing::assignRoot(const string &line, Router &rout){
+	if (rout.getRootParsing() != ""){
+		cout << RED << "Root is already set, this Root: " << line << " will not be used" RESET << endl;
+		return ;
+	}
 	string tempLine = line;
 	tempLine.erase(std::remove_if(tempLine.begin(), tempLine.end(), ::isspace), tempLine.end());
 	tempLine.erase(0, 4); tempLine.erase(tempLine.size() - 1, tempLine.size());
@@ -189,6 +210,10 @@ void parsing::assignRoot(const string &line, Router &rout){
 }
 
 void parsing::assignIndex(const string &line, Router &rout){
+	if (rout.getIndex() != ""){
+		cout << RED << "Index is already set, this Index: " << line << " will not be used" RESET << endl;
+		return ;
+	}
 	string tempLine = line;
 	tempLine.erase(std::remove_if(tempLine.begin(), tempLine.end(), ::isspace), tempLine.end());
 	tempLine.erase(0, 5); tempLine.erase(tempLine.size() - 1, tempLine.size());
@@ -200,7 +225,11 @@ void parsing::assignErrorPage(const string &line, Router &rout){
 	split[split.size() - 1].erase(split[split.size() - 1].length() - 1, split[split.size() - 1].length());
 	for (size_t i = 1; i < split.size(); i++) {
 		if (containsNonDigit(split[i]) == false && split[i].length() > 0){
-			rout.addErrorPage(std::stoi(split[i]), split[split.size() - 1]);
+			if (rout.getErrorForParsing(std::stoi(split[i])) != ""){
+				cout << RED << "This error code: " << split[i] << "is already set, it will not be used" RESET << endl;
+			}else {
+				rout.addErrorPage(std::stoi(split[i]), split[split.size() - 1]);
+			}
 		}
 	}
 }
@@ -255,6 +284,10 @@ void	parsing::assignLocation(string &line, std::ifstream &file, size_t *i, Route
 }
 
 void parsing::assignIndex(const string &line, Location &loc){
+	if(loc.getIndex() != ""){
+		cout << RED << "Index is already set in this location, this Index: " << line << " will not be used" RESET << endl;
+		return ;
+	}
 	string tempLine = line;
 	tempLine.erase(std::remove_if(tempLine.begin(), tempLine.end(), ::isspace), tempLine.end());
 	tempLine.erase(0, 5); tempLine.erase(tempLine.size() - 1, tempLine.size());
@@ -262,6 +295,10 @@ void parsing::assignIndex(const string &line, Location &loc){
 }
 
 void parsing::assignRoot(const string &line, Location &loc){
+	if (loc.getRootParsing() != ""){
+		cout << RED << "Root is already set in this location, this Root: " << line << " will not be used" RESET << endl;
+		return ;
+	}
 	string tempLine = line;
 	tempLine.erase(std::remove_if(tempLine.begin(), tempLine.end(), ::isspace), tempLine.end());
 	tempLine.erase(0, 4); tempLine.erase(tempLine.size() - 1, tempLine.size());
@@ -281,12 +318,27 @@ void	parsing::assignAllowedMethods(const string &line, Location &loc){
 		}
 	}
 	for (size_t i = 0 ; i < res.size(); i++){
-		if (res[i] == "GET")
-			loc.addAllowedMethod(res[i]);
-		else if (res[i] == "POST")
-			loc.addAllowedMethod(res[i]);
-		else if (res[i] == "DELETE")
-			loc.addAllowedMethod(res[i]);
+		if (res[i] == "GET"){
+			if (loc.getAllowedMethods().find("GET") < string::npos){
+				cout << RED "The Method GET is already set for this location, we will not set it again" RESET << endl;
+			}else {
+				loc.addAllowedMethod(res[i]);
+			}
+		}
+		else if (res[i] == "POST"){
+			if (loc.getAllowedMethods().find("POST") < string::npos){
+				cout << RED "The Method POST is already set for this location, we will not set it again" RESET << endl;
+			}else {
+				loc.addAllowedMethod(res[i]);
+			}
+		}
+		else if (res[i] == "DELETE"){
+			if (loc.getAllowedMethods().find("DELETE") < string::npos){
+				cout << RED "The Method DELETE is already set for this location, we will not set it again" RESET << endl;
+			}else {
+				loc.addAllowedMethod(res[i]);
+			}
+		}
 	}
 }
 
@@ -294,12 +346,20 @@ void	parsing::assignErrorPage(const string &line, Location &loc){
 	std::vector<string> split = splitString(line, ' ');
 	for (size_t i = 1; i < split.size(); i++) {
 		if (containsNonDigit(split[i]) == false && split[i].length() > 0){
-			loc.addErrorPage(std::stoi(split[i]), split[split.size() - 1]);
+			if (loc.getErrorParsing(std::stoi(split[i])) != ""){
+				cout << RED << "This error code: " << split[i] << "is already set for this location, it will not be used" RESET << endl;
+			}else {
+				loc.addErrorPage(std::stoi(split[i]), split[split.size() - 1]);
+			}
 		}
 	}
 }
 
 void	parsing::assignMaxBody(const string &line, Location &loc){
+	if (loc.getClientMaxBodySizeParsing() > -1){
+		cout << RED << "Client_max_body_size is already set for this location, this client_max_body_size: " << line << " will not be used" RESET << endl;
+		return ;
+	}
 	unsigned long	CMBS = 0;
 	string tempLine = line;
 	tempLine.erase(std::remove_if(tempLine.begin(), tempLine.end(), ::isspace), tempLine.end());
@@ -318,6 +378,10 @@ void	parsing::assignMaxBody(const string &line, Location &loc){
 }
 
 void parsing::assignReturn(const string &line, Location &loc){
+	if (loc.getRedirection() == true){
+		cout << RED << "The Return is already set for this location, this The Return: " << line << " will not be used" RESET << endl;
+		return ;
+	}
 	string tempLine = line;
 	tempLine.erase(0, 9);
 	loc.setRedirection(true);
@@ -342,6 +406,10 @@ void parsing::assignReturn(const string &line, Location &loc){
 }
 
 void	parsing::assignUploadBool(const string &line, Location &loc){
+	if (loc.getUploadEnableSetter() == true){
+		cout << RED << "The UploadEnable vaiable is already set for this location, this The UploadEnable vaiable: " << line << " will not be used" RESET << endl;
+		return ;
+	}
 	int start = line.rfind(" ");
 	string str = line.substr(start + 1, line.length() - start);
 	if (str == "true;")
@@ -351,12 +419,20 @@ void	parsing::assignUploadBool(const string &line, Location &loc){
 }
 
 void	parsing::assignUploadStore(const string &line, Location &loc){
+	if (loc.getUploadStore() != ""){
+		cout << RED << "The UploadStore is already set for this location, this The UploadStore: " << line << " will not be used" RESET << endl;
+		return ;
+	}
 	int start = line.rfind(" ");
 	string str = line.substr(start + 1, (line.length() - 2) - start);
 	loc.setUploadStore(str);
 }
 
 void	parsing::assignAutoIndex(const string &line, Location &loc){
+	if (loc.getAutoIndexSetter() == true){
+		cout << RED << "The AutoIndex vaiable is already set for this location, this The AutoIndex vaiable: " << line << " will not be used" RESET << endl;
+		return ;
+	}
 	int start = line.rfind(" ");
 	string str = line.substr(start + 1, line.length() - start);
 	if (str == "true;")
@@ -366,6 +442,10 @@ void	parsing::assignAutoIndex(const string &line, Location &loc){
 }
 
 void	parsing::assignUseCGI(const string &line, Location &loc){
+	if (loc.getUseCGISetter() == true){
+		cout << RED << "The UseCGI vaiable is already set for this location, this The UseCGI vaiable: " << line << " will not be used" RESET << endl;
+		return ;
+	}
 	int start = line.rfind(" ");
 	string str = line.substr(start + 1, line.length() - start);
 	if (str == "true;")

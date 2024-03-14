@@ -57,4 +57,5 @@ public:
 	std::string	getIndex() const;
 	std::string getErrorForParsing(int code) const;
 	std::string getLocationParsing() const;
+	std::string	getRootParsing() const;
 };
