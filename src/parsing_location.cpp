@@ -81,6 +81,7 @@ bool	parsing::checkLocation(string &line, unsigned int *nbLine){
 			checkUploadEnable(line, *nbLine);
 			checkUploadStore(line, *nbLine);
 			checkAutoIndex(line, *nbLine);
+			checkUseCGI(line, *nbLine);
 		}
 		(*nbLine)++;
 	}
@@ -249,6 +250,13 @@ void	parsing::checkErrorPageLocation(string const &line, unsigned int nbLine){
 	}
 	std::vector<string> split = splitString(line, ' ');
 	for (size_t i = 1; i < split.size() - 1; i++){
+		if (i < split.size() - 1 )
+			try {
+				std::stoi(split[i]);
+			} catch (std::exception &e) {
+				wagadooMachine(line, defaultIfError, NUMBERTOOBIG, nbLine, ", it must fit in an int", defaultIfError, verifLine, true);
+				return ;
+			}
 		if (containsNonDigit(split[split.size() - 1]) == false){
 			wagadooMachine(line, defaultIfError, MISSINGEND, nbLine, ", this line need a HTML to link up with the error code", defaultIfError, verifLine, true);
 			return ;
@@ -289,13 +297,24 @@ void	parsing::checkReturnsLocation(string const &line, unsigned int nbLine){
 	}else if (split[split.size() - 1][0] == '/' || split[split.size() - 1][0] == '"' || split[split.size() - 1][0] == '$'){
 		;
 	}else if(containsNonDigit(split[split.size() - 1]) == false){
-		;
+		try {
+			std::stoi(split[split.size() - 1]);
+		} catch (std::exception &e) {
+			wagadooMachine(line, defaultIfError, NUMBERTOOBIG, nbLine, ", it must fit in an int", defaultIfError, verifLine, true);
+			return ;
+		}
 	}
 	else{
 		wagadooMachine(line, defaultIfError, WRONGRETURN, nbLine, "", defaultIfError, verifLine, true);
 		return ;
 	}
 	for (size_t i = 1; i <= split.size() - 2; i++){
+		try {
+			std::stoi(split[i]);
+		} catch (std::exception &e) {
+			wagadooMachine(line, defaultIfError, NUMBERTOOBIG, nbLine, ", it must fit in an int", defaultIfError, verifLine, true);
+			return ;
+		}
 		if (containsNonDigit(split[i]) == true){
 			wagadooMachine(line, defaultIfError, DIGITERROR, nbLine, "", defaultIfError, verifLine, true);
 			return ;
@@ -363,6 +382,38 @@ void	parsing::checkAutoIndex(string const &line, unsigned int nbLine){
 		return ;
 	}
 	if (isThereSomethingInMyString(line, "autoindex", line.rfind(" ")) == true){
+		wagadooMachine(line, defaultIfError, IMPOSTORERROR, nbLine, "", defaultIfError, verifLine, true);
+		return ;
+	}
+	string temp = line.substr(line.rfind(" ") + 1, line.length());
+	if (temp != "true;" && temp != "false;"){
+		wagadooMachine(line, defaultIfError, MISSINGEND, nbLine, ", the last arguments must be true or false", defaultIfError, verifLine, true);
+		return ;
+	}
+	selectMessage(VALID, NOERR, nbLine, " \"" + line + "\"");
+	verifLine.push_back(OKPARS);
+}
+
+void	parsing::checkUseCGI(string const &line, unsigned int nbLine){
+	if (findFirstWord(line) != "useCGI")
+		return ;
+	if (checkIdentationParsing(line, "useCGI", true) == false){
+		wagadooMachine(line, defaultIfError, IDENTATIONERROR, nbLine, "", defaultIfError, verifLine, true);
+		return ;
+	}
+	if (checkVargule(line) == false){
+		wagadooMachine(line, defaultIfError, VARGULEERR, nbLine, "", defaultIfError, verifLine, true);
+		return ;
+	}
+	if (checkForArgs(line, 8) == false){
+		wagadooMachine(line, defaultIfError, NUMBERARGSERROR, nbLine, "", defaultIfError, verifLine, true);
+		return ;
+	}
+	if (checkForTabs(line, 1) == false){
+		wagadooMachine(line, defaultIfError, SPACEERROR, nbLine, "", defaultIfError, verifLine, true);
+		return ;
+	}
+	if (isThereSomethingInMyString(line, "useCGI", line.rfind(" ")) == true){
 		wagadooMachine(line, defaultIfError, IMPOSTORERROR, nbLine, "", defaultIfError, verifLine, true);
 		return ;
 	}

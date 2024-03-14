@@ -358,3 +358,12 @@ void	parsing::assignAutoIndex(const string &line, Location &loc){
 	else if (str == "false;")
 		loc.setAutoIndex(false);
 }
+
+void	parsing::assignUseCGI(const string &line, Location &loc){
+	int start = line.rfind(" ");
+	string str = line.substr(start + 1, line.length() - start);
+	if (str == "true;")
+		loc.setUseCGI(true);
+	else if (str == "false;")
+		loc.setUseCGI(false);
+}

@@ -44,6 +44,8 @@ std::string	enumToString(int code){
 		case BADARGS: return "This line have an arguments that is not valid";
 		case WRONGRETURN: return "This return line must need as it's last argument an path, https, error_code or a string";
 		case WRONGMETHODS: return "This allowedMethods line can only have GET, POST, DELETE as arguments";
+		case NUMBERTOOBIG: return "This number does not fit in the variable it is assigned";
+		case NUMBERTOOLOW: return "This number is too low, it must be at least: ";
 		case NOERR: return "This line is ok";
 	}
 	return "Unknowed error.... HELP";

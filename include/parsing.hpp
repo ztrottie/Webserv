@@ -80,6 +80,7 @@ class parsing{
 		void					checkUploadStore(string const &line, unsigned int nbLine);
 		void					checkClientMaxBodySizeLocation(string const &line, unsigned int nbLine);
 		void					checkAutoIndex(const string &line, unsigned int nbline);
+		void					checkUseCGI(string const &line, unsigned int nbLine);
 		// Assignation
 		void				setDefault(uint16_t *_port, const char **_host, string *_name, Router &rout);
 			//Server
@@ -104,4 +105,5 @@ class parsing{
 		void				assignUploadBool(const string &line, Location &loc);
 		void				assignUploadStore(const string &line, Location &loc);
 		void				assignAutoIndex(const string &line, Location &loc);
+		void				assignUseCGI(const string &line, Location &loc);
 };
