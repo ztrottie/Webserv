@@ -84,6 +84,8 @@ bool	parsing::parseConfigFile(){
 			verifLine.push_back(DONT);
 		nbLine++;
 	}
+	if (nbLine == 1 && defaultIfError == false)
+		return false;
 	return true;
 }
 
@@ -190,6 +192,10 @@ bool	parsing::checkServer(std::string &line, unsigned int *nbLine){
 			return false;
 		}
 		if (findFirstWord(line) == "return" == true){
+			wagadooMachine(line, false, IMPOSTORERROR, *nbLine, "", defaultIfError, verifLine, false);
+			return false;
+		}
+		if (findFirstWord(line) == "useCGI" == true){
 			wagadooMachine(line, false, IMPOSTORERROR, *nbLine, "", defaultIfError, verifLine, false);
 			return false;
 		}

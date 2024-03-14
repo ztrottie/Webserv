@@ -209,6 +209,10 @@ void parsing::assignErrorPage(const string &line, Router &rout){
 
 void	parsing::assignLocation(string &line, std::ifstream &file, size_t *i, Router &rout){
 	string	name = line.substr(line.rfind(" "), (line.length() - line.rfind(" ")) - 1); name.erase(std::remove_if(name.begin(), name.end(), ::isspace), name.end());
+	// cout << rout.getLocationParsing() << endl;
+	if (locationAlreadyThere(rout.getLocationParsing(), name) == true){
+		cout << RED << "The second location with the name : " << name << " will not be created, because it already exist" << RESET << endl;
+	}
 	Location	*loc = new Location(name);
 	(*i)++;
 	while (*i < verifLine.size()){
@@ -232,6 +236,8 @@ void	parsing::assignLocation(string &line, std::ifstream &file, size_t *i, Route
 				assignUploadStore(line, *loc);
 			if (findFirstWord(line) == "autoindex")
 				assignAutoIndex(line, *loc);
+			if (findFirstWord(line) == "useCGI")
+				assignUseCGI(line, *loc);
 		}
 		if (line.find("}") == 1){
 			break ;

@@ -52,3 +52,5 @@ bool	checkForTabs(string const &line, size_t lastRequireTabs);
 bool	checkVargule(std::string const &line);
 bool	checkForArgs(string const &line, size_t minSizeExpected);
 void	wagadooMachine(string const &line, int flags, int errorCode, size_t nbLine, string messSupp, bool defaultIfError, std::vector<int> &verifLine, bool insideLocation);
+bool	checkErrorCode(string const &line);
+bool	locationAlreadyThere(string const &allLocation, string const &name);
