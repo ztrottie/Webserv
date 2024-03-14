@@ -10,3 +10,5 @@
 ==64908==    by 0x100037F4F: parsing::createServer(std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> >&, std::__1::basic_ifstream<char, std::__1::char_traits<char> >&, unsigned long*, Webserv*) (assignation_parsing.cpp:109)
 ==64908==    by 0x100037962: parsing::assignConfigFile(Webserv*) (assignation_parsing.cpp:83)
 ==64908==    by 0x1000025BA: main (main.cpp:19)
+
+

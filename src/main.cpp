@@ -2,7 +2,6 @@
 #include "../include/color.h"
 #include "../include/Webserv.hpp"
 #include "../include/parsing.hpp"
-#include <libc.h>
 
 int main(int argc, char **argv){
 	if (argc != 2){
