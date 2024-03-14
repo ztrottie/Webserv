@@ -81,7 +81,8 @@ void Request::_uriParser() {
 	size_t start = _filePath.find(".");
 	if (start != std::string::npos) {
 		start += 1;
-			_extension = _filePath.substr(start);
+		_extension = _filePath.substr(start);
+		std::cout << GREEN << _extension << RESET << std::endl;
 	}
 }
 
@@ -155,7 +156,7 @@ void Request::_setHostPort() {
 
 int Request::generateTempFile(std::string &tempFilePath, int &tempFileFd) {
 	std::string tmpFileName = "tmp";
-	tempFilePath = "/tmp/";
+	tempFilePath = "./uploads/";
 	for (size_t fileIndex = 0; fileIndex < std::numeric_limits<size_t>::max(); fileIndex++) {
 		int error = access((tempFilePath + tmpFileName + std::to_string(fileIndex)).c_str(), F_OK);
 		if (error != 0) {
@@ -184,30 +185,32 @@ void Request::parseFileName() {
 
 void Request::ParseBodyHeader(char **buffer) {
 	std::string endBoundary = "\r\n--" + _boundary + "--\r\n";
-	size_t headerEnd = _raw.find("\r\n\r\n");
-	if (headerEnd != std::string::npos) {
-		headerEnd += 4;
-		_bodyStarted = true;
-		if (_errorCode == OK && _fileName.empty())
-			_search("filename=\"", '\"', _fileName);
-		if (headerEnd > _rawSize) {
-			size_t nbytes = headerEnd - _rawSize;
-			_nbytesRead -= nbytes;
-			*buffer += nbytes;
+	if (!_boundary.empty()) {
+		size_t headerEnd = _raw.find("\r\n\r\n");
+		if (headerEnd != std::string::npos) {
+			headerEnd += 4;
+			_bodyStarted = true;
+			if (_errorCode == OK && _fileName.empty())
+				_search("filename=\"", '\"', _fileName);
+			if (headerEnd > _rawSize) {
+				size_t nbytes = headerEnd - _rawSize;
+				_nbytesRead -= nbytes;
+				*buffer += nbytes;
+			}
+			_bodyLen -= (headerEnd + endBoundary.length());
+			_raw.clear();
+			_rawSize = 0;
 		}
-		_bodyLen -= (headerEnd + endBoundary.length());
-		_raw.clear();
+	} else {
+		_bodyStarted = true;
 		_rawSize = 0;
+		_raw.clear();
 	}
 }
 
 void Request::addBody(char **buffer) {
 	std::string endBoundary = "\r\n--" + _boundary + "--\r\n";
 	std::cout << _errorCode << std::endl;
-	// std::cout << _location->getUploadEnable() << std::endl;
-	// std::cout << _location->getUploadStore() << std::endl;
-	// if (_errorCode == OK && _uri.find(".php") == std::string::npos && (!_location->getUploadEnable() || _location->getUploadStore().empty()))
-	// 	_errorCode = FORBIDDEN;
 	if (_errorCode == OK && _tempFilePath.empty()) {
 		if (generateTempFile(_tempFilePath, _tempFileFd) == INTERNALSERVERROR) {
 			_errorCode = INTERNALSERVERROR;
@@ -240,19 +243,22 @@ void Request::addBody(char **buffer) {
 		}
 	}
 	if (_bodyLenWritten == _bodyLen && !_bodyEnded) {
-		std::cout << _raw << std::endl;
-		size_t end = _raw.find(endBoundary);
-		if (end != std::string::npos) {
-			_bodyEnded = true;
-			if (end > 0) {
-				if (_errorCode == OK && !_tempFilePath.empty())
-					std::remove(_tempFilePath.c_str());
-				_errorCode = TOOLARGE;
+		if (!_boundary.empty()) {
+			size_t end = _raw.find(endBoundary);
+			if (end != std::string::npos) {
+				_bodyEnded = true;
+				if (end > 0) {
+					if (_errorCode == OK && !_tempFilePath.empty())
+						std::remove(_tempFilePath.c_str());
+					_errorCode = TOOLARGE;
+				}
+				if (_errorCode == OK)
+					_errorCode = CREATED;
+				_raw = _raw.substr(end + endBoundary.length());
 			}
-			if (_errorCode == OK)
-				_errorCode = CREATED;
-			_raw = _raw.substr(end + endBoundary.length());
-			_rawSize = _raw.size();
+		} else {
+			_bodyEnded = true;
+			_raw = *buffer;
 		}
 	}
 }

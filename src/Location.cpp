@@ -6,6 +6,7 @@
 Location::Location() : _name("default"), _clientMaxBodySizeSet(false) {
 	std::cout << "Default Location constructor " << std::endl;
 	_redirectionCode = -1;
+	_useCGI = false;
 }
 
 Location::Location(std::string const &name) : _name(name), _clientMaxBodySizeSet(false) {
@@ -145,4 +146,13 @@ std::string Location::getAllowedMethods() const{
 
 std::string	Location::getIndex() const{
 	return _index;
+}
+
+void	Location::setUseCGI(bool value){
+	_useCGI = value;
+}
+
+
+bool	Location::getUseCGI() const{
+	return (_useCGI);
 }

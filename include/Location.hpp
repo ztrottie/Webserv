@@ -24,6 +24,7 @@ private:
 	std::string							_redirectionLocation;
 	bool								_clientMaxBodySizeSet;
 	bool								_redirIsString;
+	bool								_useCGI;
 
 public:
 	// Constructors / Destructor
@@ -47,6 +48,7 @@ public:
 	void setRedirectionCode(int code);
 	void setRedirectionLocation(std::string str, bool isString);
 	void setClientMaxBodySize(size_t value);
+	void setUseCGI(bool value);
 
 	// Functions
 	int isMethodAllowed(std::string const &method);
@@ -63,6 +65,7 @@ public:
 	void 				getClientMaxBodySize(size_t &clientMaxBodySize) const;
 	std::string			getAllowedMethods() const;
 	std::string			getIndex() const;
+	bool				getUseCGI() const;
 };
 
 // Location_HPP

@@ -1,4 +1,5 @@
 #include "../include/parsing.hpp"
+#include <exception>
 
 parsing::parsing(string path): pathConfigFile(path){
 	defaultIfError = false;
@@ -56,6 +57,8 @@ bool	parsing::checkValid(string const &line){
 	else if (res == "autoindex")
 		return true;
 	else if (res == "}")
+		return true;
+	else if (res == "useCGI")
 		return true;
 	else if (res.empty())
 		return true;
@@ -287,6 +290,14 @@ bool	parsing::checkListen(string const &line, unsigned int nbLine){
 			return false;
 		return true;
 	}
+	try {
+		std::stoi(&line[7]);
+	} catch (std::exception &e) {
+		wagadooMachine(line, defaultIfError, NUMBERTOOBIG, nbLine, ", it must fit in an int", defaultIfError, verifLine, false);
+		if (defaultIfError == false)
+			return false;
+		return true;
+	}
 	verifLine.push_back(OKPARS);
 	selectMessage(VALID, NOERR, nbLine, " \"" + line + "\"");
 	return true;
@@ -435,6 +446,15 @@ bool	parsing::checkErrorPage(string const &line, unsigned int nbLine){
 	}
 	std::vector<string> split = splitString(line, ' ');
 	for (size_t i = 1; i < split.size() - 1; i++){
+		if (i < split.size() - 1 )
+			try {
+				std::stoi(split[i]);
+			} catch (std::exception &e) {
+				wagadooMachine(line, defaultIfError, NUMBERTOOBIG, nbLine, ", it must fit in an int", defaultIfError, verifLine, false);
+				if (defaultIfError == false)
+					return false;
+				return true;
+			}
 		if (containsNonDigit(split[split.size() - 1]) == false){
 			wagadooMachine(line, defaultIfError, MISSINGEND, nbLine, ", this line need a HTML to link up with the error code", defaultIfError, verifLine, false);
 			if (defaultIfError == false)
@@ -495,6 +515,14 @@ bool	parsing::checkClientMaxBodySize(string const &line, unsigned int nbLine){
 		return true;
 	}
 	str.erase(str.size() - 1, str.size());
+	try {
+		std::stoi(str);
+	} catch (std::exception &e) {
+		wagadooMachine(line, defaultIfError, NUMBERTOOBIG, nbLine, ", it must fit in an int", defaultIfError, verifLine, false);
+		if (defaultIfError == false)
+			return false;
+		return true;
+	}
 	if (containsNonDigit(str) == true){
 		wagadooMachine(line, defaultIfError, DIGITERROR, nbLine, "", defaultIfError, verifLine, false);
 		if (defaultIfError == false)
