@@ -32,7 +32,7 @@ Response::Response(Request *request, int flag) {
 			return;
 		}
 		contentTypeGenerator(path);
-	} else if (!request->getExtension().empty() && request->getExtension() == "php?" && request->isValid() == RESPOND) {
+	} else if (!request->getExtension().empty() && request->getExtension() == "php" && request->isValid() == RESPOND) {
 		handleCgi(request, errorCode);
 	} else if (request->getMethod() == "GET" && request->isValid() == RESPOND) {
 		handleGet(request, errorCode);
@@ -396,7 +396,6 @@ void Response::handleCgi(Request *request, int &errorCode) {
 	errorCode = request->generateTempFile(bodyResponse, fd);
 	std::cout << bodyResponse << std::endl;
 	if (errorCode >= 300 || bodyResponse.empty() || fd < 0 || !isValid) {
-		std::cout << "here?" << std::endl;
 		if (errorCode == OK && !isValid)
 			errorCode = FORBIDDEN;
 		else if (errorCode == OK && isValid)
