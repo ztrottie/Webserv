@@ -76,7 +76,6 @@ int Server::recieveRequest(socketInfo *client) {
 	}
 	if (nbytes == 0) {
 		std::cout << timestamp() << RED << " client closed the connection!" << RESET << std::endl;
-
 		delete [] tmp;
 		return (CLOSE);
     } else if (nbytes == -1) {

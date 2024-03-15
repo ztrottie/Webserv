@@ -81,7 +81,7 @@ void Webserv::loop() {
 	std::signal(SIGQUIT, signalhandler);
 	while (loopFlag) {
 		struct kevent events[1];
-		int numEvents = kevent(_kq, nullptr, 0, events, 10, NULL);
+		int numEvents = kevent(_kq, nullptr, 0, events, 1, NULL);
 		for (int i = 0; i < numEvents; i++) {
 			std::map<int, socketInfo*>::const_iterator it = _clientMap.find(events[i].ident);
 			if (it != _clientMap.end()) {
@@ -90,11 +90,10 @@ void Webserv::loop() {
 					acceptConnection(info);
 				} else {
 					if (info->serverInst->handleClient(info, events[i].filter) == CLOSE) {
-						struct kevent changes;
-						EV_SET(&changes, info->socket, EVFILT_READ, EV_DELETE, 0, 0, nullptr);
-						kevent(_kq, &changes, 1, nullptr, 0, nullptr);
-						EV_SET(&changes, info->socket, EVFILT_WRITE, EV_DELETE, 0, 0, nullptr);
-						kevent(_kq, &changes, 1, nullptr, 0, nullptr);
+						struct kevent changes[2];
+						EV_SET(&changes[0], info->socket, EVFILT_READ, EV_DELETE | EV_DISABLE, 0, 0, nullptr);
+						EV_SET(&changes[1], info->socket, EVFILT_WRITE, EV_DELETE | EV_DISABLE, 0, 0, nullptr);
+						kevent(_kq, changes, 2, nullptr, 0, nullptr);
 						_nbClients--;
 						close(info->socket);
 						_clientMap.erase(info->socket);
