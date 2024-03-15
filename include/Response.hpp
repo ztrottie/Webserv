@@ -20,7 +20,7 @@ private:
 public:
 	// Constructors / Destructor
 	Response();
-	Response(Request *request, int flag);
+	Response(Request *request);
 	Response(const Response &inst);
 	~Response();
 
@@ -40,6 +40,6 @@ public:
 	void handleUploadedFile(Request *request, int &errorCode);
 	void handleCgi(Request *request, int &errorCode);
 	void directoryListing(Request *request, int &errorCode);
-	void headerGenerator(int &errorCode, Request *request, int flag);
+	void headerGenerator(int &errorCode, Request *request);
 	void codeMessage(int code, std::string &message);
 };

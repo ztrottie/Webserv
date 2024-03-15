@@ -89,6 +89,7 @@ void Request::_uriParser() {
 void Request::_headerParser(char **buffer) {
 	size_t headerEnd = _raw.find("\r\n\r\n");
 	if (headerEnd != std::string::npos) {
+		std::cout << _raw << std::endl;
 		headerEnd += 4;
 		_headerDone = true;
 		std::stringstream ss(_raw);
@@ -116,7 +117,6 @@ void Request::_headerParser(char **buffer) {
 		} else {
 			_rawSize -= headerEnd;
 		}
-		std::cout << _raw << std::endl;
 		_raw = _raw.substr(headerEnd);
 	}
 }
@@ -367,9 +367,7 @@ int Request::isValid() const {
 bool Request::isCgi() const {
 	std::cout << _location->getName() << " " << _extension << std::endl;
 	if (_extension == "php" && _location->getUseCGI()) {
-		std::cout << "is a cgi" << std::endl;
 		return true;
 	}
-	std::cout << "is not a cgi" << std::endl;
 	return false;
 }

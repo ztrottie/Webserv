@@ -1,6 +1,8 @@
 #pragma once
 
+#include <cstddef>
 #include <cstdint>
+#include <ctime>
 #include <string>
 #include <sys/resource.h>
 #include <sys/types.h>
@@ -25,6 +27,9 @@ private:
 	std::string												_name;
 	unsigned int											_clientBodySize;
 	Router													*_serverRouter;
+	char													*_response;
+	size_t													_responseSize;
+	char													*_responsePtr;
 
 public:
 	// Constructors / Destructor
@@ -37,7 +42,7 @@ public:
 
 	// Functions
 	Router *getRouter();
-	void sendAll(int const &socket, std::string const &fullResponse);
+	int sendData(int const &socket);
 	int acceptConnection(socketInfo *client);
 	int handleClient(socketInfo *client, int type);
 	void codeMessage(int code, std::string &message);

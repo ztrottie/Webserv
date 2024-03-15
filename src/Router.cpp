@@ -41,7 +41,6 @@ size_t Router::getClientMaxBodySize(Location *location) const{
 }
 
 long long Router::getClientMaxBodySizeParsing() const{
-	// cout << _clientMaxBodySize << endl;
 	return (_clientMaxBodySize);
 }
 
@@ -56,16 +55,12 @@ void Router::setClientMaxBodySize(size_t value){
 }
 
 void Router::parseUri(std::string &cpy){
-	for (std::map<std::string, Location*>::const_iterator it = _locations.begin(); it != _locations.end(); it++){
-		std::cout << it->second->getName() << std::endl;
-	}
 	for (std::map<std::string, Location*>::const_iterator it = _locations.end(); it == _locations.end();){
 		it = _locations.find(cpy);
 		if (it == _locations.end()){
 			trimURI(cpy);
 		}
 	}
-	std::cout << cpy << std::endl;
 }
 
 void Router::trimURI(std::string &uri){

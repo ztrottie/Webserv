@@ -14,7 +14,7 @@
 #include <dirent.h>
 #include "../include/color.h"
 
-Response::Response(Request *request, int flag) {
+Response::Response(Request *request) {
 	int errorPageCode;
 	int errorCode = request->getErrorCode();
 	std::cout << RED << errorCode << RESET << std::endl;
@@ -27,7 +27,7 @@ Response::Response(Request *request, int flag) {
 			errorPageCode = INTERNALSERVERROR;
 		if (errorPageCode == INTERNALSERVERROR || openPath(path) >= 300) {
 			internalServerError(errorPageCode);
-			headerGenerator(errorPageCode, request, flag);
+			headerGenerator(errorPageCode, request);
 			_fullResponse = _header + _body;
 			return;
 		}
@@ -41,10 +41,7 @@ Response::Response(Request *request, int flag) {
 	} else if (request->getMethod() == "POST" && request->isValid() == RESPOND) {
 		handlePost(request, errorCode);
 	}
-	headerGenerator(errorCode, request, flag);
-	if (request->getLocation()->getRedirection() && request->isValid() == RESPOND) {
-		_body.clear();
-	}
+	headerGenerator(errorCode, request);
 	_fullResponse = _header + _body;
 }
 
@@ -245,7 +242,7 @@ void Response::directoryListing(Request *request, int &errorCode) {
 }
 
 void	Response::handlePost(Request *request, int &errorCode) {
-	if (request->getLocation()->getUploadEnable() && request->getFilePath().find(".") == std::string::npos) {
+	if (request->getLocation()->getUploadEnable()) {
 		handleUploadedFile(request, errorCode);
 	} else {
 		errorCode = METHNOTALLOWED;
@@ -292,7 +289,7 @@ void	Response::handleUploadedFile(Request *request, int &errorCode) {
 	contentTypeGenerator(filePath);
 }
 
-void Response::headerGenerator(int &errorCode, Request *request, int flag) {
+void Response::headerGenerator(int &errorCode, Request *request) {
 	std::string location;
 	std::string contentType;
 	std::string	contentLength;
@@ -305,14 +302,11 @@ void Response::headerGenerator(int &errorCode, Request *request, int flag) {
 		contentType = "Content-Type: " + _contentType += "\r\n";
 		contentLength = "Content-Length: " + std::to_string(_body.size()) + "\r\n";
 	}
-	if (flag == CLOSE) {
-		connection = "Connection: close\r\n";
-	}
 	std::string codeMessageString = "HTTP/1.1 ";
 	codeMessage(errorCode, codeMessageString);
 	codeMessageString += "\r\n";
 	std::string serverName = "Server: " + request->getServerName() + "\r\n";
-	_header += codeMessageString + serverName + location +  contentType + contentLength + connection + "\r\n";
+	_header += codeMessageString + serverName + location +  contentType + contentLength + "\r\n";
 }
 
 void Response::codeMessage(int code, std::string &message) {

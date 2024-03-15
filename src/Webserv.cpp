@@ -1,4 +1,5 @@
 #include "../include/Webserv.hpp"
+#include <ctime>
 #include <sys/event.h>
 #include <vector>
 
@@ -56,7 +57,8 @@ void Webserv::addNewServer(uint16_t port, const char *host, std::string name, Ro
 }
 
 void Webserv::acceptConnection(socketInfo *info) {
-	socketInfo *client = new socketInfo; memset(client, 0, sizeof(socketInfo));
+	socketInfo *client = new socketInfo; 
+	memset(client, 0, sizeof(socketInfo));
 	if (info->serverInst->acceptConnection(client) == CLOSE) {
 		close(client->socket);
 		delete client;
@@ -80,19 +82,26 @@ void signalhandler(int signal) {
 void Webserv::loop() {
 	std::signal(SIGQUIT, signalhandler);
 	while (loopFlag) {
-		struct kevent events[1];
-		int numEvents = kevent(_kq, nullptr, 0, events, 1, NULL);
+		struct kevent events[150];
+		int numEvents = kevent(_kq, nullptr, 0, events, 150, NULL);
 		for (int i = 0; i < numEvents; i++) {
 			std::map<int, socketInfo*>::const_iterator it = _clientMap.find(events[i].ident);
 			if (it != _clientMap.end()) {
 				socketInfo *info = _clientMap[events[i].ident];
-				if (info->type == SERVER) {
+				if (events[i].filter == EVFILT_READ && info->type == SERVER)
 					acceptConnection(info);
-				} else {
+			}
+		}
+		for (int i = 0; i < numEvents; i++) {
+			std::map<int, socketInfo*>::const_iterator it = _clientMap.find(events[i].ident);
+			if (it != _clientMap.end()) {
+				socketInfo *info = _clientMap[events[i].ident];
+				if (info->type == CLIENT) {
 					if (info->serverInst->handleClient(info, events[i].filter) == CLOSE) {
-						struct kevent changes;
-						EV_SET(&changes, info->socket, EVFILT_READ | EVFILT_WRITE, EV_DELETE, 0, 0, nullptr);
-						kevent(_kq, &changes, 1, nullptr, 0, nullptr);
+						struct kevent changes[2];
+						EV_SET(&changes[0], info->socket, EVFILT_READ, EV_DELETE | EV_DISABLE, 0, 0, nullptr);
+						EV_SET(&changes[1], info->socket, EVFILT_WRITE, EV_DELETE | EV_DISABLE, 0, 0, nullptr);
+						kevent(_kq, changes, 2, nullptr, 0, nullptr);
 						_nbClients--;
 						close(info->socket);
 						_clientMap.erase(info->socket);
@@ -102,6 +111,31 @@ void Webserv::loop() {
 						delete info;
 					}
 				}
+			}
+		}
+		for (std::map<int, socketInfo*>::iterator it = _clientMap.begin(); it != _clientMap.end();) {
+			time_t end = time(NULL);
+			socketInfo *info = it->second;
+			if (info->type == CLIENT) {
+				double timeDiff = difftime(end, info->start);
+				if (timeDiff >= 2.5) {
+					std::map<int, socketInfo*>::iterator eraseIt = _clientMap.erase(it++);
+					struct kevent changes[2];
+					EV_SET(&changes[0], info->socket, EVFILT_READ, EV_DELETE, 0, 0, nullptr);
+					EV_SET(&changes[1], info->socket, EVFILT_WRITE, EV_DELETE, 0, 0, nullptr);
+					kevent(_kq, changes, 2, nullptr, 0, nullptr);
+					_nbClients--;
+					close(info->socket);
+					for (std::vector<Request*>::iterator requestIterator = info->requests.begin(); requestIterator != info->requests.end(); requestIterator++) {
+						delete *requestIterator;
+					}
+					delete info;
+					it = eraseIt;
+				} else {
+					++it;
+				}
+			} else {
+				++it;
 			}
 		}
 	}

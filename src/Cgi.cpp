@@ -77,7 +77,6 @@ void Cgi::execute(Request *request, std::string const &bodyPath){
 		}
 		close(_outputFd);
 		status = execve(argv[0], const_cast<char* const *>(argv), const_cast<char * const *>(_env));
-		std::cout << "wtf" << std::endl;
 		exit(0);
 	} else {
 		waitpid(pid, &status, 0);
