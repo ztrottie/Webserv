@@ -160,3 +160,7 @@ std::string	Router::getLocationParsing() const{
 	}
 	return res;
 }
+
+std::string	Router::getRootParsing() const{
+	return _root;
+}

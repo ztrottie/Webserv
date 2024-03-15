@@ -9,22 +9,25 @@ class Router;
 class Location
 {
 private:
-	const std::string 					_name;
-	std::string							_root;
-	std::string							_index;
-	std::map<int, std::string>			_errorPagesLocation;
-	std::string							_rewrite;
-	std::vector<std::string> 			_allowedMethod;
-	long long							_clientMaxBodySize;
-	bool								_autoIndex;
-	bool								_uploadEnable;
-	std::string							_uploadStore;
-	bool								_redirection;
-	int 								_redirectionCode;
-	std::string							_redirectionLocation;
-	bool								_clientMaxBodySizeSet;
-	bool								_redirIsString;
-	bool								_useCGI;
+	const std::string 			_name;
+	std::string					_root;
+	std::string					_index;
+	std::map<int, std::string>	_errorPagesLocation;
+	std::string					_rewrite;
+	std::vector<std::string>	_allowedMethod;
+	long long					_clientMaxBodySize;
+	bool						_autoIndex;
+	bool						_autoIndexSetter;
+	bool						_uploadEnable;
+	bool						_uploadEnableSet;
+	std::string					_uploadStore;
+	bool						_redirection;
+	int 						_redirectionCode;
+	std::string					_redirectionLocation;
+	bool						_clientMaxBodySizeSet;
+	bool						_redirIsString;
+	bool						_useCGI;
+	bool						_useCGISetter;
 
 public:
 	// Constructors / Destructor
@@ -66,6 +69,12 @@ public:
 	std::string			getAllowedMethods() const;
 	std::string			getIndex() const;
 	bool				getUseCGI() const;
+	std::string			getRootParsing() const;
+	std::string			getErrorParsing(int code) const;
+	long long			getClientMaxBodySizeParsing() const;
+	bool				getUploadEnableSetter() const;
+	bool				getAutoIndexSetter() const;
+	bool				getUseCGISetter() const;
 };
 
 // Location_HPP

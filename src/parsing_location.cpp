@@ -320,6 +320,13 @@ void	parsing::checkReturnsLocation(string const &line, unsigned int nbLine){
 			return ;
 		}
 	}
+	for(size_t i = 1; i < split.size(); i++){
+		if (containsNonDigit(split[i]) == false)
+			if (checkErrorCode(split[i]) == false){
+				wagadooMachine(line, defaultIfError, NUMBERTOOBIG, nbLine, ", it must be 200, 201, 202, 204, 205, 206, 300, 301, 302, 303, 304, 305, 307, 400, 401, 403, 404, 405, 406, 413", defaultIfError, verifLine, true);
+				return ;
+			}
+	}
 	selectMessage(VALID, NOERR, nbLine, " \"" + line + "\"");
 	verifLine.push_back(OKPARS);
 }
@@ -354,6 +361,12 @@ void	parsing::checkClientMaxBodySizeLocation(string const &line, unsigned int nb
 		return ;
 	}
 	str.erase(str.size() - 1, str.size());
+	try {
+		std::stoi(str);
+	} catch (std::exception &e) {
+		wagadooMachine(line, defaultIfError, NUMBERTOOBIG, nbLine, ", it must fit in an int", defaultIfError, verifLine, true);
+		return ;
+	}
 	if (containsNonDigit(str) == true){
 		wagadooMachine(line, defaultIfError, DIGITERROR, nbLine, "", defaultIfError, verifLine, true);
 		return ;

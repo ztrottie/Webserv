@@ -2,15 +2,25 @@
 #include "../include/struct.hpp"
 #include <iterator>
 #include <iostream>
+#include <string>
 
 Location::Location() : _name("default"), _clientMaxBodySizeSet(false) {
 	std::cout << "Default Location constructor " << std::endl;
 	_redirectionCode = -1;
 	_useCGI = false;
+	_clientMaxBodySize = -1;
+	_uploadEnableSet = false;
+	_autoIndexSetter = false;
+	_useCGISetter = false;
 }
 
 Location::Location(std::string const &name) : _name(name), _clientMaxBodySizeSet(false) {
-
+	_redirectionCode = -1;
+	_useCGI = false;
+	_clientMaxBodySize = -1;
+	_uploadEnableSet = false;
+	_autoIndexSetter = false;
+	_useCGISetter = false;
 }
 
 Location::Location(const Location &inst) {
@@ -79,6 +89,10 @@ void Location::addAllowedMethod(std::string const &method) {
 
 void Location::setUploadEnable(bool enable){
 	_uploadEnable = enable;
+	_uploadEnableSet = true;
+}
+bool	Location::getUploadEnableSetter() const{
+	return _uploadEnableSet;
 }
 
 bool Location::getUploadEnable() const {
@@ -87,6 +101,11 @@ bool Location::getUploadEnable() const {
 
 void Location::setAutoIndex(bool const &autoIndex) {
 	_autoIndex = autoIndex;
+	_autoIndexSetter = true;
+}
+
+bool	Location::getAutoIndexSetter() const{
+	return _autoIndexSetter;
 }
 
 const std::string	&Location::getUploadStore() const {
@@ -150,9 +169,27 @@ std::string	Location::getIndex() const{
 
 void	Location::setUseCGI(bool value){
 	_useCGI = value;
+	_useCGISetter = true;
 }
 
 
 bool	Location::getUseCGI() const{
-	return (_useCGI);
+	return _useCGI;
+}
+
+bool	Location::getUseCGISetter() const{
+	return _useCGISetter;
+}
+
+std::string	Location::getRootParsing() const{
+	return _root;
+}
+
+std::string Location::getErrorParsing(int code) const{
+	std::map<int, std::string>::const_iterator it = _errorPagesLocation.find(code);
+	return it->second;
+}
+
+long long	Location::getClientMaxBodySizeParsing() const{
+	return _clientMaxBodySize;
 }

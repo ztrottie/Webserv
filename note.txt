@@ -12,3 +12,6 @@
 ==64908==    by 0x1000025BA: main (main.cpp:19)
 
 
+----------------------------------------------------------------------------------------------
+M'occuper des doublons dans assignation, ca va etre plus simple, je fais juste pas les inclures
+et mettre un messages comme quoi je ne vais pas le mettre

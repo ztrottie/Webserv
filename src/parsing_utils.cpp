@@ -84,3 +84,42 @@ bool	checkForArgs(string const &line, size_t minSizeExpected){
 	}
 	return true;
 }
+
+bool	checkErrorCode(string const &line){
+	string tempLine = line;
+	if (tempLine.find(";") < string::npos)
+		tempLine.erase(tempLine.length() - 1, tempLine.length());
+	switch (std::stoi(tempLine)){
+		case 200: return true;
+		case 201: return true;
+		case 202: return true;
+		case 204: return true;
+		case 205: return true;
+		case 206: return true;
+		case 300: return true;
+		case 301: return true;
+		case 302: return true;
+		case 303: return true;
+		case 304: return true;
+		case 305: return true;
+		case 307: return true;
+		case 401: return true;
+		case 403: return true;
+		case 404: return true;
+		case 405: return true;
+		case 406: return true;
+		case 413: return true;
+		default: return false;
+	}
+	return false;
+}
+
+bool	locationAlreadyThere(const string &allLocation, string const &name){
+	std::vector<string> split = splitString(allLocation, '	');
+	for (size_t i = 0; i < split.size(); i++) {
+		if (!split[i].empty())
+			if (split[i] == name)
+				return true;
+	}
+	return false;
+}
