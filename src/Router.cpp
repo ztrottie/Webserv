@@ -9,6 +9,9 @@ Router::Router() {
 
 Router::~Router() {
 	std::cout << "Router destructor" << std::endl;
+	for (std::map<std::string, Location*>::const_iterator it = _locations.begin(); it != _locations.end(); it++) {
+		delete it->second;
+	}
 }
 
 void Router::setRoot(std::string const &root){

@@ -69,7 +69,6 @@ bool	parsing::checkValid(string const &line){
 bool	parsing::parseConfigFile(){
 	string line;
 	unsigned int	nbLine = 0;
-
 	if (checkFile() == false){
 		return false;
 	}
@@ -80,6 +79,9 @@ bool	parsing::parseConfigFile(){
 			checkDefault(line, nbLine);
 		if (checkServer(line, &nbLine) == false)
 			return false;
+		if (findFirstWord(line) == "acceptDefault" && nbLine > 1){
+			cout << RED "You can't set acceptDefault again or in another line than the first one" RESET << endl;
+		}
 		if (nbLine == verifLine.size())
 			verifLine.push_back(DONT);
 		nbLine++;
@@ -187,17 +189,29 @@ bool	parsing::checkServer(std::string &line, unsigned int *nbLine){
 			return false;
 		if (checkClientMaxBodySize(line, *nbLine) == false)
 			return false;
-		if (findFirstWord(line) == "allowedMethods" == true){
-			wagadooMachine(line, false, IMPOSTORERROR, *nbLine, "", defaultIfError, verifLine, false);
+		if (findFirstWord(line) == "server"){
+			cout << RED "You tried to make another server inside a server, that's wack, Im not dealing with it..." RESET << endl;
 			return false;
+		}
+		if (findFirstWord(line) == "acceptDefault"){
+			wagadooMachine(line, defaultIfError, IMPOSTORERROR, *nbLine, " you can't have this line in the server", defaultIfError, verifLine, false);
+			if (defaultIfError == false)
+				return false;
+		}
+		if (findFirstWord(line) == "allowedMethods" == true){
+			wagadooMachine(line, defaultIfError, IMPOSTORERROR, *nbLine, " you can't have this line in the server", defaultIfError, verifLine, false);
+			if (defaultIfError == false)
+				return false;
 		}
 		if (findFirstWord(line) == "return" == true){
-			wagadooMachine(line, false, IMPOSTORERROR, *nbLine, "", defaultIfError, verifLine, false);
-			return false;
+			wagadooMachine(line, defaultIfError, IMPOSTORERROR, *nbLine, " you can't have this line in the server", defaultIfError, verifLine, false);
+			if (defaultIfError == false)
+				return false;
 		}
 		if (findFirstWord(line) == "useCGI" == true){
-			wagadooMachine(line, false, IMPOSTORERROR, *nbLine, "", defaultIfError, verifLine, false);
-			return false;
+			wagadooMachine(line, defaultIfError, IMPOSTORERROR, *nbLine, " you can't have this line in the server", defaultIfError, verifLine, false);
+			if (defaultIfError == false)
+				return false;
 		}
 		if (line.find("}") == 0){
 			if (line.find("}") != 0 || line.length() != 1){
@@ -207,8 +221,10 @@ bool	parsing::checkServer(std::string &line, unsigned int *nbLine){
 			selectMessage(VALID, NOERR,*nbLine, " \"" + line + "\"");
 			break ;
 		}
-		if (*nbLine == verifLine.size())
+		if (*nbLine == verifLine.size()){
+			cout << YELLOW << "This line: " << line << " doesn't mean anything, skipping it" << endl;
 			verifLine.push_back(DONT);
+		}
 		(*nbLine)++;
 	}
 	if (line.find("}") != 0){

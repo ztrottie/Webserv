@@ -22,7 +22,7 @@ int parsing::isThisTheEnd(string const &line, bool insideLocation){
 bool	parsing::checkLocation(string &line, unsigned int *nbLine){
 	if (findFirstWord(line) != "location")
 		return -1;
-	cout << BLUE << "[" << RESET << std::to_string(*nbLine + 1) << BLUE << "]"; simpleWriteTimestamp(BLUE, "Checking new location");
+	simpleWriteTimestamp(BLUE, "Checking new location");
 	string name = line.substr(line.rfind(" ") + 1, line.rfind("{") - (line.rfind(" ") + 1));
 	if (isThereSomethingInMyString(line, "location", line.rfind(" ")) == true || line.rfind("{") != line.length() - 1 ||
 		name.empty() || name[0] != '/'){
@@ -42,12 +42,12 @@ bool	parsing::checkLocation(string &line, unsigned int *nbLine){
 	(*nbLine)++;
 	while (std::getline(configFile, line)){
 		if (findFirstWord(line) == "location"){
-			simpleWriteTimestamp(RED, "You can't have a location inside another one, exiting program");
+			cout << RED "You tried to make another location inside a location, that's wack, Im not dealing with it..." RESET << endl;
 			return false;
 		}
 		else if (findFirstWord(line) == "server"){
-			simpleWriteTimestamp(RED, "This line can't be inside the location : " + line);
-			verifLine.push_back(DONT);
+			cout << RED "You tried to make another server inside a location inside a server, that's wack, Im not dealing with it..." RESET << endl;
+			return false;
 		}
 		else if (findFirstWord(line) == "server_name"){
 			simpleWriteTimestamp(RED, "This line can't be inside the location : " + line);
@@ -58,6 +58,10 @@ bool	parsing::checkLocation(string &line, unsigned int *nbLine){
 			verifLine.push_back(DONT);
 		}
 		else if (findFirstWord(line) == "host"){
+			simpleWriteTimestamp(RED, "This line can't be inside the location : " + line);
+			verifLine.push_back(DONT);
+		}
+		else if (findFirstWord(line) == "acceptDefault"){
 			simpleWriteTimestamp(RED, "This line can't be inside the location : " + line);
 			verifLine.push_back(DONT);
 		}
