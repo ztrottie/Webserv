@@ -10,9 +10,7 @@
         $data = "Name: $name nickName: $nickName email: $email";
 
         file_put_contents($db, $data, FILE_APPEND | LOCK_EX);
-
-        header("Location: index.html");
         exit();
-    
+
     }
 ?>

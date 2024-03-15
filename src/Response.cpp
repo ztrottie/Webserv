@@ -415,7 +415,7 @@ void Response::handleCgi(Request *request, int &errorCode) {
 	}
 	close(fd);
 	Cgi cgi;
-	cgi.execute(request, bodyResponse);
+	cgi.execute(request);
 	if (openPath(bodyResponse) >= 300) {
 		std::remove(request->getTempFilePath().c_str());
 		std::remove(bodyResponse.c_str());
