@@ -310,7 +310,6 @@ void Response::headerGenerator(int &errorCode, Request *request, int flag) {
 	codeMessageString += "\r\n";
 	std::string serverName = "Server: " + request->getServerName() + "\r\n";
 	_header += codeMessageString + serverName + location +  contentType + contentLength + connection + "\r\n";
-	std::cout << YELLOW << request->getLocation()->getRedirection() << " " << _header << RESET << std::endl;
 }
 
 void Response::codeMessage(int code, std::string &message) {

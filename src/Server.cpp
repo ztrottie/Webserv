@@ -89,7 +89,6 @@ int Server::recieveRequest(socketInfo *client) {
 }
 
 int Server::sendData(int const &socket) {
-	std::cout << "ayo" << std::endl;
 	ssize_t nbytes = send(socket, _responsePtr, _responseSize, 0);
 	if (nbytes == -1)
 		return -1;
@@ -116,8 +115,6 @@ int Server::handleRequest(socketInfo *client) {
 		}
 	}
 	if (_responseSize > 0) {
-		std::cout << _responseSize << std::endl;
-		std::cout << _responsePtr << std::endl;
 		int result = sendData(client->socket);
 		if (_responseSize == 0 || result == -1) {
 			_responseSize = 0;
@@ -134,11 +131,9 @@ int Server::handleRequest(socketInfo *client) {
 
 int Server::handleClient(socketInfo *client, int type) {
 	if (type == EVFILT_READ) {
-		std::cout << "read request" << std::endl;
 		return recieveRequest(client);
 	}
 	else if (!client->requests.empty() && type == EVFILT_WRITE) {
-		std::cout << "write request" << std::endl;
 		return handleRequest(client);
 	}
 	return KEEP;

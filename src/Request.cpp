@@ -116,7 +116,6 @@ void Request::_headerParser(char **buffer) {
 		} else {
 			_rawSize -= headerEnd;
 		}
-		std::cout << _raw << std::endl;
 		_raw = _raw.substr(headerEnd);
 	}
 }
