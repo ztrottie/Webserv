@@ -1,4 +1,15 @@
 #include "../include/Cgi.hpp"
+#include <algorithm>
+#include <cctype>
+#include <cstddef>
+#include <cstdio>
+#include <cstdlib>
+#include <fstream>
+#include <iterator>
+#include <string>
+#include <sys/_types/_ssize_t.h>
+#include <sys/fcntl.h>
+#include <unistd.h>
 
 Cgi::Cgi() {
 	std::cout << "Default Cgi constructor " << std::endl;
@@ -18,6 +29,11 @@ Cgi& Cgi::operator=(const Cgi &rhs) {
 	if (this != &rhs) {
 	}
 	return *this;
+}
+
+char Cgi::hexToChar(const std::string &hex){
+	char *endPtr;
+	return static_cast<char>(std::strtol(hex.c_str(), &endPtr, 16));
 }
 
 void Cgi::env(Request *request){
@@ -46,39 +62,36 @@ void Cgi::env(Request *request){
 		_env[i] = env[i];
 }
 
-void Cgi::execute(Request *request, std::string const &bodyPath){
+void Cgi::execute(Request *request){
 	const char *argv[] = {"/usr/bin/php", request->getFilePath().c_str(), NULL};
-	if (!request->getTempFilePath().empty())
-		_inputFd = open(request->getTempFilePath().c_str(), O_RDWR);
-	std::cout << request->getTempFilePath() << std::endl;
-	_outputFd = open(bodyPath.c_str(), O_RDWR);
+	std::ifstream input(request->getTempFilePath());
+	if (!input.is_open()){
+		std::cout << "Error\n cannot open infile!!" << std::endl;
+		return ;
+	}
 	int pid = fork();
 	int status;
-	env(request);
+	int end[2];
 	if (pid == 0){
-		if (!request->getTempFilePath().empty() && _inputFd == -1){
-			std::cout << "Error\n cannot open infile!" << std::endl;
-			return ;
-		}
-		if (_outputFd == -1){
-			std::cout << "Error\n cannot open outfile!" << std::endl;
-			return ;
-		}
+		env(request);
 		if (pid == -1){
 			std::cout << "Error while forking ⬆️➡️⬇️⬇️⬇️ on hiroshima" << std::endl;
 			return ;
 		}
-		dup2(_inputFd, STDIN_FILENO);
-		if (!request->getTempFilePath().empty())
-			close(_inputFd);
-		if (dup2(_outputFd, STDOUT_FILENO) == -1){
-			std::cout << "Cannot dup2 fd for some reason!" << std::endl;
+		while (getline(input, _str, '&')){
+		std::cout << "VAS CHIER CALISS" << std::endl;
+			size_t findings = _str.find("%");
+			while (findings != std::string::npos){
+				_str += hexToChar(_str.substr(findings + 1, 2));
+			}
+			std::cout << "STRING" << _str << std::endl;
+		}
+		if (pipe(end) == - 1){
+			std::cout << "Error\n cannot pipe!" << std::endl;
 			return ;
 		}
-		close(_outputFd);
+		write(end[1], _str.c_str(), request->getBodyLen());
 		status = execve(argv[0], const_cast<char* const *>(argv), const_cast<char * const *>(_env));
-		exit(0);
-	} else {
 		waitpid(pid, &status, 0);
 	}
 }
