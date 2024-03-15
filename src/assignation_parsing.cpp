@@ -232,6 +232,8 @@ void	parsing::assignLocation(string &line, std::ifstream &file, size_t *i, Route
 				assignUploadStore(line, *loc);
 			if (findFirstWord(line) == "autoindex")
 				assignAutoIndex(line, *loc);
+			if (findFirstWord(line) == "useCGI")
+				assignUseCGI(line, *loc);
 		}
 		if (line.find("}") == 1){
 			break ;

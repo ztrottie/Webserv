@@ -91,4 +91,5 @@ public:
 	void addData(char **buffer, size_t const &nbytes);
 	int isValid() const;
 	void ParseBodyHeader(char **buffer);
+	bool isCgi() const;
 };

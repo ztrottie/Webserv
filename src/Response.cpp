@@ -32,7 +32,7 @@ Response::Response(Request *request, int flag) {
 			return;
 		}
 		contentTypeGenerator(path);
-	} else if (!request->getExtension().empty() && request->getExtension() == "php" && request->isValid() == RESPOND) {
+	} else if (request->isCgi() && request->isValid() == RESPOND) {
 		handleCgi(request, errorCode);
 	} else if (request->getMethod() == "GET" && request->isValid() == RESPOND) {
 		handleGet(request, errorCode);
@@ -384,6 +384,7 @@ void Response::codeMessage(int code, std::string &message) {
 }
 
 void Response::handleCgi(Request *request, int &errorCode) {
+	std::cout << "cgi request processing..." << std::endl;
 	std::string bodyResponse;
 	int			fd = -1;
 	std::string path = request->getRouter()->getRoot(request->getLocation());

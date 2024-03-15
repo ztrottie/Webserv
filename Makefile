@@ -43,6 +43,6 @@ fclean: clean
 re: fclean all
 
 run: re all
-	@./webserv configFile/config.cfg
+	@./webserv configFile/testConfig.cfg
 
 .PHONY:	all clean fclean re

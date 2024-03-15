@@ -50,9 +50,11 @@ void Cgi::execute(Request *request, std::string const &bodyPath){
 	const char *argv[] = {"/usr/bin/php", request->getFilePath().c_str(), NULL};
 	if (!request->getTempFilePath().empty())
 		_inputFd = open(request->getTempFilePath().c_str(), O_RDWR);
+	std::cout << request->getTempFilePath() << std::endl;
 	_outputFd = open(bodyPath.c_str(), O_RDWR);
 	int pid = fork();
 	int status;
+	env(request);
 	if (pid == 0){
 		if (!request->getTempFilePath().empty() && _inputFd == -1){
 			std::cout << "Error\n cannot open infile!" << std::endl;
@@ -62,15 +64,11 @@ void Cgi::execute(Request *request, std::string const &bodyPath){
 			std::cout << "Error\n cannot open outfile!" << std::endl;
 			return ;
 		}
-		env(request);
 		if (pid == -1){
 			std::cout << "Error while forking ⬆️➡️⬇️⬇️⬇️ on hiroshima" << std::endl;
 			return ;
 		}
-		if (!request->getTempFilePath().empty() && dup2(_inputFd, STDIN_FILENO) == -1){
-			std::cout << "Cannot dup2 fd for some reason!" << std::endl;
-			return ;
-		}
+		dup2(_inputFd, STDIN_FILENO);
 		if (!request->getTempFilePath().empty())
 			close(_inputFd);
 		if (dup2(_outputFd, STDOUT_FILENO) == -1){
@@ -79,6 +77,7 @@ void Cgi::execute(Request *request, std::string const &bodyPath){
 		}
 		close(_outputFd);
 		status = execve(argv[0], const_cast<char* const *>(argv), const_cast<char * const *>(_env));
+		std::cout << "wtf" << std::endl;
 		exit(0);
 	} else {
 		waitpid(pid, &status, 0);

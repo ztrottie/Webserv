@@ -363,3 +363,13 @@ int Request::isValid() const {
 	}
 	return WAIT;
 }
+
+bool Request::isCgi() const {
+	std::cout << _location->getName() << " " << _extension << std::endl;
+	if (_extension == "php" && _location->getUseCGI()) {
+		std::cout << "is a cgi" << std::endl;
+		return true;
+	}
+	std::cout << "is not a cgi" << std::endl;
+	return false;
+}
