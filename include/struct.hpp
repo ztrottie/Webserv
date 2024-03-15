@@ -1,5 +1,6 @@
 #pragma once
 #include <arpa/inet.h>
+#include <ctime>
 #include <fstream>
 #include <string>
 #include <vector>
@@ -31,6 +32,7 @@ struct socketInfo {
 	bool					hasRequest;
 	struct sockaddr_in		client_address;
 	Server					*serverInst;
+	time_t					start;
 };
 
 enum Codes {

@@ -89,6 +89,7 @@ void Request::_uriParser() {
 void Request::_headerParser(char **buffer) {
 	size_t headerEnd = _raw.find("\r\n\r\n");
 	if (headerEnd != std::string::npos) {
+		std::cout << _raw << std::endl;
 		headerEnd += 4;
 		_headerDone = true;
 		std::stringstream ss(_raw);

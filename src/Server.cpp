@@ -1,6 +1,10 @@
 #include "../include/Server.hpp"
 #include "../include/Response.hpp"
+#include <csignal>
+#include <cstddef>
 #include <cstring>
+#include <ctime>
+#include <sys/signal.h>
 #include <sys/socket.h>
 #include <unistd.h>
 #ifndef BUFFER_SIZE
@@ -24,7 +28,7 @@ Server::Server(uint16_t port, const char *host, std::string name, Router *router
 	serverAddr.sin_port = htons(_port);
 	if (bind(server->socket, (struct sockaddr*)&serverAddr, sizeof(serverAddr)) == -1)
 		throw std::invalid_argument("bind creation Failed");
-	listen(server->socket, 1000);
+	listen(server->socket, 100);
 	server->type = SERVER;
 	_serverRouter = router;
 	_listSocket = server->socket;
@@ -62,6 +66,7 @@ int Server::acceptConnection(socketInfo *client) {
 	client->client_address = clientAddress;
 	client->serverInst = this;
 	client->hasRequest = false;
+	client->start = time(NULL);
 	std::cout << GREEN << timestamp() << " incomming connnection from " << inet_ntoa(client->client_address.sin_addr) << " accepted and setted to the socket: " << client->socket << "!" << RESET << std::endl;
 	return (KEEP);
 }
@@ -71,17 +76,17 @@ int Server::recieveRequest(socketInfo *client) {
 	char *tmp = buffer;
 	ssize_t nbytes = recv(client->socket, buffer, BUFFER_SIZE, 0);
 	std::memset(buffer + nbytes, 0, BUFFER_SIZE - nbytes);
-	if (client->requests.empty() || client->requests.back()->isValid() == RESPOND) {
+	if (nbytes > 0 && (client->requests.empty() || client->requests.back()->isValid() == RESPOND)) {
 		client->requests.push_back(new Request(client, this));
 	}
 	if (nbytes == 0) {
-		std::cout << timestamp() << RED << " client closed the connection!" << RESET << std::endl;
 		delete [] tmp;
-		return (CLOSE);
+		return (KEEP);
     } else if (nbytes == -1) {
-		std::cout << timestamp() << RED << " read to far exiting" << RESET << std::endl;
 		delete [] tmp;
 		return (CLOSE);
+	} else if (nbytes > 0) {
+		client->start = time(NULL);
 	}
 	client->requests.back()->addData(&buffer, nbytes);
 	delete [] tmp;
@@ -89,11 +94,13 @@ int Server::recieveRequest(socketInfo *client) {
 }
 
 int Server::sendData(int const &socket) {
+	signal(SIGPIPE, SIG_IGN);
 	ssize_t nbytes = send(socket, _responsePtr, _responseSize, 0);
 	if (nbytes == -1)
 		return -1;
 	_responseSize -= nbytes;
 	_responsePtr += nbytes;
+	signal(SIGPIPE, SIG_DFL);
 	return 0;
 }
 
@@ -101,10 +108,7 @@ int Server::handleRequest(socketInfo *client) {
 	if (client->requests.back()->isValid() == WAIT)
 		return (KEEP);
 	else if (client->requests.back()->isValid() == RESPOND) {
-		int flag = KEEP;
-		if (client->requests.size() == 1)
-			flag = CLOSE;
-		Response response(client->requests.front(), flag);
+		Response response(client->requests.front());
 		std::string fullResponse = response.getFullResponse();
 		_responseSize = fullResponse.size();
 		_response = new char[_responseSize + 1];
@@ -121,9 +125,6 @@ int Server::handleRequest(socketInfo *client) {
 			delete _response;
 			delete client->requests.front();
 			client->requests.erase(client->requests.begin());
-			if ((_responseSize == 0 && client->requests.size() == 1) || result == -1)
-				return CLOSE;
-			return KEEP;
 		}
 	}
 	return (KEEP);
@@ -131,9 +132,11 @@ int Server::handleRequest(socketInfo *client) {
 
 int Server::handleClient(socketInfo *client, int type) {
 	if (type == EVFILT_READ) {
+		// std::cout << "received a read request" << std::endl;
 		return recieveRequest(client);
 	}
 	else if (!client->requests.empty() && type == EVFILT_WRITE) {
+		std::cout << "received a write request" << std::endl;
 		return handleRequest(client);
 	}
 	return KEEP;
