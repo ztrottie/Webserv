@@ -1,12 +1,14 @@
 #include "../include/Server.hpp"
 #include "../include/Response.hpp"
 #include <cstring>
+#include <sys/socket.h>
+#include <unistd.h>
 #ifndef BUFFER_SIZE
 # define BUFFER_SIZE 1024
 #endif
 
 
-Server::Server(uint16_t port, const char *host, std::string name, Router *router, socketInfo *server) : _port(port), _host(host), _name(name) {
+Server::Server(uint16_t port, const char *host, std::string name, Router *router, socketInfo *server) : _port(port), _host(host), _name(name), _responseSize(0) {
 	std::cout << YELLOW << timestamp() << " Initializing a Server named " << _name << " on " << _host << ":" << _port << RESET << std::endl;
 	server->socket = socket(AF_INET, SOCK_STREAM, 0);
 	int reuse = 1;
@@ -53,7 +55,7 @@ int Server::acceptConnection(socketInfo *client) {
 	socklen_t clientAdressLen = sizeof(client->client_address);
 	client->type = CLIENT;
 	client->socket = accept(_listSocket, reinterpret_cast<struct sockaddr*>(&clientAddress), &clientAdressLen);
-	if (client->socket < 0 || fcntl(client->socket, F_SETFL, O_NONBLOCK, FD_CLOEXEC) == -1) {
+	if (client->socket < 0 || fcntl(client->socket, F_SETFL | O_NONBLOCK | FD_CLOEXEC) == -1) {
 		std::cout << RED << timestamp() << " Server: "  << _name << " had a problem with connection incomming from: " << inet_ntoa(clientAddress.sin_addr) << " closing connection!" << std::endl;
 		return CLOSE;
 	}
@@ -74,28 +76,30 @@ int Server::recieveRequest(socketInfo *client) {
 	}
 	if (nbytes == 0) {
 		std::cout << timestamp() << RED << " client closed the connection!" << RESET << std::endl;
+
 		delete [] tmp;
 		return (CLOSE);
     } else if (nbytes == -1) {
 		std::cout << timestamp() << RED << " read to far exiting" << RESET << std::endl;
 		delete [] tmp;
-		return (KEEP);
+		return (CLOSE);
 	}
 	client->requests.back()->addData(&buffer, nbytes);
 	delete [] tmp;
 	return (KEEP);
 }
 
-void Server::sendAll(int const &socket, std::string const &fullResponse) {
-	unsigned long totalSent = 0;
-	while (totalSent < fullResponse.size()) {
-		int sent = send(socket, fullResponse.c_str() + totalSent, fullResponse.size() - totalSent, 0);
-		totalSent += sent;
-	}
+int Server::sendData(int const &socket) {
+	std::cout << "ayo" << std::endl;
+	ssize_t nbytes = send(socket, _responsePtr, _responseSize, 0);
+	if (nbytes == -1)
+		return -1;
+	_responseSize -= nbytes;
+	_responsePtr += nbytes;
+	return 0;
 }
 
 int Server::handleRequest(socketInfo *client) {
-	std::string fullResponse;
 	if (client->requests.back()->isValid() == WAIT)
 		return (KEEP);
 	else if (client->requests.back()->isValid() == RESPOND) {
@@ -103,11 +107,28 @@ int Server::handleRequest(socketInfo *client) {
 		if (client->requests.size() == 1)
 			flag = CLOSE;
 		Response response(client->requests.front(), flag);
-		fullResponse = response.getFullResponse();
-		sendAll(client->socket, fullResponse);
-		delete client->requests.front();
-		client->requests.erase(client->requests.begin());
-		return flag;
+		std::string fullResponse = response.getFullResponse();
+		_responseSize = fullResponse.size();
+		_response = new char[_responseSize + 1];
+		_responsePtr = _response;
+		_response[_responseSize] = 0;
+		for (size_t i = 0; i < _responseSize; i++) {
+			_response[i] = fullResponse[i];
+		}
+	}
+	if (_responseSize > 0) {
+		std::cout << _responseSize << std::endl;
+		std::cout << _responsePtr << std::endl;
+		int result = sendData(client->socket);
+		if (_responseSize == 0 || result == -1) {
+			_responseSize = 0;
+			delete _response;
+			delete client->requests.front();
+			client->requests.erase(client->requests.begin());
+			if ((_responseSize == 0 && client->requests.size() == 1) || result == -1)
+				return CLOSE;
+			return KEEP;
+		}
 	}
 	return (KEEP);
 }

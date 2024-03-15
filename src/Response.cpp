@@ -42,9 +42,6 @@ Response::Response(Request *request, int flag) {
 		handlePost(request, errorCode);
 	}
 	headerGenerator(errorCode, request, flag);
-	if (request->getLocation()->getRedirection() && request->isValid() == RESPOND) {
-		_body.clear();
-	}
 	_fullResponse = _header + _body;
 }
 
@@ -245,7 +242,7 @@ void Response::directoryListing(Request *request, int &errorCode) {
 }
 
 void	Response::handlePost(Request *request, int &errorCode) {
-	if (request->getLocation()->getUploadEnable() && request->getFilePath().find(".") == std::string::npos) {
+	if (request->getLocation()->getUploadEnable()) {
 		handleUploadedFile(request, errorCode);
 	} else {
 		errorCode = METHNOTALLOWED;
@@ -313,6 +310,7 @@ void Response::headerGenerator(int &errorCode, Request *request, int flag) {
 	codeMessageString += "\r\n";
 	std::string serverName = "Server: " + request->getServerName() + "\r\n";
 	_header += codeMessageString + serverName + location +  contentType + contentLength + connection + "\r\n";
+	std::cout << YELLOW << request->getLocation()->getRedirection() << " " << _header << RESET << std::endl;
 }
 
 void Response::codeMessage(int code, std::string &message) {

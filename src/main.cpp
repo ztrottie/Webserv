@@ -16,6 +16,6 @@ int main(int argc, char **argv){
 		return 1;
 	}
 	parsing.assignConfigFile(&webserv);
-	// webserv.loop();
+	webserv.loop();
 	return 0;
 }
