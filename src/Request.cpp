@@ -366,7 +366,7 @@ int Request::isValid() const {
 
 bool Request::isCgi() const {
 	std::cout << _location->getName() << " " << _extension << std::endl;
-	if (_extension == "php" && _location->getUseCGI()) {
+	if (_extension == "py" && _location->getUseCGI()) {
 		return true;
 	}
 	return false;

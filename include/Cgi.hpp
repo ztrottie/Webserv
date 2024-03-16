@@ -9,7 +9,6 @@ class Cgi
 {
 private:
 
-	int			_inputFd;
 	int			_outputFd;
 	const char 		*_env[12];
 
@@ -25,6 +24,7 @@ public:
 	// Functions
 	void execute(Request *request, std::string const &bodyPath);
 	void env(Request *request);
+	char decToHex(std::string hexaString);
 };
 
 // Cgi_HPP
