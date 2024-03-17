@@ -1,8 +1,4 @@
 #include "../include/utils.hpp"
-#include <algorithm>
-#include <string>
-#include <vector>
-
 
 bool isThereSomethingInMyString(std::string line, std::string const &begin, size_t finish){
 	std::string impasta;

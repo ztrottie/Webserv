@@ -1,5 +1,4 @@
 #include "../include/parsing.hpp"
-#include <exception>
 
 parsing::parsing(string path): pathConfigFile(path){
 	defaultIfError = false;

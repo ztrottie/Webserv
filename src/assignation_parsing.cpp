@@ -1,7 +1,4 @@
 #include "../include/parsing.hpp"
-#include <algorithm>
-#include <string>
-#include <vector>
 
 void	parsing::setDefault(uint16_t *_port, const char **_host, string *_name, Router &rout){
 	if (*_port == 0)
