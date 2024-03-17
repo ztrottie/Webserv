@@ -1,6 +1,5 @@
 #include "../include/Router.hpp"
 #include "../include/utils.hpp"
-#include <cstddef>
 
 Router::Router() {
 	std::cout << timestamp() << " Initializing the server Router!" << std::endl;

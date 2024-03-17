@@ -1,16 +1,9 @@
 #include "../include/Response.hpp"
 #include "../include/struct.hpp"
 #include "../include/Cgi.hpp"
-#include <cstddef>
 #include <iostream>
-#include <fstream>
-#include <iterator>
 #include <ostream>
 #include <sstream>
-#include <sys/fcntl.h>
-#include <sys/unistd.h>
-#include <unistd.h>
-#include <cstdio>
 #include <dirent.h>
 #include "../include/color.h"
 

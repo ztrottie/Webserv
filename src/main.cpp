@@ -1,4 +1,3 @@
-#include <iostream>
 #include "../include/color.h"
 #include "../include/Webserv.hpp"
 #include "../include/parsing.hpp"

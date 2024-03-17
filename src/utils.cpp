@@ -1,8 +1,4 @@
 #include "../include/utils.hpp"
-#include <cstddef>
-#include <cstdlib>
-#include <string>
-#include <vector>
 
 std::string	timestamp() {
 	std::time_t currentTime = std::time(nullptr);

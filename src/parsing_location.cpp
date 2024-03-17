@@ -1,7 +1,4 @@
 #include "../include/parsing.hpp"
-#include <algorithm>
-#include <string>
-#include <unistd.h>
 
 int parsing::isThisTheEnd(string const &line, bool insideLocation){
 	size_t pos = line.find("}");

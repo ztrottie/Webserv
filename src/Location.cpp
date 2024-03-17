@@ -1,8 +1,6 @@
 #include "../include/Location.hpp"
 #include "../include/struct.hpp"
-#include <iterator>
 #include <iostream>
-#include <string>
 
 Location::Location() : _name("default"), _clientMaxBodySizeSet(false) {
 	std::cout << "Default Location constructor " << std::endl;

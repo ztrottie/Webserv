@@ -1,16 +1,6 @@
 #include "../include/Request.hpp"
 #include "../include/color.h"
 #include "../include/Server.hpp"
-#include <arpa/inet.h>
-#include <cstddef>
-#include <cstdio>
-#include <limits>
-#include <sstream>
-#include <string>
-#include <sys/fcntl.h>
-#include <sys/signal.h>
-#include <sys/stat.h>
-#include <unistd.h>
 
 Request::Request(socketInfo *client, Server *server) : _client(client), _server(server), _serverName(server->getName()), _clientAddr(inet_ntoa(client->client_address.sin_addr)), _errorCode(OK), _bodyLen(0), _headerDone(false), _bodyStarted(false), _bodyEnded(false), _bodyLenWritten(0) {
 	std::cout << "Created a request!" << std::endl;
