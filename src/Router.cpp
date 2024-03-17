@@ -162,3 +162,10 @@ std::string	Router::getLocationParsing() const{
 std::string	Router::getRootParsing() const{
 	return _root;
 }
+
+Location *Router::getLocationForTesting() const{
+	for (std::map<std::string, Location*>::const_iterator it = _locations.begin(); it != _locations.end(); it++) {
+		return it->second;
+	}
+	return NULL;
+}

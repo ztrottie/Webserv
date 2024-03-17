@@ -23,6 +23,7 @@ private:
 	std::vector<std::string> 			_allowedMethod;
 
 public:
+	Location *getLocationForTesting() const;
 	Router();
 	Router(const Router &inst);
 	~Router();

@@ -349,7 +349,9 @@ void	parsing::assignErrorPage(const string &line, Location &loc){
 			if (loc.getErrorParsing(std::stoi(split[i])) != ""){
 				cout << RED << "This error code: " << split[i] << "is already set for this location, it will not be used" RESET << endl;
 			}else {
-				loc.addErrorPage(std::stoi(split[i]), split[split.size() - 1]);
+				string html = split[split.size() - 1];
+				html.erase(html.length() - 1, html.length());
+				loc.addErrorPage(std::stoi(split[i]), html);
 			}
 		}
 	}
