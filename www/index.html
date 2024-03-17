@@ -10,9 +10,9 @@
 <body>
 	<h1>Webserv</h1>
 	<h2>File Upload Form</h2>
-    <form action="/uploads" method="post" enctype="multipart/form-data">
+    <form action="/bin-cgi/upload.py" method="post" enctype="multipart/form-data">
         <label for="file">Select a file:</label>
-        <input type="file" name="image" id="image" required>
+        <input type="file" name="file" id="file" required>
         <br>
         <input type="submit" value="Upload">
     </form>
@@ -44,7 +44,7 @@
         }
         </script>
     <h2>Register into imaginary</h2>
-    <form action="/bin-cgi/upload.php" method="POST">
+    <form action="/bin-cgi/register.py" method="POST">
         <label for="name">Name:</label>
         <input type="text" id="name" name="name">
         <label for="nickName">nickName:</label>
@@ -53,6 +53,5 @@
         <input type="text" id="email" name="email">
         <input type="submit" value="register">
     </form>
-    <img src="tele.png" alt="tele">
 </body>
 </html>

@@ -107,7 +107,10 @@ void Request::_headerParser(char **buffer) {
 		_serverName = _server->getName();
 		_clientAddr = inet_ntoa(_client->client_address.sin_addr);
 		_search("boundary=", '\r', _boundary);
-		_search("Content-Type: ", ';', _type);
+		if (_raw.find("boundary") != std::string::npos)
+			_search("Content-Type: ", ';', _type);
+		else
+			_search("Content-Type: ", '\r', _type);
 		std::cout << GREEN << _errorCode << RESET << std::endl;
 		if (headerEnd > _rawSize) {
 			size_t nbytes = headerEnd - _rawSize;
@@ -186,12 +189,19 @@ void Request::parseFileName() {
 void Request::ParseBodyHeader(char **buffer) {
 	std::string endBoundary = "\r\n--" + _boundary + "--\r\n";
 	if (!_boundary.empty()) {
+		std::cout << PURPLE << _raw << RESET << std::endl;
 		size_t headerEnd = _raw.find("\r\n\r\n");
 		if (headerEnd != std::string::npos) {
 			headerEnd += 4;
 			_bodyStarted = true;
 			if (_errorCode == OK && _fileName.empty())
 				_search("filename=\"", '\"', _fileName);
+			if (_errorCode == OK && _bodyName.empty())
+				_search("; name=\"", '\"', _bodyName);
+			if (_errorCode == OK && _bodyContentDispo.empty())
+				_search("Content-Disposition: ", ';', _bodyContentDispo);
+			if (_errorCode == OK && _bodyContentType.empty())
+				_search("Content-Type: ", '\r', _bodyContentType);
 			if (headerEnd > _rawSize) {
 				size_t nbytes = headerEnd - _rawSize;
 				_nbytesRead -= nbytes;
@@ -366,8 +376,20 @@ int Request::isValid() const {
 
 bool Request::isCgi() const {
 	std::cout << _location->getName() << " " << _extension << std::endl;
-	if (_extension == "php" && _location->getUseCGI()) {
+	if (_extension == "py" && _location->getUseCGI()) {
 		return true;
 	}
 	return false;
+}
+
+std::string const &Request::getBodyContentType() const {
+	return _bodyContentType;
+}
+
+std::string const &Request::getBodyContentDispo() const {
+	return _bodyContentDispo;
+}
+
+std::string const &Request::getBodyName() const {
+	return _bodyName;
 }

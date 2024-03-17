@@ -24,6 +24,9 @@ private:
 	std::string 		_serverName;
 	std::string 		_clientAddr;
 	std::string 		_fileName;
+	std::string			_bodyName;
+	std::string			_bodyContentType;
+	std::string			_bodyContentDispo;
 	std::string			_tempFilePath;
 	std::string			_extension;
 	int					_tempFileFd;
@@ -74,6 +77,9 @@ public:
 	std::string const &getFullPath() const;
 	std::string const &getTempFilePath() const;
 	std::string const &getExtension() const;
+	std::string const &getBodyContentType() const;
+	std::string const &getBodyContentDispo() const;
+	std::string const &getBodyName() const;
 	Location *getLocation();
 	Router *getRouter();
 	int const &getErrorCode() const;
