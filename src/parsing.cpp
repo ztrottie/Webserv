@@ -73,9 +73,10 @@ bool	parsing::parseConfigFile(){
 		return false;
 	}
 	std::ifstream test;
+	test.open(pathConfigFile);
 	bool flag = false;
 	string linetest;
-	while (std::getline(configFile, linetest)){
+	while (std::getline(test, linetest)){
 		if (findFirstWord(linetest) == "server")
 			flag = true;
 	}
