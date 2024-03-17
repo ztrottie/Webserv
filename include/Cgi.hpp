@@ -25,6 +25,8 @@ public:
 
 	// Functions
 	void env(Request *request);
+	void execute(Request *request, std::string const &bodyPath);
+	char decToHex(std::string hexaString);
 };
 
 // Cgi_HPP

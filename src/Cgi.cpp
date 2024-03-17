@@ -150,7 +150,7 @@ void Cgi::execute(Request *request, std::string const &bodyPath){
 			std::cout << "Cannot dup2 fd for some reason!" << std::endl;
 			return ;
 		}
-		write(end[1], _str.c_str(), request->getBodyLen());
+		close(_outputFd);
 		status = execve(argv[0], const_cast<char* const *>(argv), const_cast<char * const *>(_env));
 		exit(0);
 	} else {
