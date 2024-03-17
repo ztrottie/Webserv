@@ -3,6 +3,7 @@
 #include <cstddef>
 #include <fstream>
 #include <string>
+#include <sys/fcntl.h>
 #include <unistd.h>
 #include "../include/color.h"
 
@@ -33,7 +34,7 @@ void Cgi::env(Request *request){
 	std::string queryString = "QUERY_STRING=";
 	queryString += request->getStringQuerry();
 	std::string contentType = "CONTENT_TYPE=";
-	contentType += request->getType();
+	contentType += request->getType() + "; boundary=" + request->getBoundary();
 	std::string contentLength = "CONTENT_LENGTH=";
 	contentLength += request->getBodyLen();
 	std::string clientAddr = "REMOTE_ADDR=";
@@ -58,14 +59,15 @@ char Cgi::decToHex(std::string hexaString) {
 
 void Cgi::execute(Request *request, std::string const &bodyPath){
 	const char *argv[] = {"/usr/bin/python3", request->getFilePath().c_str(), NULL};
-	int fds[2];
-	std::ifstream input;
-	if (!request->getTempFilePath().empty()) {
-		input.open(request->getTempFilePath());
+	int tempInFileFd;
+	std::string tempFilePath;
+	request->generateTempFile(tempFilePath, tempInFileFd);
+	if (tempFilePath.empty() || tempInFileFd == -1)
+		return;
+	std::cout << GREEN << request->getTempFilePath() << " " << request->getType() << RESET << std::endl;
+	if (!request->getTempFilePath().empty() && request->getType() == "application/x-www-form-urlencoded") {
+		std::ifstream input(request->getTempFilePath());
 		if (!input.is_open()) {
-			return;
-		}
-		if (pipe(fds) < 0) {
 			return;
 		}
 		std::string line;
@@ -73,7 +75,7 @@ void Cgi::execute(Request *request, std::string const &bodyPath){
 		while(std::getline(input, line, '&')) {
 			if (!firstLine) {
 				std::cout << "&";
-				write(fds[1], "&", 1);
+				write(tempInFileFd, "&", 1);
 			} else {
 				firstLine = false;
 			}
@@ -86,14 +88,41 @@ void Cgi::execute(Request *request, std::string const &bodyPath){
 				start = line.find("%");
 			}
 			std::cout << line;
-			write(fds[1], line.c_str(), line.size());
+			write(tempInFileFd, line.c_str(), line.size());
 		}
-		std::cout << std::endl;
+		close(tempInFileFd);
+	} else if (!request->getTempFilePath().empty()  && request->getType() == "multipart/form-data") {
+		std::string startBoundary = "--" + request->getBoundary();
+		std::string endBoundary = "\r\n--" + request->getBoundary() + "--\r\n";
+		std::string bodyType =  "Content-Type: " +  request->getBodyContentType();
+		std::string ContentDispo = "Content-Disposition: " + request->getBodyContentDispo() + ";";
+		std::string bodyName = "name=\"" + request->getBodyName() + "\";";
+		std::string fileName = "filename=\"" + request->getFileName() + "\"";
+		std::string header = startBoundary + "\r\n" + ContentDispo + " " +  bodyName + " " + fileName + "\r\n" + bodyType + "\r\n\r\n";
+		int tempFileFd = open(request->getTempFilePath().c_str(), O_RDONLY);
+		if (tempInFileFd < 0)
+			return;
+		size_t nbytes = 1024;
+		char buffer[1024];
+		write(tempInFileFd, header.c_str(), header.size());
+		while (1) {
+			nbytes = read(tempFileFd, buffer, sizeof(buffer));
+			if (nbytes <= 0)
+				break;
+			write(tempInFileFd, buffer, nbytes);
+		}
+		write(tempInFileFd, endBoundary.c_str(), endBoundary.size());
+		close(tempInFileFd);
 	}
 	_outputFd = open(bodyPath.c_str(), O_RDWR);
 	if (_outputFd == -1){
 		std::cout << "Error\n cannot open outfile!" << std::endl;
 		return ;
+	}
+	tempInFileFd = open(tempFilePath.c_str(), O_RDONLY);
+	if (tempInFileFd == -1) {
+		std::cout << "Error cannot open infile!" << std::endl;
+		return;
 	}
 	int pid = fork();
 	int status;
@@ -103,9 +132,8 @@ void Cgi::execute(Request *request, std::string const &bodyPath){
 		return ;
 	} else if (pid == 0){
 		if (!request->getTempFilePath().empty()) {
-			dup2(fds[0], STDIN_FILENO);
-			close(fds[0]);
-			close(fds[1]);
+			dup2(tempInFileFd, STDIN_FILENO);
+			close(tempInFileFd);
 		}
 		if (dup2(_outputFd, STDOUT_FILENO) == -1){
 			std::cout << "Cannot dup2 fd for some reason!" << std::endl;
@@ -115,9 +143,9 @@ void Cgi::execute(Request *request, std::string const &bodyPath){
 		status = execve(argv[0], const_cast<char* const *>(argv), const_cast<char * const *>(_env));
 		exit(0);
 	} else {
-		if (!request->getTempFilePath().empty()) {
-			close(fds[0]);
-			close(fds[1]);
+		if (!tempFilePath.empty()) {
+			close(tempInFileFd);
+			std::remove(tempFilePath.c_str());
 		}
 		close(_outputFd);
 		waitpid(pid, &status, 0);
