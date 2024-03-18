@@ -15,7 +15,7 @@
 #include "utils.hpp"
 
 // Router
-#define DEFAULTROOT "./www"
+#define DEFAULTROOT "./www/"
 #define DEFAULTINDEX "index.html"
 #define DEFAULTMAXBODY 1000000
 #define LOCATIONIFNONE "/"
@@ -27,7 +27,7 @@
 
 // Location
 #define DEFAULTMETHODS "GET POST DELETE"
-#define DEFAULTSTORE "/uploads"
+#define DEFAULTSTORE "./uploads/"
 
 enum verifFlags{
 	OKPARS,
