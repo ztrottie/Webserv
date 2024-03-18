@@ -75,7 +75,6 @@ void Cgi::execute(Request *request, std::string const &bodyPath){
 	request->generateTempFile(tempFilePath, tempInFileFd);
 	if (tempFilePath.empty() || tempInFileFd == -1)
 		return;
-	std::cout << GREEN << request->getTempFilePath() << " " << request->getType() << RESET << std::endl;
 	if (!request->getTempFilePath().empty() && request->getType() == "application/x-www-form-urlencoded") {
 		std::ifstream input(request->getTempFilePath());
 		if (!input.is_open()) {
@@ -85,7 +84,6 @@ void Cgi::execute(Request *request, std::string const &bodyPath){
 		bool firstLine = true;
 		while(std::getline(input, line, '&')) {
 			if (!firstLine) {
-				std::cout << "&";
 				write(tempInFileFd, "&", 1);
 			} else {
 				firstLine = false;
@@ -98,7 +96,6 @@ void Cgi::execute(Request *request, std::string const &bodyPath){
 				line = first + mid + end;
 				start = line.find("%");
 			}
-			std::cout << line;
 			write(tempInFileFd, line.c_str(), line.size());
 		}
 		close(tempInFileFd);

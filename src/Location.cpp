@@ -4,7 +4,7 @@
 #include <iostream>
 #include <string>
 
-Location::Location() : _name("default"), _clientMaxBodySizeSet(false) {
+Location::Location() : _name("default"), _redirection(false), _clientMaxBodySizeSet(false) {
 	std::cout << "Default Location constructor " << std::endl;
 	_redirectionCode = -1;
 	_useCGI = false;
@@ -14,7 +14,7 @@ Location::Location() : _name("default"), _clientMaxBodySizeSet(false) {
 	_useCGISetter = false;
 }
 
-Location::Location(std::string const &name) : _name(name), _clientMaxBodySizeSet(false) {
+Location::Location(std::string const &name) : _name(name), _redirection(false), _clientMaxBodySizeSet(false) {
 	_redirectionCode = -1;
 	_useCGI = false;
 	_clientMaxBodySize = -1;
@@ -48,7 +48,7 @@ int Location::isMethodAllowed(std::string const &method){
 	std::vector<const std::string>::const_iterator it = _allowedMethod.begin();
 	for (; it != _allowedMethod.end() && *it != method;++it){}
 	if (it == _allowedMethod.end())
-		return FORBIDDEN;
+		return METHNOTALLOWED;
 	return OK;
 }
 

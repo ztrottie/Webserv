@@ -12,7 +12,7 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
-Request::Request(socketInfo *client, Server *server) : _client(client), _server(server), _serverName(server->getName()), _clientAddr(inet_ntoa(client->client_address.sin_addr)), _errorCode(OK), _bodyLen(0), _headerDone(false), _bodyStarted(false), _bodyEnded(false), _bodyLenWritten(0) {
+Request::Request(socketInfo *client, Server *server) : _client(client), _server(server), _method(""), _serverName(server->getName()), _clientAddr(inet_ntoa(client->client_address.sin_addr)), _errorCode(OK), _bodyLen(0), _headerDone(false), _bodyStarted(false), _bodyEnded(false), _bodyLenWritten(0) {
 	std::cout << "Created a request!" << std::endl;
 	_raw.clear();
 }
@@ -24,14 +24,6 @@ Request::Request(const Request &inst) {
 
 Request::~Request() {
 	std::cout << "Request destructor" << std::endl;
-}
-
-Request& Request::operator=(const Request &rhs) {
-	std::cout << "Request operator = overload" << std::endl;
-	if (this != &rhs) {
-
-	}
-	return *this;
 }
 
 bool Request::_search(std::string const &searching, char endChar, std::string &result) {
@@ -82,14 +74,12 @@ void Request::_uriParser() {
 	if (start != std::string::npos) {
 		start += 1;
 		_extension = _filePath.substr(start);
-		std::cout << GREEN << _extension << RESET << std::endl;
 	}
 }
 
 void Request::_headerParser(char **buffer) {
 	size_t headerEnd = _raw.find("\r\n\r\n");
 	if (headerEnd != std::string::npos) {
-		std::cout << _raw << std::endl;
 		headerEnd += 4;
 		_headerDone = true;
 		std::stringstream ss(_raw);
@@ -111,7 +101,6 @@ void Request::_headerParser(char **buffer) {
 			_search("Content-Type: ", ';', _type);
 		else
 			_search("Content-Type: ", '\r', _type);
-		std::cout << GREEN << _errorCode << RESET << std::endl;
 		if (headerEnd > _rawSize) {
 			size_t nbytes = headerEnd - _rawSize;
 			_nbytesRead -= nbytes;
@@ -159,7 +148,7 @@ void Request::_setHostPort() {
 
 int Request::generateTempFile(std::string &tempFilePath, int &tempFileFd) {
 	std::string tmpFileName = "tmp";
-	tempFilePath = "./uploads/";
+	tempFilePath = "/tmp/";
 	for (size_t fileIndex = 0; fileIndex < std::numeric_limits<size_t>::max(); fileIndex++) {
 		int error = access((tempFilePath + tmpFileName + std::to_string(fileIndex)).c_str(), F_OK);
 		if (error != 0) {
@@ -189,7 +178,6 @@ void Request::parseFileName() {
 void Request::ParseBodyHeader(char **buffer) {
 	std::string endBoundary = "\r\n--" + _boundary + "--\r\n";
 	if (!_boundary.empty()) {
-		std::cout << PURPLE << _raw << RESET << std::endl;
 		size_t headerEnd = _raw.find("\r\n\r\n");
 		if (headerEnd != std::string::npos) {
 			headerEnd += 4;
@@ -207,11 +195,12 @@ void Request::ParseBodyHeader(char **buffer) {
 				_nbytesRead -= nbytes;
 				*buffer += nbytes;
 			}
-			_bodyLen -= (headerEnd + endBoundary.length());
+			_bodyLenModified = _bodyLen - (headerEnd + endBoundary.length());
 			_raw.clear();
 			_rawSize = 0;
 		}
 	} else {
+		_bodyLenModified = _bodyLen;
 		_bodyStarted = true;
 		_rawSize = 0;
 		_raw.clear();
@@ -220,19 +209,20 @@ void Request::ParseBodyHeader(char **buffer) {
 
 void Request::addBody(char **buffer) {
 	std::string endBoundary = "\r\n--" + _boundary + "--\r\n";
-	std::cout << _errorCode << std::endl;
 	if (_errorCode == OK && _tempFilePath.empty()) {
 		if (generateTempFile(_tempFilePath, _tempFileFd) == INTERNALSERVERROR) {
 			_errorCode = INTERNALSERVERROR;
+			_bodyStarted = true;
+			_bodyEnded = true;
 			return;
 		}
 	}
 	if (!_bodyStarted) {
 		ParseBodyHeader(buffer);
 	}
-	if (_bodyStarted && _bodyLenWritten != _bodyLen) {
-		if (_bodyLen < _nbytesRead + _bodyLenWritten) {
-			_nbytesRead = _bodyLen - _bodyLenWritten;
+	if (_bodyStarted && _bodyLenWritten != _bodyLenModified) {
+		if (_bodyLenModified < _nbytesRead + _bodyLenWritten) {
+			_nbytesRead = _bodyLenModified - _bodyLenWritten;
 		}
 		if (_errorCode == OK) {
 			while (_nbytesRead > 0) {
@@ -245,14 +235,14 @@ void Request::addBody(char **buffer) {
 			_bodyLenWritten += _nbytesRead;
 			*buffer += _nbytesRead;
 		}
-		if (_bodyLenWritten == _bodyLen) {
+		if (_bodyLenWritten == _bodyLenModified) {
 			_raw = *buffer;
 			_rawSize = _nbytesRead;
 			if (_errorCode == OK && !_tempFilePath.empty())
 				close(_tempFileFd);
 		}
 	}
-	if (_bodyLenWritten == _bodyLen && !_bodyEnded) {
+	if (_bodyLenWritten == _bodyLenModified && !_bodyEnded) {
 		if (!_boundary.empty()) {
 			size_t end = _raw.find(endBoundary);
 			if (end != std::string::npos) {
@@ -375,7 +365,6 @@ int Request::isValid() const {
 }
 
 bool Request::isCgi() const {
-	std::cout << _location->getName() << " " << _extension << std::endl;
 	if (_extension == "py" && _location->getUseCGI()) {
 		return true;
 	}

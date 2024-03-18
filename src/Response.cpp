@@ -17,9 +17,7 @@
 Response::Response(Request *request) {
 	int errorPageCode;
 	int errorCode = request->getErrorCode();
-	std::cout << RED << errorCode << RESET << std::endl;
 	if (errorCode >= 300) {
-		std::cout << request->getMethod() << " " << errorCode << " error encountered sending error" << std::endl;
 		std::string path;
 		if (errorCode != INTERNALSERVERROR)
 			errorPageCode = request->getRouter()->getErrorPage(path, errorCode, request->getLocation());
@@ -129,7 +127,6 @@ void Response::handleGet(Request *request, int &errorCode) {
 		return;
 	} else if (errorCode != 200 && request->getLocation()->getAutoIndex()) {
 		directoryListing(request, errorCode);
-		std::cout << errorCode << std::endl;
 		if (errorCode == INTERNALSERVERROR)
 			return;
 		if (errorCode >= 300){
@@ -151,7 +148,6 @@ void Response::handleDelete(Request *request, int &errorCode) {
 	if (path.back() == '/' && filePath.front() == '/') {
 		path += filePath.substr(1);
 	}
-	std::cout << path << std::endl;
 	if (access(path.c_str(), F_OK) != 0) {
 		errorCode = NOTFOUND;
 		std::string errorPath;
@@ -171,7 +167,6 @@ void Response::handleDelete(Request *request, int &errorCode) {
 			newPath = newPath.substr(0, end);
 			request->setFilePath(newPath);
 		}
-		std::cout << PURPLE << newPath << RESET << std::endl;
 		if (request->getLocation()->getAutoIndex()) {
 			directoryListing(request, errorCode);
 		} else {
@@ -179,7 +174,6 @@ void Response::handleDelete(Request *request, int &errorCode) {
 			_contentType = "text/plain";
 			errorCode = OK;
 		}
-		std::cout << errorCode << std::endl;
 	}
 }
 
@@ -218,7 +212,6 @@ void Response::directoryListing(Request *request, int &errorCode) {
 	}
 	DIR *dir;
 	struct dirent* entry;
-	std::cout << GREEN << path << RESET << std::endl;
 	if (access(path.c_str(), F_OK) != 0) {
 		errorCode = NOTFOUND;
 		return;
@@ -272,7 +265,7 @@ void	Response::handleUploadedFile(Request *request, int &errorCode) {
 		internalServerError(errorCode);
 		return;
 	}
-	size_t nbytes = 1024;
+	ssize_t nbytes = 1024;
 	char buffer[1024];
 	while (1) {
 		nbytes = read(tempFileFd, buffer, sizeof(buffer));
@@ -282,6 +275,11 @@ void	Response::handleUploadedFile(Request *request, int &errorCode) {
 	}
 	close(fileFd);
 	std::remove(request->getTempFilePath().c_str());
+	if (nbytes < 0) {
+		internalServerError(errorCode);
+		return;
+	}
+	request->getRouter()->getErrorPage(filePath, errorCode, request->getLocation());
 	if (openPath(filePath) >= 300) {
 		internalServerError(errorCode);
 		return;
@@ -378,7 +376,6 @@ void Response::codeMessage(int code, std::string &message) {
 }
 
 void Response::handleCgi(Request *request, int &errorCode) {
-	std::cout << "cgi request processing..." << std::endl;
 	std::string bodyResponse;
 	int			fd = -1;
 	std::string path = request->getRouter()->getRoot(request->getLocation());
@@ -389,7 +386,6 @@ void Response::handleCgi(Request *request, int &errorCode) {
 	request->setFilePath(path);
 	bool isValid = (access(path.c_str(), F_OK) == 0);
 	errorCode = request->generateTempFile(bodyResponse, fd);
-	std::cout << bodyResponse << std::endl;
 	if (errorCode >= 300 || bodyResponse.empty() || fd < 0 || !isValid) {
 		if (errorCode == OK && !isValid)
 			errorCode = FORBIDDEN;

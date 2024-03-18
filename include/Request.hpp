@@ -32,6 +32,7 @@ private:
 	int					_tempFileFd;
 	int					_errorCode;
 	size_t				_bodyLen;
+	size_t				_bodyLenModified;
 	size_t				_nbytesRead;
 	size_t				_bodyNbytes;
 	size_t				_rawSize;
@@ -54,9 +55,6 @@ public:
 	Request(socketInfo *client, Server *server);
 	Request(const Request &inst);
 	~Request();
-
-	// Operator Overload
-	Request& operator=(const Request &rhs);
 
 	// Functions
 	std::string const &getMethod() const;

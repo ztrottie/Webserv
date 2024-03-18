@@ -64,7 +64,6 @@ void Router::parseUri(std::string &cpy){
 }
 
 void Router::trimURI(std::string &uri){
-	std::cout << "timURI: " << uri << std::endl;
 	size_t index = uri.rfind('/');
 	if (index == 0){
 		uri = '/';

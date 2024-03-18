@@ -107,7 +107,7 @@ int Server::sendData(int const &socket) {
 int Server::handleRequest(socketInfo *client) {
 	if (client->requests.back()->isValid() == WAIT)
 		return (KEEP);
-	else if (client->requests.back()->isValid() == RESPOND) {
+	else if (client->requests.back()->isValid() == RESPOND && _responseSize == 0) {
 		Response response(client->requests.front());
 		std::string fullResponse = response.getFullResponse();
 		_responseSize = fullResponse.size();
@@ -122,7 +122,7 @@ int Server::handleRequest(socketInfo *client) {
 		int result = sendData(client->socket);
 		if (_responseSize == 0 || result == -1) {
 			_responseSize = 0;
-			delete _response;
+			delete [] _response;
 			delete client->requests.front();
 			client->requests.erase(client->requests.begin());
 		}
@@ -132,11 +132,9 @@ int Server::handleRequest(socketInfo *client) {
 
 int Server::handleClient(socketInfo *client, int type) {
 	if (type == EVFILT_READ) {
-		// std::cout << "received a read request" << std::endl;
 		return recieveRequest(client);
 	}
 	else if (!client->requests.empty() && type == EVFILT_WRITE) {
-		std::cout << "received a write request" << std::endl;
 		return handleRequest(client);
 	}
 	return KEEP;
