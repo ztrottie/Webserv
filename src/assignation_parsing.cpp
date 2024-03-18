@@ -20,7 +20,9 @@ void	parsing::setDefault(uint16_t *_port, const char **_host, string *_name, Rou
 		loc->addAllowedMethod("GET");
 		loc->addAllowedMethod("POST");
 		loc->addAllowedMethod("DELETE");
+		loc->setUploadEnable(true);
 		loc->setUploadStore(DEFAULTSTORE);
+		loc->setRedirection(false);
 		rout.addLocation(loc->getName(), loc);
 	}
 

@@ -1,12 +1,5 @@
 #include "../include/Server.hpp"
 #include "../include/Response.hpp"
-#include <csignal>
-#include <cstddef>
-#include <cstring>
-#include <ctime>
-#include <sys/signal.h>
-#include <sys/socket.h>
-#include <unistd.h>
 #ifndef BUFFER_SIZE
 # define BUFFER_SIZE 1024
 #endif

@@ -1,4 +1,5 @@
 #include "../include/parsing.hpp"
+#include <fstream>
 
 parsing::parsing(string path): pathConfigFile(path){
 	defaultIfError = false;
@@ -69,6 +70,18 @@ bool	parsing::parseConfigFile(){
 	string line;
 	unsigned int	nbLine = 0;
 	if (checkFile() == false){
+		return false;
+	}
+	std::ifstream test;
+	test.open(pathConfigFile);
+	bool flag = false;
+	string linetest;
+	while (std::getline(test, linetest)){
+		if (findFirstWord(linetest) == "server")
+			flag = true;
+	}
+	if (flag == false){
+		simpleWriteTimestamp(RED, "They're no server in the file... ok");
 		return false;
 	}
 	while (std::getline(configFile, line)){

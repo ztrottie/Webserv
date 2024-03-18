@@ -1,21 +1,4 @@
 #include "../include/Cgi.hpp"
-#include <algorithm>
-#include <cctype>
-#include <cstddef>
-#include <cstdio>
-#include <cstdlib>
-#include <fstream>
-#include <iterator>
-#include <string>
-#include <sys/_types/_ssize_t.h>
-#include <sys/fcntl.h>
-#include <unistd.h>
-#include <algorithm>
-#include <cstddef>
-#include <fstream>
-#include <string>
-#include <sys/fcntl.h>
-#include <unistd.h>
 #include "../include/color.h"
 
 Cgi::Cgi() {

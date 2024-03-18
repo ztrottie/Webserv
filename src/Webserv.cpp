@@ -1,7 +1,4 @@
 #include "../include/Webserv.hpp"
-#include <ctime>
-#include <sys/event.h>
-#include <vector>
 
 Webserv::Webserv() : _nbServer(0), _nbClients(0) {
 	std::cout << GREEN << timestamp() << " Starting the webserv..." << RESET << std::endl;
