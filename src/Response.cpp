@@ -40,7 +40,6 @@ Response::Response() {
 }
 
 Response::~Response() {
-	std::cout << "Response destructor" << std::endl;
 }
 
 const std::string & Response::getFullResponse() const {

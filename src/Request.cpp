@@ -3,12 +3,10 @@
 #include "../include/Server.hpp"
 
 Request::Request(socketInfo *client, Server *server) : _client(client), _server(server), _method(""), _serverName(server->getName()), _clientAddr(inet_ntoa(client->client_address.sin_addr)), _errorCode(OK), _bodyLen(0), _headerDone(false), _bodyStarted(false), _bodyEnded(false), _bodyLenWritten(0) {
-	std::cout << "Created a request!" << std::endl;
 	_raw.clear();
 }
 
 Request::~Request() {
-	std::cout << "Request destructor" << std::endl;
 }
 
 bool Request::_search(std::string const &searching, char endChar, std::string &result) {

@@ -42,7 +42,7 @@ void Webserv::addNewServer(uint16_t port, const char *host, std::string name, Ro
 
 void Webserv::acceptConnection(socketInfo *info) {
 	socketInfo *client = new socketInfo; 
-	memset(client, 0, sizeof(socketInfo));
+	std::memset(client, 0, sizeof(socketInfo));
 	if (info->serverInst->acceptConnection(client) == CLOSE) {
 		close(client->socket);
 		delete client;
