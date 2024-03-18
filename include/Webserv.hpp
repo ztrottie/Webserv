@@ -7,6 +7,12 @@
 
 #include <csignal>
 #include <map>
+#ifndef LEAK
+# define LEAK 0
+#endif
+#ifndef ITER_AMOUNT
+# define ITER_AMOUNT 1000
+#endif
 
 
 class Webserv
@@ -19,11 +25,7 @@ private:
 public:
 	// Constructors / Destructor
 	Webserv();
-	Webserv(const Webserv &inst);
 	~Webserv();
-
-	// Operator Overload
-	Webserv& operator=(const Webserv &rhs);
 
 	// Functions
 	void addNewServer(uint16_t port, const char *host, std::string name, Router *router);

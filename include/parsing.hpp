@@ -70,17 +70,17 @@ class parsing{
 		bool				checkClientMaxBodySize(string const &line, unsigned int nbLine);
 		bool				checkReturns(string const &line, unsigned int nbLine);
 				// Dans location
-		bool					checkLocation(string &line, unsigned int *nbLine);
-		void					checkIndexLocation(string const &line, unsigned int nbLine);
-		void					checkRootLocation(string const &line, unsigned int nbLine);
-		void					checkAllowedMethods(string &line, unsigned int nbLine);
-		void					checkErrorPageLocation(string const &line, unsigned int nbLine);
-		void					checkReturnsLocation(string const &line, unsigned int nbLine);
-		void					checkUploadEnable(string const &line, unsigned int nbLine);
-		void					checkUploadStore(string const &line, unsigned int nbLine);
-		void					checkClientMaxBodySizeLocation(string const &line, unsigned int nbLine);
-		void					checkAutoIndex(const string &line, unsigned int nbline);
-		void					checkUseCGI(string const &line, unsigned int nbLine);
+		bool				checkLocation(string &line, unsigned int *nbLine);
+		void				checkIndexLocation(string const &line, unsigned int nbLine);
+		void				checkRootLocation(string const &line, unsigned int nbLine);
+		void				checkAllowedMethods(string &line, unsigned int nbLine);
+		void				checkErrorPageLocation(string const &line, unsigned int nbLine);
+		void				checkReturnsLocation(string const &line, unsigned int nbLine);
+		void				checkUploadEnable(string const &line, unsigned int nbLine);
+		void				checkUploadStore(string const &line, unsigned int nbLine);
+		void				checkClientMaxBodySizeLocation(string const &line, unsigned int nbLine);
+		void				checkAutoIndex(const string &line, unsigned int nbline);
+		void				checkUseCGI(string const &line, unsigned int nbLine);
 		// Assignation
 		void				setDefault(uint16_t *_port, const char **_host, string *_name, Router &rout);
 			//Server

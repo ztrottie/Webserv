@@ -28,22 +28,9 @@ Server::Server(uint16_t port, const char *host, std::string name, Router *router
 	std::cout << GREEN << timestamp() << " " << _name <<  " is listening on port " << _port << RESET << std::endl;
 }
 
-Server::Server(const Server &inst) {
-	std::cout << "Copy Server constructor" << std::endl;
-	*this = inst;
-}
-
 Server::~Server() {
 	std::cout << "Server destructor" << std::endl;
 	delete _serverRouter;
-}
-
-Server& Server::operator=(const Server &rhs) {
-	std::cout << "Server operator = overload" << std::endl;
-	if (this != &rhs) {
-
-	}
-	return *this;
 }
 
 int Server::acceptConnection(socketInfo *client) {

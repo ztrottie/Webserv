@@ -36,9 +36,6 @@ public:
 	Location(const Location &inst);
 	~Location();
 
-	// Operator Overload
-	Location& operator=(const Location &rhs);
-
 	//Setters
 	void setUploadEnable(bool enable);
 	void setRoot(std::string const &root);

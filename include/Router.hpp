@@ -23,12 +23,8 @@ private:
 	std::vector<std::string> 			_allowedMethod;
 
 public:
-	Location *getLocationForTesting() const;
 	Router();
-	Router(const Router &inst);
 	~Router();
-
-	Router& operator=(const Router &rhs);
 
 	void setRoot(std::string const &root);
 	void setIndex(std::string const &index);
@@ -59,4 +55,5 @@ public:
 	std::string getErrorForParsing(int code) const;
 	std::string getLocationParsing() const;
 	std::string	getRootParsing() const;
+	Location *getLocationForTesting() const;
 };

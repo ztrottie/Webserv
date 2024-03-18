@@ -21,11 +21,7 @@ public:
 	// Constructors / Destructor
 	Response();
 	Response(Request *request);
-	Response(const Response &inst);
 	~Response();
-
-	// Operator Overload
-	Response& operator=(const Response &rhs);
 
 	// Functions
 	const std::string & getFullResponse() const;

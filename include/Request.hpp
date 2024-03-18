@@ -53,7 +53,6 @@ private:
 public:
 	// Constructors / Destructor
 	Request(socketInfo *client, Server *server);
-	Request(const Request &inst);
 	~Request();
 
 	// Functions

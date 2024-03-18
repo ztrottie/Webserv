@@ -5,11 +5,6 @@ Webserv::Webserv() : _nbServer(0), _nbClients(0) {
 	_kq = kqueue();
 }
 
-Webserv::Webserv(const Webserv &inst) {
-	std::cout << "Copy Webserv constructor " << std::endl;
-	*this = inst;
-}
-
 Webserv::~Webserv() {
 	for (std::map<int, socketInfo*>::iterator it = _clientMap.begin(); it != _clientMap.end();) {
 		struct kevent clientChanges;
@@ -29,14 +24,6 @@ Webserv::~Webserv() {
 		_clientMap.erase(tempit);
 	}
 	std::cout << "Webserv destructor" << std::endl;
-}
-
-Webserv& Webserv::operator=(const Webserv &rhs) {
-	std::cout << "Webserv operator = overload" << std::endl;
-	if (this != &rhs) {
-
-	}
-	return *this;
 }
 
 void Webserv::addNewServer(uint16_t port, const char *host, std::string name, Router *router) {
@@ -78,7 +65,8 @@ void signalhandler(int signal) {
 
 void Webserv::loop() {
 	std::signal(SIGQUIT, signalhandler);
-	while (loopFlag) {
+	int leakcheck = 0;
+	while ((LEAK && leakcheck < ITER_AMOUNT) || (!LEAK && 1)) {
 		struct kevent events[150];
 		int numEvents = kevent(_kq, nullptr, 0, events, 150, NULL);
 		for (int i = 0; i < numEvents; i++) {
@@ -135,5 +123,7 @@ void Webserv::loop() {
 				++it;
 			}
 		}
+		if (LEAK)
+			leakcheck++;
 	}
 }

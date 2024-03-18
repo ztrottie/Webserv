@@ -36,24 +36,11 @@ Response::Response(Request *request) {
 	_fullResponse = _header + _body;
 }
 
-Response::Response(const Response &inst) {
-	std::cout << "Copy Response constructor" << std::endl;
-	*this = inst;
-}
-
 Response::Response() {
 }
 
 Response::~Response() {
 	std::cout << "Response destructor" << std::endl;
-}
-
-Response& Response::operator=(const Response &rhs) {
-	std::cout << "Response operator = overload" << std::endl;
-	if (this != &rhs) {
-
-	}
-	return *this;
 }
 
 const std::string & Response::getFullResponse() const {

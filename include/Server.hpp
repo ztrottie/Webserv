@@ -34,11 +34,7 @@ private:
 public:
 	// Constructors / Destructor
 	Server(uint16_t port, const char *host, std::string name, Router *router, socketInfo *server);
-	Server(const Server &inst);
 	~Server();
-
-	// Operator Overload
-	Server& operator=(const Server &rhs);
 
 	// Functions
 	Router *getRouter();

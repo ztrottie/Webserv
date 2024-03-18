@@ -2,20 +2,16 @@
 #include "../include/color.h"
 
 Cgi::Cgi() {
-	std::cout << "Default Cgi constructor " << std::endl;
 }
 
 Cgi::Cgi(const Cgi &inst) {
 	(void) inst;
-	std::cout << "Copy Cgi constructor " << std::endl;
 }
 
 Cgi::~Cgi() {
-	std::cout << "Cgi destructor" << std::endl;
 }
 
 Cgi& Cgi::operator=(const Cgi &rhs) {
-	std::cout << "Cgi operator = overide" << std::endl;
 	if (this != &rhs) {
 	}
 	return *this;

@@ -7,11 +7,6 @@ Request::Request(socketInfo *client, Server *server) : _client(client), _server(
 	_raw.clear();
 }
 
-Request::Request(const Request &inst) {
-	std::cout << "Copy Request constructor" << std::endl;
-	*this = inst;
-}
-
 Request::~Request() {
 	std::cout << "Request destructor" << std::endl;
 }

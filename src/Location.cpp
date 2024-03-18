@@ -3,7 +3,6 @@
 #include <iostream>
 
 Location::Location() : _name("default"), _redirection(false), _clientMaxBodySizeSet(false) {
-	std::cout << "Default Location constructor " << std::endl;
 	_redirectionCode = -1;
 	_useCGI = false;
 	_clientMaxBodySize = -1;
@@ -21,23 +20,8 @@ Location::Location(std::string const &name) : _name(name), _redirection(false), 
 	_useCGISetter = false;
 }
 
-Location::Location(const Location &inst) {
-	(void)inst;
-	std::cout << "Copy Location constructor " << std::endl;
-	*this = inst;
-}
-
 Location::~Location() {
 	// std::cout << "Location destructor" << std::endl;
-}
-
-Location& Location::operator=(const Location &rhs) {
-	(void) rhs;
-	std::cout << "Location operator = overide" << std::endl;
-	if (this != &rhs) {
-
-	}
-	return *this;
 }
 
 int Location::isMethodAllowed(std::string const &method){
